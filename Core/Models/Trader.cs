@@ -1,8 +1,10 @@
 namespace Core.Models;
 
-public class Trader
+public class Trader : ModelBase
 {
     public required string Name { get; init; }
+    
+    public required IEnumerable<OrderBase> Orders { get; init; }
     
     public required double SellerRating { get; init; }
     

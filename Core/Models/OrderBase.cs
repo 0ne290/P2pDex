@@ -2,19 +2,17 @@ using Core.Enums;
 
 namespace Core.Models;
 
-public class Order
+public abstract class OrderBase : ModelBase
 {
-    public required OrderType Type { get; init; }
-    
-    public required Trader Initiator { get; init; }
-    
-    public required string InitiatorGuid { get; init; }
-    
-    public required Trader Responded { get; init; }
-    
-    public required string RespondedGuid { get; init; }
-    
     public required OrderStatus Status { get; init; }
+    
+    public required Trader Seller { get; init; }
+    
+    public required string SellerGuid { get; init; }
+    
+    public required Trader Buyer { get; init; }
+    
+    public required string BuyerGuid { get; init; }
     
     public required Cryptocurrency Crypto { get; init; }
     
