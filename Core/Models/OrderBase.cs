@@ -4,27 +4,41 @@ namespace Core.Models;
 
 public abstract class OrderBase : ModelBase
 {
-    public required OrderStatus Status { get; init; }
+    public OrderBase(OrderStatus status, Trader? seller, Trader? buyer, Cryptocurrency crypto, decimal cryptoAmount,
+        FiatCurrency fiat, decimal cryptoToFiatExchangeRate, string paymentMethodInfo)
+    {
+        Status = status;
+        Seller = seller;
+        SellerGuid = seller?.Guid;
+        Buyer = buyer;
+        BuyerGuid = buyer?.Guid;
+        Crypto = crypto;
+        CryptoAmount = cryptoAmount;
+        Fiat = fiat;
+        CryptoToFiatExchangeRate = cryptoToFiatExchangeRate;
+        FiatAmount = cryptoAmount * cryptoToFiatExchangeRate;
+        PaymentMethodInfo = paymentMethodInfo;
+    }
+
+    public OrderStatus Status { get; protected set; }
     
-    public required Trader Seller { get; init; }
+    public Trader? Seller { get; }
     
-    public required string SellerGuid { get; init; }
+    public string? SellerGuid { get; }
     
-    public required Trader Buyer { get; init; }
+    public Trader? Buyer { get; protected set; }
     
-    public required string BuyerGuid { get; init; }
+    public string? BuyerGuid { get; protected set; }
     
-    public required Cryptocurrency Crypto { get; init; }
+    public Cryptocurrency Crypto { get; }
     
-    public required decimal CryptoAmount { get; init; }
+    public decimal CryptoAmount { get; }
     
-    public required FiatCurrency Fiat { get; init; }
+    public FiatCurrency Fiat { get; }
     
-    public required decimal CryptoToFiatExchangeRate { get; init; }
+    public decimal CryptoToFiatExchangeRate { get; }
     
     public decimal FiatAmount { get; }
     
-    public required string PaymentMethodInfo { get; init; }
-    
-    public required string JsonOfChatContent { get; init; }
+    public string PaymentMethodInfo { get; }
 }

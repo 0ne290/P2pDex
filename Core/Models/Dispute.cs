@@ -13,6 +13,4 @@ public class Dispute : ModelBase
     public required Administrator Administrator { get; init; }
     
     public required string AdministratorGuid { get; init; }
-    
-    public required string JsonOfChatContent { get; init; }
 }
