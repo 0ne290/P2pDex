@@ -2,7 +2,7 @@ using Core.Interfaces;
 
 namespace CoreConsoleTests.Stubs;
 
-public class BlockchainStub : IBlockchain
+public class BlockchainStub : IBlockchain, IDisposable
 {
     private class Transaction
     {
