@@ -11,7 +11,7 @@ public class OrderTracker : IDisposable
 {
     public OrderTracker(IEnumerable<Order> trackedOrders, IBlockchain blockchain, IOrderStorage orderStorage)
     {
-        _timer = new Timer { AutoReset = true, Enabled = false, Interval = 10000 };
+        _timer = new Timer { AutoReset = true, Enabled = false, Interval = 5000 };
         _timer.Elapsed += Handler;
         _numberOfAtiveHandlers = 0;
         _trackedOrders = trackedOrders.ToHashSet();
