@@ -4,11 +4,12 @@ using Core.Models;
 
 namespace CoreConsoleTests.Stubs;
 
-public class OrderStorageStub : IOrderStorage
+public class OrderStorageStub : IOrderStorage, IDisposable
 {
     public OrderStorageStub(IEnumerable<Order> orders)
     {
         _orders = orders.ToList();
+        _logger = Log.Logger;
     }
 
     public async Task<ICollection<Order>> GetAllByStatus(OrderStatus status) =>
@@ -21,6 +22,13 @@ public class OrderStorageStub : IOrderStorage
         
         return Task.CompletedTask;
     }
+
+    public void Dispose()
+    {
+        _logger.Information("OrderStorageStub is disposed.");
+    }
     
     private readonly List<Order> _orders;
+
+    private readonly ILogger _logger;
 }
