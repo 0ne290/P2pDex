@@ -2,11 +2,16 @@ namespace Core.Models;
 
 public class Trader : ModelBase
 {
-    public required string Name { get; init; }
+    public Trader(string guid, string name,double sellerRating, double buyerRating) : base(guid)
+    {
+        Name = name;
+        SellerRating = sellerRating;
+        BuyerRating = buyerRating;
+    }
+
+    public string Name { get; }
     
-    public required IEnumerable<OrderBase> Orders { get; init; }
+    public double SellerRating { get; }
     
-    public required double SellerRating { get; init; }
-    
-    public required double BuyerRating { get; init; }
+    public double BuyerRating { get; }
 }

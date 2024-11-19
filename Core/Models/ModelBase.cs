@@ -2,5 +2,7 @@ namespace Core.Models;
 
 public abstract class ModelBase
 {
-    public required string Guid { get; init; }
+    protected ModelBase(string guid) => Guid = guid;
+    
+    public string Guid { get; }
 }
