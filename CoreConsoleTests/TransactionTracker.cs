@@ -1,23 +1,24 @@
 using System.Timers;
 using Core.Interfaces;
 using Core.Models;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using ILogger = Serilog.ILogger;
 using Timer = System.Timers.Timer;
 
 namespace CoreConsoleTests;
 
 public class OrderTracker : IDisposable
 {
-    public OrderTracker(IEnumerable<Order> trackedOrders, IBlockchain blockchain, IOrderStorage orderStorage, ILogger logger)
+    public OrderTracker(IEnumerable<Order> trackedOrders, IBlockchain blockchain, IOrderStorage orderStorage)
     {
-        _timer = new Timer { AutoReset = true, Enabled = false, Interval = 60000 };
+        _timer = new Timer { AutoReset = true, Enabled = false, Interval = 10000 };
         _timer.Elapsed += Handler;
         _numberOfAtiveHandlers = 0;
         _trackedOrders = trackedOrders.ToHashSet();
         _locker = new object();
         _blockchain = blockchain;
         _orderStorage = orderStorage;
-        _logger = logger;
+        _logger = Log.Logger;
         
         _timer.Start();
     }
@@ -27,7 +28,7 @@ public class OrderTracker : IDisposable
         lock (_locker)
         {
             _trackedOrders.Add(order);
-            _logger.LogInformation("Transaction is being tracked. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
+            _logger.Information("Transaction is being tracked. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
                 order.Guid, order.TransactionHash);
         }
     }
@@ -45,7 +46,7 @@ public class OrderTracker : IDisposable
                 order.ConfirmTransaction();
                 updatedOrders.Add(order);
                 _trackedOrders.Remove(order);
-                _logger.LogInformation("Transaction is confirmed. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
+                _logger.Information("Transaction is confirmed. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
                     order.Guid, order.TransactionHash);
             }
         }
@@ -65,6 +66,8 @@ public class OrderTracker : IDisposable
             Thread.Yield();
         
         _timer.Dispose();
+        
+        _logger.Information("OrderTracker is disposed.");
     }
 
     private readonly Timer _timer;

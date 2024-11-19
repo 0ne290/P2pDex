@@ -16,7 +16,10 @@ public class OrderStorageStub : IOrderStorage
 
     public Task UpdateAll(IEnumerable<Order> orders)
     {
-        throw new NotImplementedException();
+        foreach (var order in orders)
+            _orders[_orders.FindIndex(o => o.Guid == order.Guid)] = order;
+        
+        return Task.CompletedTask;
     }
     
     private readonly List<Order> _orders;
