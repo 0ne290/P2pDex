@@ -6,7 +6,7 @@ public class Order : ModelBase
 {
     public static Order CreateSellOrder(string guid, Trader seller, string transactionHash, Cryptocurrency crypto,
         decimal cryptoAmount, FiatCurrency fiat, decimal cryptoToFiatExchangeRate, string paymentMethodInfo) => new(
-        guid, OrderType.Sell, OrderStatus.WaitingForBuyersResponse, seller, transactionHash, null, null, crypto, cryptoAmount, fiat,
+        guid, OrderType.Sell, OrderStatus.WaitingForConfirmationOfTheTransactionOfTransferOfCryptocurrencyToTheEscrowAccountByTheSeller, seller, transactionHash, null, null, crypto, cryptoAmount, fiat,
         cryptoToFiatExchangeRate, paymentMethodInfo);
 
     public static Order CreateCopy(Order order) => new(order.Guid, order.Type, order.Status, order.Seller,

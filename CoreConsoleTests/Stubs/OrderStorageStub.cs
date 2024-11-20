@@ -1,6 +1,7 @@
 using Core.Enums;
 using Core.Interfaces;
 using Core.Models;
+using Serilog;
 
 namespace CoreConsoleTests.Stubs;
 
@@ -12,6 +13,15 @@ public class OrderStorageStub : IOrderStorage, IDisposable
         _logger = Log.Logger;
     }
 
+    public Task Add(Order order)
+    {
+        _orders.Add(order);
+
+        return Task.CompletedTask;
+    }
+
+    public ICollection<Order> GetAll() => _orders.Select(Order.CreateCopy).ToList();
+    
     public async Task<ICollection<Order>> GetAllByStatus(OrderStatus status) =>
         await Task.FromResult(_orders.Where(o => o.Status == status).Select(Order.CreateCopy).ToList());
 

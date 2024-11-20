@@ -41,7 +41,7 @@ public class OrderTracker : IDisposable
 
         lock (_locker)
         {
-            foreach (var order in _trackedOrders.Where(order => _blockchain.TransactionConfirmed(order.TransactionHash!)))
+            foreach (var order in _trackedOrders.Where(order => _blockchain.GetTransactionStatus(order.TransactionHash!)))
             {
                 order.ConfirmTransaction();
                 updatedOrders.Add(order);

@@ -1,4 +1,5 @@
 using Core.Interfaces;
+using Serilog;
 
 namespace CoreConsoleTests.Stubs;
 
@@ -20,6 +21,8 @@ public class BlockchainStub : IBlockchain, IDisposable
         }).ToList();
         _logger = Log.Logger;
     }
+
+    public void AddTransaction(string hash) => _transactions.Add(new Transaction { Hash = hash, IsConfirmed = false });
 
     public void ConfirmTransaction(int index) => _transactions[index].IsConfirmed = true;
 

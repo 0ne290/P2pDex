@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreConsoleTests", "CoreConsoleTests\CoreConsoleTests.csproj", "{E76D8DD8-DE60-4DF6-B093-D5E00D32050D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Storage", "Infrastructure.Storage\Infrastructure.Storage.csproj", "{19A34B6A-BD91-4A7D-9A65-AD798700F226}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Blockchain", "Infrastructure.Blockchain\Infrastructure.Blockchain.csproj", "{906C37E5-CA16-47F3-ACA2-661087DE91CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{E76D8DD8-DE60-4DF6-B093-D5E00D32050D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E76D8DD8-DE60-4DF6-B093-D5E00D32050D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E76D8DD8-DE60-4DF6-B093-D5E00D32050D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19A34B6A-BD91-4A7D-9A65-AD798700F226}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19A34B6A-BD91-4A7D-9A65-AD798700F226}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19A34B6A-BD91-4A7D-9A65-AD798700F226}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A34B6A-BD91-4A7D-9A65-AD798700F226}.Release|Any CPU.Build.0 = Release|Any CPU
+		{906C37E5-CA16-47F3-ACA2-661087DE91CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{906C37E5-CA16-47F3-ACA2-661087DE91CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{906C37E5-CA16-47F3-ACA2-661087DE91CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{906C37E5-CA16-47F3-ACA2-661087DE91CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

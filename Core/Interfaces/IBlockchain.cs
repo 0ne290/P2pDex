@@ -1,6 +1,8 @@
+using Core.Enums;
+
 namespace Core.Interfaces;
 
 public interface IBlockchain
 {
-    bool TransactionConfirmed(string transactionHash);
+    Task<TransactionStatus> GetTransactionStatus(string transactionHash);
 }
