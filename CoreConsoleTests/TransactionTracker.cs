@@ -1,4 +1,5 @@
 using System.Timers;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Models;
 using Serilog;
@@ -13,9 +14,8 @@ public class OrderTracker : IDisposable
     {
         _timer = new Timer { AutoReset = true, Enabled = false, Interval = 5000 };
         _timer.Elapsed += Handler;
-        _numberOfAtiveHandlers = 0;
+        _synchronizer = 0;
         _trackedOrders = trackedOrders.ToHashSet();
-        _locker = new object();
         _blockchain = blockchain;
         _orderStorage = orderStorage;
         _logger = Log.Logger;
@@ -25,36 +25,47 @@ public class OrderTracker : IDisposable
 
     public void TrackOrder(Order order)
     {
-        lock (_locker)
-        {
-            _trackedOrders.Add(order);
-            _logger.Information("Transaction is being tracked. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
-                order.Guid, order.TransactionHash);
-        }
+        Interlocked.Increment(ref _synchronizer);
+        
+        while (_synchronizer != 1)
+            Thread.Yield();
+        
+        _trackedOrders.Add(order);
+        
+        Interlocked.Decrement(ref _synchronizer);
+        
+        _logger.Information("Transaction is being tracked. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.", 
+            order.Guid, order.TransactionHash);
     }
 
     private async void Handler(object? sender, ElapsedEventArgs e)
     {
-        Interlocked.Increment(ref _numberOfAtiveHandlers);
-        
         var updatedOrders = new List<Order>();
+        
+        Interlocked.Increment(ref _synchronizer);
+        
+        while (_synchronizer != 1)
+            Thread.Yield();
 
-        lock (_locker)
+        foreach (var order in _trackedOrders)
         {
-            foreach (var order in _trackedOrders.Where(order => _blockchain.GetTransactionStatus(order.TransactionHash!)))
+            if (await _blockchain.GetTransactionStatus(order.TransactionHash!) == TransactionStatus.Confirmed)
             {
                 order.ConfirmTransaction();
                 updatedOrders.Add(order);
                 _trackedOrders.Remove(order);
-                _logger.Information("Transaction is confirmed. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
+                _logger.Information(
+                    "Transaction is confirmed. Order: {OrderGuid}; Transaction: {TransactionHashOfOrder}.",
                     order.Guid, order.TransactionHash);
             }
+
+
         }
 
-        if (updatedOrders.Count > 0)
-            await _orderStorage.UpdateAll(updatedOrders);
+        Interlocked.Decrement(ref _synchronizer);
         
-        Interlocked.Decrement(ref _numberOfAtiveHandlers);
+        if (updatedOrders.Count > 0) 
+            await _orderStorage.UpdateAll(updatedOrders);
     }
 
     public void Dispose()
@@ -62,7 +73,7 @@ public class OrderTracker : IDisposable
         _timer.Elapsed -= Handler;
         _timer.Stop();
         
-        while (_numberOfAtiveHandlers != 0)
+        while (_synchronizer != 0)
             Thread.Yield();
         
         _timer.Dispose();
@@ -72,11 +83,9 @@ public class OrderTracker : IDisposable
 
     private readonly Timer _timer;
 
-    private int _numberOfAtiveHandlers;
+    private int _synchronizer;
 
     private readonly HashSet<Order> _trackedOrders;
-
-    private readonly object _locker;
 
     private readonly IBlockchain _blockchain;
 

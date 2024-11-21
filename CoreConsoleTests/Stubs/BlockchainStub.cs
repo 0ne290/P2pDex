@@ -1,3 +1,4 @@
+using Core.Enums;
 using Core.Interfaces;
 using Serilog;
 
@@ -26,8 +27,10 @@ public class BlockchainStub : IBlockchain, IDisposable
 
     public void ConfirmTransaction(int index) => _transactions[index].IsConfirmed = true;
 
-    public bool TransactionConfirmed(string transactionHash) =>
-        _transactions.Exists(t => t.Hash == transactionHash && t.IsConfirmed);
+    public Task<TransactionStatus> GetTransactionStatus(string transactionHash) => Task.FromResult(
+        _transactions.Exists(t => t.Hash == transactionHash && t.IsConfirmed)
+            ? TransactionStatus.Confirmed
+            : TransactionStatus.WaitingConfirmation);
 
     public void Dispose()
     {
