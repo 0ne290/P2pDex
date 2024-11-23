@@ -5,17 +5,21 @@ namespace Core.Models;
 public class Order : ModelBase
 {
     public static Order CreateSellOrder(string guid, Trader seller, string transactionHash, Cryptocurrency crypto,
-        decimal cryptoAmount, FiatCurrency fiat, decimal cryptoToFiatExchangeRate, string paymentMethodInfo) => new(
-        guid, OrderType.Sell, OrderStatus.WaitingForConfirmationOfTheTransactionOfTransferOfCryptocurrencyToTheEscrowAccountByTheSeller, seller, transactionHash, null, null, crypto, cryptoAmount, fiat,
-        cryptoToFiatExchangeRate, paymentMethodInfo);
+        decimal cryptoAmount, FiatCurrency fiat, decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
+        decimal sellerToExchangerFee, decimal exchangerToMinersExpectedFee) => new(guid, OrderType.Sell,
+        OrderStatus.WaitingForConfirmationOfTheTransactionOfTransferOfCryptocurrencyToTheEscrowAccountByTheSeller,
+        seller, transactionHash, null, null, crypto, cryptoAmount, fiat, cryptoToFiatExchangeRate, paymentMethodInfo,
+        sellerToExchangerFee, exchangerToMinersExpectedFee, null);
 
     public static Order CreateCopy(Order order) => new(order.Guid, order.Type, order.Status, order.Seller,
         order.TransactionHash, order.Buyer, order.BuyersWalletAddress, order.Crypto, order.CryptoAmount, order.Fiat,
-        order.CryptoToFiatExchangeRate, order.PaymentMethodInfo);
+        order.CryptoToFiatExchangeRate, order.PaymentMethodInfo, order.SellerToExchangerFee,
+        order.ExchangerToMinersExpectedFee, order.ExchangerToMinersActualFee);
 
-    private Order(string guid, OrderType type, OrderStatus status, Trader? seller, string? transactionHash, Trader? buyer,
-        string? buyersWalletAddress, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
-        decimal cryptoToFiatExchangeRate, string paymentMethodInfo) : base(guid)
+    private Order(string guid, OrderType type, OrderStatus status, Trader? seller, string? transactionHash,
+        Trader? buyer, string? buyersWalletAddress, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+        decimal cryptoToFiatExchangeRate, string paymentMethodInfo, decimal? sellerToExchangerFee,
+        decimal? exchangerToMinersExpectedFee, decimal? exchangerToMinersActualFee) : base(guid)
     {
         Type = type;
         Status = status;
@@ -31,20 +35,33 @@ public class Order : ModelBase
         CryptoToFiatExchangeRate = cryptoToFiatExchangeRate;
         FiatAmount = cryptoAmount * cryptoToFiatExchangeRate;
         PaymentMethodInfo = paymentMethodInfo;
+        SellerToExchangerFee = sellerToExchangerFee;
+        ExchangerToMinersExpectedFee = exchangerToMinersExpectedFee;
+        ExchangerExpectedProfit = sellerToExchangerFee - exchangerToMinersExpectedFee;
+        ExchangerToMinersActualFee = exchangerToMinersActualFee;
+        ExchangerActualProfit = sellerToExchangerFee - exchangerToMinersActualFee;
     }
 
     public void ConfirmTransaction() => Status = Type == OrderType.Sell
         ? OrderStatus.WaitingForBuyersResponse
         : OrderStatus.WaitingForSellerToConfirmReceiptOfFiatCurrencyFromBuyer;
 
-    public void AssignBuyer(Trader buyer)
+    public void AssignBuyer(Trader buyer, string buyersWalletAddress)
     {
         Status = OrderStatus
             .WaitingForConfirmationOfTheTransactionOfTransferOfCryptocurrencyToTheEscrowAccountByTheSeller;
         Buyer = buyer;
         BuyerGuid = buyer.Guid;
+        BuyersWalletAddress = buyersWalletAddress;
     }
-    
+
+    public void Complete(decimal exchangerToMinersActualFee)
+    {
+        Status = OrderStatus.Completed;
+        ExchangerToMinersActualFee = exchangerToMinersActualFee;
+        ExchangerActualProfit = SellerToExchangerFee - exchangerToMinersActualFee;
+    }
+
     public OrderType Type { get; }
 
     public OrderStatus Status { get; private set; }
@@ -72,4 +89,14 @@ public class Order : ModelBase
     public decimal FiatAmount { get; }
 
     public string PaymentMethodInfo { get; }
+
+    public decimal? SellerToExchangerFee { get; }
+
+    public decimal? ExchangerToMinersExpectedFee { get; }
+
+    public decimal? ExchangerExpectedProfit { get; }
+
+    public decimal? ExchangerToMinersActualFee { get; private set; }
+
+    public decimal? ExchangerActualProfit { get; private set; }
 }

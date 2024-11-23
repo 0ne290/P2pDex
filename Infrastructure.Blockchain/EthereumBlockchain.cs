@@ -28,7 +28,12 @@ public class EthereumBlockchain : IBlockchain
         
         return receipt.Status.Value == 1 ? TransactionStatus.Confirmed : TransactionStatus.Cancelled;
     }
-    
+
+    public Task<string> SendTransaction(string from, string to, string value)
+    {
+        throw new NotImplementedException();
+    }
+
     private int _synchronizer;
 
     private readonly Web3 _web3;
