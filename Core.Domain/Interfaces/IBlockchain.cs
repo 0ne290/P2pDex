@@ -1,6 +1,6 @@
-using Core.Enums;
+using Core.Domain.Enums;
 
-namespace Core.Interfaces;
+namespace Core.Domain.Interfaces;
 
 public interface IBlockchain
 {

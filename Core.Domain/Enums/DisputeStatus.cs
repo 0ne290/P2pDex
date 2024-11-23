@@ -1,4 +1,4 @@
-namespace Core.Enums;
+namespace Core.Domain.Enums;
 
 public enum DisputeStatus
 {

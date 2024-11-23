@@ -1,6 +1,6 @@
-using Core.Enums;
+using Core.Domain.Enums;
 
-namespace Core.Models;
+namespace Core.Domain.Models;
 
 //public class Dispute : ModelBase
 //{

@@ -1,5 +1,5 @@
-using Core.Enums;
-using Core.Interfaces;
+using Core.Domain.Enums;
+using Core.Domain.Interfaces;
 using Nethereum.Web3;
 
 namespace Infrastructure.Blockchain;
