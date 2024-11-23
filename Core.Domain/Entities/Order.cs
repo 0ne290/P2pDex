@@ -2,7 +2,7 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.Models;
 
-public class Order : ModelBase
+public class Order : EntityBase
 {
     public static Order CreateSellOrder(string guid, Trader seller, string transactionHash, Cryptocurrency crypto,
         decimal cryptoAmount, FiatCurrency fiat, decimal cryptoToFiatExchangeRate, string paymentMethodInfo,

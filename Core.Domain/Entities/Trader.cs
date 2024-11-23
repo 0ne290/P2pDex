@@ -1,6 +1,6 @@
 namespace Core.Domain.Models;
 
-public class Trader : ModelBase
+public class Trader : EntityBase
 {
     public Trader(string guid, string name) : base(guid)
     {

@@ -7,12 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Handlers\" />
-      <Folder Include="Validators\" />
+      <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
+      <PackageReference Include="FluentValidation" Version="11.11.0" />
     </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.Models;
 
-//public class Dispute : ModelBase
+//public class Dispute : EntityBase
 //{
 //    public required DisputeStatus Status { get; init; }
 //    

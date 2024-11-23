@@ -1,6 +1,6 @@
 namespace Core.Domain.Models;
 
-//public class Administrator : ModelBase
+//public class Administrator : EntityBase
 //{
 //    public required string Name { get; init; }
 //    
