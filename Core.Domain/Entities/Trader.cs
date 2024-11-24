@@ -1,4 +1,4 @@
-namespace Core.Domain.Models;
+namespace Core.Domain.Entities;
 
 public class Trader : EntityBase
 {

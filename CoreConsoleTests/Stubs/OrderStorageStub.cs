@@ -1,6 +1,5 @@
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
-using Core.Domain.Models;
 using Serilog;
 
 namespace CoreConsoleTests.Stubs;

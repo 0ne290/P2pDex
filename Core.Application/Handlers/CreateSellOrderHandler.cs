@@ -1,5 +1,4 @@
 using Core.Application.Commands;
-using Core.Domain.Models;
 using FluentValidation.Results;
 
 namespace Core.Application.Handlers;

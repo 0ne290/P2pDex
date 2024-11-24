@@ -1,0 +1,63 @@
+using Core.Domain.Enums;
+
+namespace Core.Domain.Entities;
+
+public class SellOrder : OrderBase
+{
+    public SellOrder(string guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+        decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller, decimal feeFromSeller,
+        string transactionHash) : base(guid,
+        OrderStatus.WaitingForSellerToConfirmOfTransferTransaction,
+        crypto, cryptoAmount, fiat, cryptoToFiatExchangeRate, paymentMethodInfo)
+    {
+        Seller = seller;
+        SellerGuid = seller.Guid;
+        FeeFromSeller = feeFromSeller;
+        TransactionHash = transactionHash;
+        Buyer = null;
+        BuyerGuid = null;
+        BuyersWalletAddress = null;
+    }
+
+    //public static SellOrder Copy(SellOrder order) => new(order.Guid, order.Type, order.Status, order.Seller,
+    //    order.TransactionHash, order.Buyer, order.BuyersWalletAddress, order.Crypto, order.CryptoAmount, order.Fiat,
+    //    order.CryptoToFiatExchangeRate, order.PaymentMethodInfo, order.SellerToExchangerFee,
+    //    order.ExchangerToMinersExpectedFee, order.ExchangerToMinersActualFee);
+
+    public void ConfirmTransactionByClient()
+    {
+        Status = OrderStatus.WaitingForBlockchainToConfirmOfTransferTransaction;
+    }
+    
+    public void ConfirmTransactionByBlockchain()
+    {
+        Status = OrderStatus.WaitingForBuyersResponse;
+    }
+
+    public void AssignBuyer(Trader buyer, string buyersWalletAddress)
+    {
+        Status = OrderStatus.WaitingForSellerToConfirmReceiptOfFiatCurrencyFromBuyer;
+        Buyer = buyer;
+        BuyerGuid = buyer.Guid;
+        BuyersWalletAddress = buyersWalletAddress;
+    }
+
+    public void Complete()
+    {
+        Status = OrderStatus.Completed;
+    }
+
+    public Trader Seller { get; }
+
+    public string SellerGuid { get; }
+    
+    public decimal FeeFromSeller { get; }
+
+    public string TransactionHash { get; }
+
+    public Trader? Buyer { get; protected set; }
+
+    public string? BuyerGuid { get; private set; }
+
+    public string? BuyersWalletAddress { get; private set; }
+}

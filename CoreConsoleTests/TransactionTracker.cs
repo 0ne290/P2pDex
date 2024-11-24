@@ -1,7 +1,6 @@
 using System.Timers;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
-using Core.Domain.Models;
 using Serilog;
 using ILogger = Serilog.ILogger;
 using Timer = System.Timers.Timer;

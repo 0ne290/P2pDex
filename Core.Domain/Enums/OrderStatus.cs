@@ -2,10 +2,37 @@ namespace Core.Domain.Enums;
 
 public enum OrderStatus
 {
+    /// <summary>
+    /// Заказ на продажу ожидает отклика покупателем
+    /// </summary>
     WaitingForBuyersResponse,
-    WaitingForSellersResponse,
-    WaitingForConfirmationOfTheTransactionOfTransferOfCryptocurrencyToTheEscrowAccountByTheSeller,
-    WaitingForSellerToConfirmReceiptOfFiatCurrencyFromBuyer,
+    /// <summary>
+    /// Заказ подготовлен (кол-во продаваемой крипты (CryptoAmount) инициализировано указанным покупателем/продавцом
+    /// значением, а размер требуемой от продавца комисси (FeeFromSeller) инициализирован значением, автоматически
+    /// вычисленным системой относительно продаваемого кол-ва крипты и ожидаемого размера комиссии от биржи к майнерам).
+    /// Теперь этот заказ ожидает подтверждения продавцом выполнения им транзакции перевода на эскроу-счет биржи кол-ва
+    /// крипты, равного CryptoAmount + FeeFromSeller
+    /// </summary>
+    WaitingForSellerToConfirmOfCryptocurrencyTransferTransaction,
+    /// <summary>
+    /// Продавец подтвердил транзакцию и она уже появилась в блокчейне, но еще не подтверждена. Теперь этот заказ
+    /// ожидает подтверждения блокчейном транзакции.
+    /// </summary>
+    WaitingForBlockchainToConfirmOfCryptocurrencyTransferTransaction,
+    /// <summary>
+    /// Блокчейн подтвердил транзакцию. Теперь этот заказ ожидает подтверждения продавцом получения им платы от
+    /// покупателя за продаваемую криптовалюту.
+    /// </summary>
+    WaitingForSellerToConfirmReceiptOfFiatCurrency,
+    /// <summary>
+    /// Заказ отменен. Отменить заказ может вручную продавец/покупатель/администратор на определенных стадиях заказа
+    /// или автоматически сама система в случае отклонения блокчейном транзакции.
+    /// </summary>
     Cancelled,
+    /// <summary>
+    /// Заказ завершен. Завершает заказ система автоматически после подтверждения продавцом получения им платы от
+    /// покупателя за продаваемую криптовалюту и подтверждения блокчейном транзакции перевода этой криптовалюты на
+    /// кошелек покупателя, выполняемой системой автоматически.
+    /// </summary>
     Completed
 }

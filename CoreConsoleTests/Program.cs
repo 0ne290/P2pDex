@@ -1,7 +1,7 @@
 ﻿using Bogus;
+using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
-using Core.Domain.Models;
 using CoreConsoleTests.Stubs;
 using Infrastructure.Blockchain;
 using Microsoft.Extensions.DependencyInjection;

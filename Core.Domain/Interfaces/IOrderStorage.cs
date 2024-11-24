@@ -1,5 +1,4 @@
 using Core.Domain.Enums;
-using Core.Domain.Models;
 
 namespace Core.Domain.Interfaces;
 

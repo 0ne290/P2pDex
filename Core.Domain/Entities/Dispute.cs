@@ -1,6 +1,4 @@
-using Core.Domain.Enums;
-
-namespace Core.Domain.Models;
+namespace Core.Domain.Entities;
 
 //public class Dispute : EntityBase
 //{
