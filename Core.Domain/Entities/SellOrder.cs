@@ -7,7 +7,7 @@ public class SellOrder : OrderBase
     public SellOrder(string guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller, decimal feeFromSeller,
         string transactionHash) : base(guid,
-        OrderStatus.WaitingForSellerToConfirmOfTransferTransaction,
+        OrderStatus.WaitingConfirmBySellerOfCryptocurrencyTransferTransaction,
         crypto, cryptoAmount, fiat, cryptoToFiatExchangeRate, paymentMethodInfo)
     {
         Seller = seller;
@@ -24,19 +24,19 @@ public class SellOrder : OrderBase
     //    order.CryptoToFiatExchangeRate, order.PaymentMethodInfo, order.SellerToExchangerFee,
     //    order.ExchangerToMinersExpectedFee, order.ExchangerToMinersActualFee);
 
-    public void ConfirmTransactionByClient()
+    public void ConfirmBySellerOfCryptocurrencyTransferTransaction()
     {
-        Status = OrderStatus.WaitingForBlockchainToConfirmOfTransferTransaction;
+        Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
     }
     
-    public void ConfirmTransactionByBlockchain()
+    public void ConfirmByBlockchainOfCryptocurrencyTransferTransaction()
     {
         Status = OrderStatus.WaitingForBuyersResponse;
     }
 
     public void AssignBuyer(Trader buyer, string buyersWalletAddress)
     {
-        Status = OrderStatus.WaitingForSellerToConfirmReceiptOfFiatCurrencyFromBuyer;
+        Status = OrderStatus.WaitingBySellerOfConfirmFiatCurrencyReceipt;
         Buyer = buyer;
         BuyerGuid = buyer.Guid;
         BuyersWalletAddress = buyersWalletAddress;

@@ -13,17 +13,17 @@ public enum OrderStatus
     /// Теперь этот заказ ожидает подтверждения продавцом выполнения им транзакции перевода на эскроу-счет биржи кол-ва
     /// крипты, равного CryptoAmount + FeeFromSeller
     /// </summary>
-    WaitingForSellerToConfirmOfCryptocurrencyTransferTransaction,
+    WaitingConfirmBySellerOfCryptocurrencyTransferTransaction,
     /// <summary>
     /// Продавец подтвердил транзакцию и она уже появилась в блокчейне, но еще не подтверждена. Теперь этот заказ
     /// ожидает подтверждения блокчейном транзакции.
     /// </summary>
-    WaitingForBlockchainToConfirmOfCryptocurrencyTransferTransaction,
+    WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction,
     /// <summary>
     /// Блокчейн подтвердил транзакцию. Теперь этот заказ ожидает подтверждения продавцом получения им платы от
     /// покупателя за продаваемую криптовалюту.
     /// </summary>
-    WaitingForSellerToConfirmReceiptOfFiatCurrency,
+    WaitingBySellerOfConfirmFiatCurrencyReceipt,
     /// <summary>
     /// Заказ отменен. Отменить заказ может вручную продавец/покупатель/администратор на определенных стадиях заказа
     /// или автоматически сама система в случае отклонения блокчейном транзакции.
