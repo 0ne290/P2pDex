@@ -6,17 +6,8 @@ public class SellOrder : OrderBase
 {
     public SellOrder(string guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller, decimal feeFromSeller) : base(guid,
-        OrderStatus.WaitingConfirmBySellerOfCryptocurrencyTransferTransaction,
-        crypto, cryptoAmount, fiat, cryptoToFiatExchangeRate, paymentMethodInfo)
-    {
-        Seller = seller;
-        SellerGuid = seller.Guid;
-        FeeFromSeller = feeFromSeller;
-        TransactionHash = null;
-        Buyer = null;
-        BuyerGuid = null;
-        BuyersWalletAddress = null;
-    }
+        OrderStatus.WaitingConfirmBySellerOfCryptocurrencyTransferTransaction, crypto, cryptoAmount, fiat,
+        cryptoToFiatExchangeRate, paymentMethodInfo, seller, feeFromSeller, null, null, null) { }
 
     //public static SellOrder Copy(SellOrder order) => new(order.Guid, order.Type, order.Status, order.Seller,
     //    order.TransactionHash, order.Buyer, order.BuyersWalletAddress, order.Crypto, order.CryptoAmount, order.Fiat,
@@ -28,7 +19,7 @@ public class SellOrder : OrderBase
         TransactionHash = transactionHash;
         Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
     }
-    
+
     public void ConfirmByBlockchainOfCryptocurrencyTransferTransaction()
     {
         Status = OrderStatus.WaitingForBuyersResponse;
@@ -46,18 +37,4 @@ public class SellOrder : OrderBase
     {
         Status = OrderStatus.Completed;
     }
-
-    public Trader Seller { get; }
-
-    public string SellerGuid { get; }
-    
-    public decimal FeeFromSeller { get; }
-
-    public string? TransactionHash { get; private set; }
-
-    public Trader? Buyer { get; protected set; }
-
-    public string? BuyerGuid { get; private set; }
-
-    public string? BuyersWalletAddress { get; private set; }
 }

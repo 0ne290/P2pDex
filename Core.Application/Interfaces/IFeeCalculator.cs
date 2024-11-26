@@ -2,5 +2,5 @@ namespace Core.Application.Interfaces;
 
 public interface IFeeCalculator
 {
-    Task<decimal> Calculate(decimal cryptoAmount);
+    Task<(decimal FeeSellerToExchanger, decimal ExpectedFeeExchangerToMiners)> Calculate(decimal cryptoAmount);
 }
