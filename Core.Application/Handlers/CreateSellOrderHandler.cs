@@ -1,19 +1,18 @@
 using Core.Application.Commands;
+using Core.Application.Interfaces;
 using Core.Domain.Entities;
-using Core.Domain.Interfaces;
 using FluentResults;
 using FluentValidation;
-using FluentValidation.Results;
 
 namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler
 {
-    public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage, IBlockchain blockchain, IOrderStorage orderStorage)
+    public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage, IFeeCalculator feeCalculator, IOrderStorage orderStorage)
     {
         _validator = validator;
         _traderStorage = traderStorage;
-        _blockchain = blockchain;
+        _feeCalculator = feeCalculator;
         _orderStorage = orderStorage;
     }
 
@@ -27,8 +26,9 @@ public class CreateSellOrderHandler
         if (seller == null)
             return Result.Fail($"Trader with guid \"{request.SellerGuid}\" does not exist.");
 
+        var feeFromSeller = await _feeCalculator.Calculate(request.CryptoAmount);
         var order = new SellOrder(Guid.NewGuid().ToString(), request.Crypto, request.CryptoAmount, request.Fiat,
-            request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, seller, 1337);
+            request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, seller, feeFromSeller);
         await _orderStorage.Add(order);
 
         return Result.Ok();
@@ -39,7 +39,7 @@ public class CreateSellOrderHandler
 
     private readonly ITraderStorage _traderStorage;
 
-    private readonly IBlockchain _blockchain;
+    private readonly IFeeCalculator _feeCalculator;
 
     private readonly IOrderStorage _orderStorage;
 }

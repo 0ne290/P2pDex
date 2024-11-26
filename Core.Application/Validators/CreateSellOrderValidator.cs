@@ -1,5 +1,4 @@
 using Core.Application.Commands;
-using Core.Domain.Interfaces;
 using FluentValidation;
 
 namespace Core.Application.Validators;
