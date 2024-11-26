@@ -5,15 +5,14 @@ namespace Core.Domain.Entities;
 public class SellOrder : OrderBase
 {
     public SellOrder(string guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
-        decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller, decimal feeFromSeller,
-        string transactionHash) : base(guid,
+        decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller, decimal feeFromSeller) : base(guid,
         OrderStatus.WaitingConfirmBySellerOfCryptocurrencyTransferTransaction,
         crypto, cryptoAmount, fiat, cryptoToFiatExchangeRate, paymentMethodInfo)
     {
         Seller = seller;
         SellerGuid = seller.Guid;
         FeeFromSeller = feeFromSeller;
-        TransactionHash = transactionHash;
+        TransactionHash = null;
         Buyer = null;
         BuyerGuid = null;
         BuyersWalletAddress = null;
@@ -24,8 +23,9 @@ public class SellOrder : OrderBase
     //    order.CryptoToFiatExchangeRate, order.PaymentMethodInfo, order.SellerToExchangerFee,
     //    order.ExchangerToMinersExpectedFee, order.ExchangerToMinersActualFee);
 
-    public void ConfirmBySellerOfCryptocurrencyTransferTransaction()
+    public void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transactionHash)
     {
+        TransactionHash = transactionHash;
         Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
     }
     
@@ -53,7 +53,7 @@ public class SellOrder : OrderBase
     
     public decimal FeeFromSeller { get; }
 
-    public string TransactionHash { get; }
+    public string? TransactionHash { get; private set; }
 
     public Trader? Buyer { get; protected set; }
 

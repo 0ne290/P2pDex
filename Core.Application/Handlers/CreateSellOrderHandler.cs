@@ -1,19 +1,45 @@
 using Core.Application.Commands;
+using Core.Domain.Entities;
+using Core.Domain.Interfaces;
+using FluentResults;
+using FluentValidation;
 using FluentValidation.Results;
 
 namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler
 {
-    public CreateSellOrderHandler()
+    public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage, IBlockchain blockchain, IOrderStorage orderStorage)
     {
-        
+        _validator = validator;
+        _traderStorage = traderStorage;
+        _blockchain = blockchain;
+        _orderStorage = orderStorage;
     }
-    
-    public async Task Handle(CreateSellOrderCommand request)
+
+    public async Task<Result> Handle(CreateSellOrderCommand request)
     {
-        var c = new ValidationResult
-        var trader
-        var order = Order.CreateSellOrder(Guid.NewGuid().ToString(), )
+        var validationResult = await _validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+            return Result.Fail(validationResult.ToString());
+
+        var seller = await _traderStorage.TryGetByGuid(request.SellerGuid);
+        if (seller == null)
+            return Result.Fail($"Trader with guid \"{request.SellerGuid}\" does not exist.");
+
+        var order = new SellOrder(Guid.NewGuid().ToString(), request.Crypto, request.CryptoAmount, request.Fiat,
+            request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, seller, 1337);
+        await _orderStorage.Add(order);
+
+        return Result.Ok();
+
     }
+
+    private readonly IValidator<CreateSellOrderCommand> _validator;
+
+    private readonly ITraderStorage _traderStorage;
+
+    private readonly IBlockchain _blockchain;
+
+    private readonly IOrderStorage _orderStorage;
 }

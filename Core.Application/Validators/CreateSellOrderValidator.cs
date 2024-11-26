@@ -13,7 +13,5 @@ public class CreateSellOrderValidator : AbstractValidator<CreateSellOrderCommand
         RuleFor(request => request.Fiat).IsInEnum();
         RuleFor(request => request.CryptoToFiatExchangeRate).GreaterThan(0);
         RuleFor(request => request.PaymentMethodInfo).NotEmpty();
-        
-        RuleFor(request => new { request.SellerToExchangerFee, request.ExchangerToMinersExpectedFee }).
     }
 }
