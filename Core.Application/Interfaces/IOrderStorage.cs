@@ -12,4 +12,6 @@ public interface IOrderStorage
     Task<ICollection<Order>> GetAllByStatus(OrderStatus status);
 
     Task UpdateAll(IEnumerable<Order> orders);
+    
+    Task Update(OrderBase order);
 }

@@ -10,11 +10,11 @@ public class FeeCalculator : IFeeCalculator
         _feeRate = feeRate;
     }
     
-    public async Task<decimal> Calculate(decimal cryptoAmount)
+    public async Task<(decimal SellerToExchanger, decimal ExpectedExchangerToMiners)> Calculate(decimal cryptoAmount)
     {
         var transferTransactionFee = await _blockchain.GetTransferTransactionFee();
 
-        return transferTransactionFee + cryptoAmount * _feeRate;
+        return (cryptoAmount * _feeRate, transferTransactionFee);
     }
 
     private readonly IBlockchain _blockchain;

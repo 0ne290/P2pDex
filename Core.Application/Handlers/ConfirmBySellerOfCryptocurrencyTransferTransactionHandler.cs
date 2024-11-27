@@ -31,9 +31,16 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
         var transaction = await _blockchain.TryGetTransactionByHash(request.TransactionHash);
         if (transaction == null)
             return Result.Fail($"Transaction with hash \"{request.TransactionHash}\" does not exist.");
-        
-        // if (order.CryptoAmount + order.FeeFromSeller != transaction.CryptoAmount)
-        // Перевести transaction.CryptoAmount - order.Fee.ExpectedFeeExchangerToMiners обратно продавцу и отменить заказ
+
+        var expectedCryptoAmount =
+            order.CryptoAmount + order.Fee.SellerToExchanger + order.Fee.ExpectedExchangerToMiners;
+        if (expectedCryptoAmount != transaction.CryptoAmount)
+        {
+            await _blockchain.SendTransaction(transaction.From, transaction.To, transaction.CryptoAmount - order.Fee.ExpectedExchangerToMiners);
+            order.Cancel();
+            await _orderStorage.Update(order);
+            return Result.Fail($"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Order cancelled. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain.");
+        }
         
         // Проверить статус транзакции. Если подтверждена - перевести заказ в следующую стадию. Если нет - поставить
         // транзакцию на отслеживание
