@@ -15,13 +15,13 @@ public class SellOrder : OrderBase
     //    order.CryptoToFiatExchangeRate, order.PaymentMethodInfo, order.SellerToExchangerFee,
     //    order.ExchangerToMinersExpectedFee, order.ExchangerToMinersActualFee);
 
-    public void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transactionHash)
+    public override void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transactionHash)
     {
         TransactionHash = transactionHash;
         Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
     }
 
-    public void ConfirmByBlockchainOfCryptocurrencyTransferTransaction()
+    public override void ConfirmByBlockchainOfCryptocurrencyTransferTransaction()
     {
         Status = OrderStatus.WaitingForBuyersResponse;
     }
@@ -32,5 +32,15 @@ public class SellOrder : OrderBase
         Buyer = buyer;
         BuyerGuid = buyer.Guid;
         BuyersWalletAddress = buyersWalletAddress;
+    }
+    
+    public override void Complete()
+    {
+        Status = OrderStatus.Completed;
+    }
+
+    public override void Cancel()
+    {
+        Status = OrderStatus.Cancelled;
     }
 }

@@ -24,16 +24,14 @@ public abstract class OrderBase : EntityBase
         BuyerGuid = buyer?.Guid;
         BuyersWalletAddress = buyersWalletAddress;
     }
-    
-    public void Complete()
-    {
-        Status = OrderStatus.Completed;
-    }
 
-    public void Cancel()
-    {
-        Status = OrderStatus.Cancelled;
-    }
+    public abstract void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transactionHash);
+
+    public abstract void ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
+
+    public abstract void Complete();
+
+    public abstract void Cancel();
 
     public OrderStatus Status { get; protected set; }
 

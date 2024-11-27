@@ -1,6 +1,7 @@
 using Core.Application.Commands;
 using Core.Application.Interfaces;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using FluentResults;
 using FluentValidation;
 
@@ -41,9 +42,23 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
             await _orderStorage.Update(order);
             return Result.Fail($"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Order cancelled. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain.");
         }
+
+        var transactionStatus = await _blockchain.GetTransactionStatus(request.TransactionHash);
+        if (transactionStatus == TransactionStatus.Cancelled)
+        {
+            order.Cancel();
+            await _orderStorage.Update(order);
+            return Result.Fail($"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Order cancelled. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain.");
+        }
         
-        // Проверить статус транзакции. Если подтверждена - перевести заказ в следующую стадию. Если нет - поставить
-        // транзакцию на отслеживание
+        order.ConfirmBySellerOfCryptocurrencyTransferTransaction(request.TransactionHash);
+
+        if (transactionStatus == TransactionStatus.Confirmed)
+            order.ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
+        else
+            _transactionTracker.Track(request.TransactionHash);
+
+        await _orderStorage.Update(order);
 
         return Result.Ok();
 
