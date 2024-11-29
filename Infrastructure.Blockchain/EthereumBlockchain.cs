@@ -17,7 +17,6 @@ public class EthereumBlockchain : IBlockchain
     public async Task<decimal> GetTransferTransactionFee()
     {
         var gasPriceInWei = await _concurrentWeb3Wrapper.Execute(async web3 => await web3.Eth.GasPrice.SendRequestAsync());
-        
         var gasPriceInEth = Web3.Convert.FromWei(gasPriceInWei);
         
         return gasPriceInEth * GasLimitOfTransferTransaction;
