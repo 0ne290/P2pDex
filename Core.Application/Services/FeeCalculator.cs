@@ -1,8 +1,8 @@
-using Core.Application.Interfaces;
+using Core.Domain.Interfaces;
 
 namespace Core.Application.Services;
 
-public class FeeCalculator : IFeeCalculator
+public class FeeCalculator
 {
     public FeeCalculator(IBlockchain blockchain, decimal feeRate)
     {

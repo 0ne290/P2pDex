@@ -11,13 +11,13 @@ public class SellOrder : OrderBase
         cryptoToFiatExchangeRate, paymentMethodInfo, seller, fee, null, null, null) { }
 
     //public static SellOrder Copy(SellOrder order) => new(order.Guid, order.Type, order.Status, order.Seller,
-    //    order.TransactionHash, order.Buyer, order.BuyersWalletAddress, order.Crypto, order.CryptoAmount, order.Fiat,
+    //    order.TransferTransactionHash, order.Buyer, order.BuyersWalletAddress, order.Crypto, order.CryptoAmount, order.Fiat,
     //    order.CryptoToFiatExchangeRate, order.PaymentMethodInfo, order.SellerToExchangerFee,
     //    order.ExchangerToMinersExpectedFee, order.ExchangerToMinersActualFee);
 
-    public override void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transactionHash)
+    public override void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transferTransactionHash)
     {
-        TransactionHash = transactionHash;
+        TransferTransactionHash = transferTransactionHash;
         Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
     }
 

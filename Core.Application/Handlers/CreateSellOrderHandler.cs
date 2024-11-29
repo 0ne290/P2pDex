@@ -1,6 +1,7 @@
 using Core.Application.Commands;
-using Core.Application.Interfaces;
+using Core.Application.Services;
 using Core.Domain.Entities;
+using Core.Domain.Interfaces;
 using FluentResults;
 using FluentValidation;
 
@@ -8,7 +9,7 @@ namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler
 {
-    public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage, IFeeCalculator feeCalculator, IOrderStorage orderStorage)
+    public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage, FeeCalculator feeCalculator, IOrderStorage orderStorage)
     {
         _validator = validator;
         _traderStorage = traderStorage;
@@ -39,7 +40,7 @@ public class CreateSellOrderHandler
 
     private readonly ITraderStorage _traderStorage;
 
-    private readonly IFeeCalculator _feeCalculator;
+    private readonly FeeCalculator _feeCalculator;
 
     private readonly IOrderStorage _orderStorage;
 }

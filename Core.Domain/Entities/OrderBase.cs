@@ -6,7 +6,7 @@ public abstract class OrderBase : EntityBase
 {
     protected OrderBase(string guid, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller,
-        (decimal SellerToExchanger, decimal ExpectedExchangerToMiners) fee, string? transactionHash,
+        (decimal SellerToExchanger, decimal ExpectedExchangerToMiners) fee, string? transferTransactionHash,
         Trader? buyer, string? buyersWalletAddress) : base(guid)
     {
         Status = status;
@@ -19,13 +19,13 @@ public abstract class OrderBase : EntityBase
         Seller = seller;
         SellerGuid = seller.Guid;
         Fee = fee;
-        TransactionHash = transactionHash;
+        TransferTransactionHash = transferTransactionHash;
         Buyer = buyer;
         BuyerGuid = buyer?.Guid;
         BuyersWalletAddress = buyersWalletAddress;
     }
 
-    public abstract void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transactionHash);
+    public abstract void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transferTransactionHash);
 
     public abstract void ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
 
@@ -53,7 +53,7 @@ public abstract class OrderBase : EntityBase
     
     public (decimal SellerToExchanger, decimal ExpectedExchangerToMiners) Fee { get; }
 
-    public string? TransactionHash { get; protected set; }
+    public string? TransferTransactionHash { get; protected set; }
 
     public Trader? Buyer { get; protected set; }
 

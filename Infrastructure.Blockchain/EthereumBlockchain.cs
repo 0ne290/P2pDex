@@ -1,40 +1,60 @@
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
+using Core.Domain.ValueObjects;
+using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 
 namespace Infrastructure.Blockchain;
 
 public class EthereumBlockchain : IBlockchain
 {
-    public EthereumBlockchain(Web3 web3)
+    public EthereumBlockchain(ConcurrentWeb3Wrapper concurrentWeb3Wrapper, string exchangerAccountAddress)
     {
-        _web3 = web3;
-        _synchronizer = 0;
+        _concurrentWeb3Wrapper = concurrentWeb3Wrapper;
+        ExchangerAccountAddress = exchangerAccountAddress;
     }
-    
-    public async Task<TransactionStatus> GetTransactionStatus(string transactionHash)
+
+    public async Task<decimal> GetTransferTransactionFee()
     {
-        Interlocked.Increment(ref _synchronizer);
+        var gasPriceInWei = await _concurrentWeb3Wrapper.Execute(async web3 => await web3.Eth.GasPrice.SendRequestAsync());
         
-        while (_synchronizer != 1)
-            Thread.Yield();
+        var gasPriceInEth = Web3.Convert.FromWei(gasPriceInWei);
         
-        var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
-        
-        Interlocked.Decrement(ref _synchronizer);
+        return gasPriceInEth * GasLimitOfTransferTransaction;
+    }
+
+    public async Task<TransferTransactionStatus> GetTransferTransactionStatus(string transactionHash)
+    {
+        var receipt = await _concurrentWeb3Wrapper.Execute(async web3 =>
+            await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash));
 
         if (receipt == null)
-            return TransactionStatus.WaitingConfirmation;
+            return TransferTransactionStatus.WaitingConfirmation;
         
-        return receipt.Status.Value == 1 ? TransactionStatus.Confirmed : TransactionStatus.Cancelled;
+        return receipt.Status.Value == 1 ? TransferTransactionStatus.Confirmed : TransferTransactionStatus.Cancelled;
     }
 
-    public Task<string> SendTransaction(string from, string to, string value)
+    public async Task<TransferTransactionInfo?> TryGetTransferTransactionInfo(string transactionHash)
     {
-        throw new NotImplementedException();
+        var transaction = await _concurrentWeb3Wrapper.Execute(async web3 =>
+            await web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash));
+
+        return transaction == null ? null : new TransferTransactionInfo
+        {
+            From = transaction.From,
+            To = transaction.To,
+            Amount = Web3.Convert.FromWei(transaction.Value)
+        };
     }
 
-    private int _synchronizer;
+    public async Task<string> SendTransferTransaction(string to, decimal amount) =>
+        await _concurrentWeb3Wrapper.Execute(async web3 =>
+            await web3.TransactionManager.SendTransactionAsync(ExchangerAccountAddress, to,
+                Web3.Convert.ToWei(amount).ToHexBigInteger()));
+    
+    public string ExchangerAccountAddress { get; }
+    
+    private readonly ConcurrentWeb3Wrapper _concurrentWeb3Wrapper;
 
-    private readonly Web3 _web3;
+    private const decimal GasLimitOfTransferTransaction = 21_000m;
 }

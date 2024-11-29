@@ -48,7 +48,7 @@ public class OrderTracker : IDisposable
 
         foreach (var order in _trackedOrders)
         {
-            if (await _blockchain.GetTransactionStatus(order.TransactionHash!) == TransactionStatus.Confirmed)
+            if (await _blockchain.GetTransactionStatus(order.TransactionHash!) == TransferTransactionStatus.Confirmed)
             {
                 order.ConfirmTransaction();
                 updatedOrders.Add(order);

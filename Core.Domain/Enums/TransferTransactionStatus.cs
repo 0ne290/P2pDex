@@ -1,6 +1,6 @@
 namespace Core.Domain.Enums;
 
-public enum TransactionStatus
+public enum TransferTransactionStatus
 {
     WaitingConfirmation, Confirmed, Cancelled,
 }

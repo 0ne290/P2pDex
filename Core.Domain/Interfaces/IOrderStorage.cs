@@ -1,7 +1,7 @@
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 
-namespace Core.Application.Interfaces;
+namespace Core.Domain.Interfaces;
 
 public interface IOrderStorage
 {

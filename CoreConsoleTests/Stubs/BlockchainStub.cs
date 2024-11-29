@@ -27,10 +27,10 @@ public class BlockchainStub : IBlockchain, IDisposable
 
     public void ConfirmTransaction(int index) => _transactions[index].IsConfirmed = true;
 
-    public Task<TransactionStatus> GetTransactionStatus(string transactionHash) => Task.FromResult(
+    public Task<TransferTransactionStatus> GetTransactionStatus(string transactionHash) => Task.FromResult(
         _transactions.Exists(t => t.Hash == transactionHash && t.IsConfirmed)
-            ? TransactionStatus.Confirmed
-            : TransactionStatus.WaitingConfirmation);
+            ? TransferTransactionStatus.Confirmed
+            : TransferTransactionStatus.WaitingConfirmation);
 
     public void Dispose()
     {
