@@ -40,6 +40,7 @@ public class EthereumBlockchain : IBlockchain
 
         return transaction == null ? null : new TransferTransactionInfo
         {
+            Hash = transaction.TransactionHash,
             From = transaction.From,
             To = transaction.To,
             Amount = Web3.Convert.FromWei(transaction.Value)

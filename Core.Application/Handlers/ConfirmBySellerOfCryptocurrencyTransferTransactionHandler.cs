@@ -29,65 +29,93 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
 
     public async Task<Result> Handle(ConfirmBySellerOfCryptocurrencyTransferTransactionCommand request)
     {
+        _logger.LogDebug("{Method} is invoked by {@Param1}.",
+            $"{typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler)}.{nameof(Handle)}", request);
+
+        Result result;
         var seller = await _traderStorage.TryGetByGuid(request.SellerGuid);
 
-        if (seller == null)
-            return Result.Fail($"Trader with guid \"{request.SellerGuid}\" does not exist.");
-
-        var order = await _orderStorage.TryGetByGuid(request.OrderGuid);
-
-        if (order == null)
-            return Result.Fail($"Order with guid \"{request.OrderGuid}\" does not exist.");
-        if (!order.Seller.Equals(seller))
-            return Result.Fail(
-                $"Trader with guid \"{seller.Guid}\" is not the seller of the order with guid \"{order.Guid}\".");
-
-        var transaction = await _blockchain.TryGetTransferTransactionInfo(request.TransactionHash);
-
-        if (transaction == null)
-            return Result.Fail($"Transaction with hash \"{request.TransactionHash}\" does not exist.");
-        if (transaction.To != _blockchain.ExchangerAccountAddress)
-            return Result.Fail(
-                $"Cryptocurrency was transferred to the wrong address. Order cancelled. For a refund, contact the owner of address {transaction.To}.");
-
-        order.ConfirmBySellerOfCryptocurrencyTransferTransaction(request.TransactionHash);
-
-        var expectedCryptoAmount =
-            order.CryptoAmount + order.Fee.SellerToExchanger + order.Fee.ExpectedExchangerToMiners;
-
-        if (expectedCryptoAmount != transaction.Amount)
+        if (seller != null)
         {
-            var refundTransactionHash = await _blockchain.SendTransferTransaction(transaction.From,
-                transaction.Amount - order.Fee.ExpectedExchangerToMiners);
-            order.Cancel();
-            await _orderStorage.Update(order);
+            var order = await _orderStorage.TryGetByGuid(request.OrderGuid);
 
-            return Result.Fail(
-                $"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Order cancelled. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain. Refund transaction hash: {refundTransactionHash}.");
-        }
+            if (order != null)
+            {
+                if (order.Seller.Equals(seller))
+                {
+                    var transaction = await _blockchain.TryGetTransferTransactionInfo(request.TransactionHash);
 
-        var transactionStatus = await _blockchain.GetTransferTransactionStatus(request.TransactionHash);
+                    if (transaction != null)
+                    {
+                        if (transaction.To == _blockchain.ExchangerAccountAddress)
+                        {
+                            order.ConfirmBySellerOfCryptocurrencyTransferTransaction(request.TransactionHash);
 
-        if (transactionStatus == TransferTransactionStatus.Cancelled)
-        {
-            order.Cancel();
-            await _orderStorage.Update(order);
+                            var expectedCryptoAmount =
+                                order.CryptoAmount + order.Fee.SellerToExchanger + order.Fee.ExpectedExchangerToMiners;
 
-            return Result.Fail($"Blockchain rejected the transaction. Order cancelled.");
-        }
+                            if (expectedCryptoAmount == transaction.Amount)
+                            {
+                                var transactionStatus =
+                                    await _blockchain.GetTransferTransactionStatus(request.TransactionHash);
 
-        if (transactionStatus == TransferTransactionStatus.Confirmed)
-        {
-            order.ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
-            await _orderStorage.Update(order);
+                                if (transactionStatus != TransferTransactionStatus.Cancelled)
+                                {
+                                    if (transactionStatus == TransferTransactionStatus.Confirmed)
+                                    {
+                                        order.ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
+                                        await _orderStorage.Update(order);
+                                    }
+                                    else
+                                    {
+                                        await _orderStorage.Update(order);
+                                        _orderTransferTransactionTracker.Track(order);
+                                    }
+
+                                    result = Result.Ok();
+                                }
+                                else
+                                {
+                                    order.Cancel();
+                                    await _orderStorage.Update(order);
+
+                                    _logger.LogWarning("Blockchain rejected the {@Transaction}.", transaction);
+
+                                    result = Result.Fail("Blockchain rejected the transaction. Order cancelled.");
+                                }
+                            }
+                            else
+                            {
+                                var refundTransactionHash = await _blockchain.SendTransferTransaction(transaction.From,
+                                    transaction.Amount - order.Fee.ExpectedExchangerToMiners);
+
+                                order.Cancel();
+                                await _orderStorage.Update(order);
+
+                                result = Result.Fail(
+                                    $"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Order cancelled. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain. Refund transaction hash: {refundTransactionHash}.");
+                            }
+                        }
+                        else
+                            result = Result.Fail(
+                                $"Cryptocurrency was transferred to the wrong address. For a refund, contact the owner of address {transaction.To}.");
+                    }
+                    else
+                        result = Result.Fail("Transaction does not exist.");
+                }
+                else
+                    result = Result.Fail("Trader is not the seller of the order.");
+            }
+            else
+                result = Result.Fail("Order does not exist.");
         }
         else
-        {
-            await _orderStorage.Update(order);
-            _orderTransferTransactionTracker.Track(order);
-        }
+            result = Result.Fail("Trader does not exist.");
 
-        return Result.Ok();
+        _logger.LogDebug("{Method} is returned {@Result}.",
+            $"{typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler)}.{nameof(Handle)}", result);
+
+        return result;
     }
 
     private readonly ITraderStorage _traderStorage;
