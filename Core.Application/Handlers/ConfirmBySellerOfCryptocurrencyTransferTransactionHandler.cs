@@ -14,7 +14,7 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
         OrderTransferTransactionTracker orderTransferTransactionTracker,
         ILogger<ConfirmBySellerOfCryptocurrencyTransferTransactionHandler> logger)
     {
-        logger.LogDebug("{Constructor} is invoked by {Param1}, {Param2}, {Param3}, {@Param4}, {Param5}.",
+        logger.LogDebug("{Constructor} is invoked by {Param1}, {Param2}, {Param3}, {Param4}, {Param5}.",
             typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler), traderStorage.GetType(), orderStorage.GetType(), blockchain.GetType(),
             orderTransferTransactionTracker.GetType(), logger.GetType());
         
