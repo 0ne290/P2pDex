@@ -13,7 +13,7 @@ public class CreateSellOrderHandler
     public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage,
         FeeCalculator feeCalculator, IOrderStorage orderStorage, ILogger<CreateSellOrderHandler> logger)
     {
-        logger.LogDebug("{Constructor} is invoked by {Param1}, {Param2}, {Param3}, {@Param4}, {Param5}.",
+        logger.LogDebug("{Constructor} is invoked by {Param1}, {Param2}, {Param3}, {Param4}, {Param5}.",
             typeof(CreateSellOrderHandler), validator.GetType(), traderStorage.GetType(), feeCalculator.GetType(),
             orderStorage.GetType(), logger.GetType());
 
@@ -39,7 +39,7 @@ public class CreateSellOrderHandler
         var seller = await _traderStorage.TryGetByGuid(request.SellerGuid);
         
         if (seller == null)
-            return Result.Fail($"Trader with guid \"{request.SellerGuid}\" does not exist.");
+            return Result.Fail($"Trader does not exist.");
 
         var feeFromSeller = await _feeCalculator.Calculate(request.CryptoAmount);
         var order = new SellOrder(Guid.NewGuid().ToString(), request.Crypto, request.CryptoAmount, request.Fiat,
