@@ -9,9 +9,9 @@ public interface IOrderStorage
 
     Task<OrderBase?> TryGetByGuid(string guid);
     
-    Task<ICollection<Order>> GetAllByStatus(OrderStatus status);
+    Task<ICollection<OrderBase>> GetAllByStatus(OrderStatus status);
 
-    Task UpdateAll(IEnumerable<Order> orders);
+    Task UpdateAll(IEnumerable<OrderBase> orders);
     
     Task Update(OrderBase order);
 }
