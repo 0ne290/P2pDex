@@ -14,25 +14,15 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
         OrderTransferTransactionTracker orderTransferTransactionTracker,
         ILogger<ConfirmBySellerOfCryptocurrencyTransferTransactionHandler> logger)
     {
-        logger.LogDebug("{Constructor} is invoked by {Param1}, {Param2}, {Param3}, {Param4}, {Param5}.",
-            typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler), traderStorage.GetType(), orderStorage.GetType(), blockchain.GetType(),
-            orderTransferTransactionTracker.GetType(), logger.GetType());
-        
         _traderStorage = traderStorage;
         _orderStorage = orderStorage;
         _blockchain = blockchain;
         _orderTransferTransactionTracker = orderTransferTransactionTracker;
         _logger = logger;
-        
-        logger.LogDebug("{Constructor} is finished.", typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler));
     }
 
     public async Task<Result> Handle(ConfirmBySellerOfCryptocurrencyTransferTransactionCommand request)
     {
-        _logger.LogDebug("{Method} is invoked by {@Param1}.",
-            $"{typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler)}.{nameof(Handle)}", request);
-
-        Result result;
         var seller = await _traderStorage.TryGetByGuid(request.SellerGuid);
 
         if (seller != null)
@@ -110,12 +100,11 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
                 result = Result.Fail("Order does not exist.");
         }
         else
-            result = Result.Fail("Trader does not exist.");
-
-        _logger.LogDebug("{Method} is returned {@Result}.",
-            $"{typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionHandler)}.{nameof(Handle)}", result);
-
-        return result;
+        {
+            _logger.LogInformation();
+            
+            return Result.Fail("Trader does not exist.");
+        }
     }
 
     private readonly ITraderStorage _traderStorage;

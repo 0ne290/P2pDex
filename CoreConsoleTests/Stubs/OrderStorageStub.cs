@@ -1,3 +1,4 @@
+/*
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
 using Serilog;
@@ -41,3 +42,4 @@ public class OrderStorageStub : IOrderStorage, IDisposable
 
     private readonly ILogger _logger;
 }
+*/
