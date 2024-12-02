@@ -1,7 +1,7 @@
 ﻿using Nethereum.Web3;
 using Nethereum.Web3.Accounts.Managed;
 
-namespace Infrastructure.Blockchain;
+namespace Infrastructure;
 
 public class Class1
 {

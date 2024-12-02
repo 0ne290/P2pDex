@@ -34,6 +34,8 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
             return Result.Fail("Order does not exist.");
         if (!order.Seller.Equals(seller))
             return Result.Fail("Trader is not the seller of the order.");
+        if (order.Status != OrderStatus.WaitingConfirmBySellerOfCryptocurrencyTransferTransaction)
+            return Result.Fail("Order status is invalid.");
 
         var transaction = await _blockchain.TryGetTransferTransactionInfo(request.TransactionHash);
 

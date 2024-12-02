@@ -1,6 +1,6 @@
 using Nethereum.Web3;
 
-namespace Infrastructure.Blockchain;
+namespace Infrastructure;
 
 public class ConcurrentWeb3Wrapper
 {

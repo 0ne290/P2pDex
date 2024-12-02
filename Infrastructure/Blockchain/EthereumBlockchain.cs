@@ -4,7 +4,7 @@ using Core.Domain.ValueObjects;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 
-namespace Infrastructure.Blockchain;
+namespace Infrastructure;
 
 public class EthereumBlockchain : IBlockchain
 {
