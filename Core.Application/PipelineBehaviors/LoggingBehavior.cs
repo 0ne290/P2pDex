@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Text.Json;
+using Core.Application.Errors;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -17,9 +17,10 @@ public class LoggingBehavior<TRequest> : IPipelineBehavior<TRequest, IResultBase
         CancellationToken cancellationToken)
     {
         var requestName = request.GetType().Name;
+        var requestGuid = Guid.NewGuid().ToString();
 
-        _logger.LogInformation("Stage: {stage}, request name: {requestName}, request body: {@requestBody}.", "START",
-            requestName, request);
+        _logger.LogInformation("Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}.", "START",
+            requestName, requestGuid, request);
 
         var stopwatch = Stopwatch.StartNew();
         try
@@ -28,8 +29,8 @@ public class LoggingBehavior<TRequest> : IPipelineBehavior<TRequest, IResultBase
             stopwatch.Stop();
             
             _logger.LogInformation(
-                "Stage: {stage}, request name: {requestName}, request body: {@requestBody}, execution time in ms: {executionTime}, response: {@response}.",
-                "END", requestName, request, stopwatch.ElapsedMilliseconds, response);
+                "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, execution time in ms: {executionTime}, response: {@response}.",
+                "END", requestName, requestGuid, request, stopwatch.ElapsedMilliseconds, response);
 
             return response;
         }
@@ -37,10 +38,13 @@ public class LoggingBehavior<TRequest> : IPipelineBehavior<TRequest, IResultBase
         {
             stopwatch.Stop();
             _logger.LogError(
-                "Stage: {stage}, request name: {requestName}, request body: {@requestBody}, error detail: {@errorDetail}.",
-                "ERROR", requestName, request, e);
+                "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, error detail: {@errorDetail}.",
+                "ERROR", requestName, requestGuid, request, e);
 
-            return Result.Fail("sg");// TODO: Выделить данную ошибку в отдельный тип для простоты ее идентификации. Генерировать для каждой приходящей команды GUID и добавлять его к инфе об ошибке. Контроллеры ASP.NET Core, получающие такие ошибки, должны формировать свои собственные сообщения для клиента, взяв за основу сообщение полученной ошибки и добавив к ней контекстную инфу, содержащуюся в логах (например, время, HttpContext.TraceIdentifier, URL и т. д.), для облегчения поиска нужных логов.
+            return Result.Fail(
+                new DevelopmentError().WithMetadata(
+                    new Dictionary<string, object>(
+                        [new KeyValuePair<string, object>(nameof(requestGuid), requestGuid)])));
         }
     }
 

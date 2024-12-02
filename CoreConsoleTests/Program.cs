@@ -9,8 +9,8 @@ internal class Program
     private static void Main()
     {
         Log.Logger = new LoggerConfiguration().WriteTo.Async(c => c.Console(new JsonFormatter())).CreateLogger();
-        var m = new TestModel { Name = "Chipchilinka", Password = "Zxc993" };
-        Log.Information($"Zshv {JsonConvert.SerializeObject(m)}.");
+        Dictionary<string, int> m = new([new KeyValuePair<string, int>("fnh", 44)]);
+        Log.Information("Zshv {@M}.", m);
         Log.CloseAndFlush();
     }
 

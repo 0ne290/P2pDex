@@ -2,19 +2,16 @@ using System.Timers;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
-using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
 
 namespace Core.Application.Services;
 
 public class OrderTransferTransactionTracker : IDisposable
 {
-    public OrderTransferTransactionTracker(IBlockchain blockchain, IOrderStorage orderStorage,
-        ILogger<OrderTransferTransactionTracker> logger, IEnumerable<OrderBase> trackedOrders, double intervalInMs)
+    public OrderTransferTransactionTracker(IBlockchain blockchain, IOrderStorage orderStorage, IEnumerable<OrderBase> trackedOrders, double intervalInMs)
     {
         _blockchain = blockchain;
         _orderStorage = orderStorage;
-        _logger = logger;
 
         _synchronizer = 0;
         _trackedOrders = trackedOrders.ToHashSet();
@@ -35,8 +32,6 @@ public class OrderTransferTransactionTracker : IDisposable
         _trackedOrders.Add(order);
 
         Interlocked.Decrement(ref _synchronizer);
-
-        _logger.LogInformation("Transfer transaction of {@Order} is being tracked.", order);
     }
 
     private async void Handler(object? sender, ElapsedEventArgs e)
@@ -57,7 +52,6 @@ public class OrderTransferTransactionTracker : IDisposable
             order.ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
             updatedOrders.Add(order);
             _trackedOrders.Remove(order);
-            _logger.LogInformation("Transfer transaction of {@Order} is confirmed.", order);
         }
 
         Interlocked.Decrement(ref _synchronizer);
@@ -80,8 +74,6 @@ public class OrderTransferTransactionTracker : IDisposable
     private readonly IBlockchain _blockchain;
 
     private readonly IOrderStorage _orderStorage;
-
-    private readonly ILogger<OrderTransferTransactionTracker> _logger;
 
     private int _synchronizer;
 

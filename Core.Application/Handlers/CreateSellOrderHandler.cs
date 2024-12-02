@@ -1,26 +1,25 @@
 using Core.Application.Commands;
 using Core.Application.Services;
 using Core.Domain.Entities;
+using Core.Domain.Enums;
 using Core.Domain.Interfaces;
 using FluentResults;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 
 namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler
 {
     public CreateSellOrderHandler(IValidator<CreateSellOrderCommand> validator, ITraderStorage traderStorage,
-        FeeCalculator feeCalculator, IOrderStorage orderStorage, ILogger<CreateSellOrderHandler> logger)
+        FeeCalculator feeCalculator, IOrderStorage orderStorage)
     {
         _validator = validator;
         _traderStorage = traderStorage;
         _feeCalculator = feeCalculator;
         _orderStorage = orderStorage;
-        _logger = logger;
     }
 
-    public async Task<Result> Handle(CreateSellOrderCommand request)
+    public async Task<Result<(string, OrderStatus)>> Handle(CreateSellOrderCommand request)
     {
         var validationResult = await _validator.ValidateAsync(request);
         
@@ -38,7 +37,7 @@ public class CreateSellOrderHandler
         
         await _orderStorage.Add(order);
 
-        return Result.Ok();
+        return Result.Ok((order.Guid, order.Status));
     }
 
     private readonly IValidator<CreateSellOrderCommand> _validator;
@@ -48,6 +47,4 @@ public class CreateSellOrderHandler
     private readonly FeeCalculator _feeCalculator;
 
     private readonly IOrderStorage _orderStorage;
-
-    private readonly ILogger<CreateSellOrderHandler> _logger;
 }
