@@ -1,4 +1,6 @@
 using Core.Application.Commands;
+using Core.Application.Errors;
+using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,9 +18,13 @@ public class ApiController : Controller
     [HttpPost]
     public async Task<IActionResult> CreateSellOrder([FromBody] CreateSellOrderCommand request)
     {
-        var response = await _mediator.Send(request);
-        
-        return Ok();
+        var response = (Result)await _mediator.Send(request);
+
+        if (response.IsSuccess)
+            return Ok();
+        if (response.HasError<DevelopmentError>())
+            return ServerError(response.Errors.Select(e => e.Message));
+        return BadRequest(response.Errors.Select(e => e.Message));
     }
 
     private readonly IMediator _mediator;

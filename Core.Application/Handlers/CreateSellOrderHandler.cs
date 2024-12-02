@@ -22,9 +22,9 @@ public class CreateSellOrderHandler
     public async Task<Result<(string, OrderStatus)>> Handle(CreateSellOrderCommand request)
     {
         var validationResult = await _validator.ValidateAsync(request);
-        
+
         if (!validationResult.IsValid)
-            return Result.Fail(validationResult.ToString());
+            return Result.Fail(validationResult.Errors.Select(e => e.ErrorMessage));
 
         var seller = await _traderStorage.TryGetByGuid(request.SellerGuid);
         
