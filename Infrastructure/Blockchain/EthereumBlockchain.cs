@@ -4,19 +4,19 @@ using Core.Domain.ValueObjects;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 
-namespace Infrastructure;
+namespace Infrastructure.Blockchain;
 
 public class EthereumBlockchain : IBlockchain
 {
-    public EthereumBlockchain(ConcurrentWeb3Wrapper concurrentWeb3Wrapper, string exchangerAccountAddress)
+    public EthereumBlockchain(Web3 web3, string exchangerAccountAddress)
     {
-        _concurrentWeb3Wrapper = concurrentWeb3Wrapper;
+        _web3 = web3;
         ExchangerAccountAddress = exchangerAccountAddress;
     }
 
     public async Task<decimal> GetTransferTransactionFee()
     {
-        var gasPriceInWei = await _concurrentWeb3Wrapper.Execute(async web3 => await web3.Eth.GasPrice.SendRequestAsync());
+        var gasPriceInWei = await _web3.Eth.GasPrice.SendRequestAsync();
         var gasPriceInEth = Web3.Convert.FromWei(gasPriceInWei);
         
         return gasPriceInEth * GasLimitOfTransferTransaction;
@@ -24,8 +24,7 @@ public class EthereumBlockchain : IBlockchain
 
     public async Task<TransferTransactionStatus> GetTransferTransactionStatus(string transactionHash)
     {
-        var receipt = await _concurrentWeb3Wrapper.Execute(async web3 =>
-            await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash));
+        var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
 
         if (receipt == null)
             return TransferTransactionStatus.WaitingConfirmation;
@@ -35,8 +34,7 @@ public class EthereumBlockchain : IBlockchain
 
     public async Task<TransferTransactionInfo?> TryGetTransferTransactionInfo(string transactionHash)
     {
-        var transaction = await _concurrentWeb3Wrapper.Execute(async web3 =>
-            await web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash));
+        var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash);
 
         return transaction == null ? null : new TransferTransactionInfo
         {
@@ -48,13 +46,12 @@ public class EthereumBlockchain : IBlockchain
     }
 
     public async Task<string> SendTransferTransaction(string to, decimal amount) =>
-        await _concurrentWeb3Wrapper.Execute(async web3 =>
-            await web3.TransactionManager.SendTransactionAsync(ExchangerAccountAddress, to,
-                Web3.Convert.ToWei(amount).ToHexBigInteger()));
+        await _web3.TransactionManager.SendTransactionAsync(ExchangerAccountAddress, to,
+                Web3.Convert.ToWei(amount).ToHexBigInteger());
     
     public string ExchangerAccountAddress { get; }
     
-    private readonly ConcurrentWeb3Wrapper _concurrentWeb3Wrapper;
+    private readonly Web3 _web3;
 
     private const decimal GasLimitOfTransferTransaction = 21_000m;
 }

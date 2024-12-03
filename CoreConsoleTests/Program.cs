@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Serilog;
+﻿using Serilog;
 using Serilog.Formatting.Json;
 
 namespace CoreConsoleTests;

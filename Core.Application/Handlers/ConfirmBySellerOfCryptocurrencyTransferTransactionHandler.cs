@@ -3,11 +3,12 @@ using Core.Application.Services;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
 using FluentResults;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Application.Handlers;
 
-public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
+public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler : IRequestHandler<ConfirmBySellerOfCryptocurrencyTransferTransactionCommand, Result<(string, OrderStatus)>>
 {
     public ConfirmBySellerOfCryptocurrencyTransferTransactionHandler(ITraderStorage traderStorage,
         IOrderStorage orderStorage, IBlockchain blockchain,
@@ -21,7 +22,7 @@ public class ConfirmBySellerOfCryptocurrencyTransferTransactionHandler
         _logger = logger;
     }
 
-    public async Task<Result<(string, OrderStatus)>> Handle(ConfirmBySellerOfCryptocurrencyTransferTransactionCommand request)
+    public async Task<Result<(string, OrderStatus)>> Handle(ConfirmBySellerOfCryptocurrencyTransferTransactionCommand request, CancellationToken _)
     {
         var seller = await _traderStorage.TryGetByGuid(request.SellerGuid);
 

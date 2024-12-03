@@ -1,6 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using Core.Domain.Enums;
-using Infrastructure.Storage.Constants;
+using Infrastructure.Storage.Enums;
 
 namespace Infrastructure.Storage.Models;
 

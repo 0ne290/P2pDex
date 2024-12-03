@@ -1,4 +1,4 @@
-namespace Infrastructure.Storage.Constants;
+namespace Infrastructure.Storage.Enums;
 
 public enum OrderType
 {

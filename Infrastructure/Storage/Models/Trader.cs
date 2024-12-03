@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Infrastructure.Storage.Models;
 
 public class Trader : ModelBase

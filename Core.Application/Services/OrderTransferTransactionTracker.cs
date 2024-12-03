@@ -22,42 +22,49 @@ public class OrderTransferTransactionTracker : IDisposable
         _timer.Start();
     }
 
-    public void Track(OrderBase order)
+    public void Track(OrderBase order) => ExecuteConcurrently(() => _trackedOrders.Add(order));
+    
+    private void ExecuteConcurrently(Action action)
     {
         Interlocked.Increment(ref _synchronizer);
 
         while (_synchronizer != 1)
             Thread.Yield();
 
-        _trackedOrders.Add(order);
+        action();
 
         Interlocked.Decrement(ref _synchronizer);
     }
 
-    private async void Handler(object? sender, ElapsedEventArgs e)
+    private async void Handler(object? sender, ElapsedEventArgs e) => await ExecuteConcurrently(async () =>
     {
         var updatedOrders = new List<OrderBase>();
-
-        Interlocked.Increment(ref _synchronizer);
-
-        while (_synchronizer != 1)
-            Thread.Yield();
 
         foreach (var order in _trackedOrders)
         {
             if (await _blockchain.GetTransferTransactionStatus(order.TransferTransactionHash!) !=
                 TransferTransactionStatus.Confirmed)
                 continue;
-            
+
             order.ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
             updatedOrders.Add(order);
             _trackedOrders.Remove(order);
         }
 
-        Interlocked.Decrement(ref _synchronizer);
-
         if (updatedOrders.Count > 0)
             await _orderStorage.UpdateAll(updatedOrders);
+    });
+
+    private async Task ExecuteConcurrently(Func<Task> action)
+    {
+        Interlocked.Increment(ref _synchronizer);
+
+        while (_synchronizer != 1)
+            Thread.Yield();
+
+        await action();
+
+        Interlocked.Decrement(ref _synchronizer);
     }
 
     public void Dispose()
@@ -65,10 +72,15 @@ public class OrderTransferTransactionTracker : IDisposable
         _timer.Elapsed -= Handler;
         _timer.Stop();
 
-        while (_synchronizer != 0)
-            Thread.Yield();
+        Join();
 
         _timer.Dispose();
+    }
+
+    private void Join()
+    {
+        while (_synchronizer != 0)
+            Thread.Yield();
     }
 
     private readonly IBlockchain _blockchain;

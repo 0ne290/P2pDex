@@ -6,14 +6,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Application.PipelineBehaviors;
 
-public class LoggingBehavior<TRequest> : IPipelineBehavior<TRequest, IResultBase> where TRequest : notnull
+public class LoggingBehavior : IPipelineBehavior<IRequest<IResultBase>, IResultBase>
 {
-    public LoggingBehavior(ILogger<TRequest> logger)
+    public LoggingBehavior(ILogger<IRequest<IResultBase>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<IResultBase> Handle(TRequest request, RequestHandlerDelegate<IResultBase> next,
+    public async Task<IResultBase> Handle(IRequest<IResultBase> request, RequestHandlerDelegate<IResultBase> next,
         CancellationToken cancellationToken)
     {
         var requestName = request.GetType().Name;
@@ -48,5 +48,5 @@ public class LoggingBehavior<TRequest> : IPipelineBehavior<TRequest, IResultBase
         }
     }
 
-    private readonly ILogger<TRequest> _logger;
+    private readonly ILogger<IRequest<IResultBase>> _logger;
 }

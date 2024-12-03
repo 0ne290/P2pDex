@@ -1,6 +1,10 @@
+using Core.Domain.Enums;
+using FluentResults;
+using MediatR;
+
 namespace Core.Application.Commands;
 
-public class ConfirmBySellerOfCryptocurrencyTransferTransactionCommand
+public class ConfirmBySellerOfCryptocurrencyTransferTransactionCommand : IRequest<Result<(string, OrderStatus)>>
 {
     public required string SellerGuid { get; init; }
     
