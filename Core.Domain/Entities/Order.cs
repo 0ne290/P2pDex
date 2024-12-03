@@ -2,14 +2,15 @@ using Core.Domain.Enums;
 
 namespace Core.Domain.Entities;
 
-public abstract class OrderBase : EntityBase
+public class Order : EntityBase
 {
-    protected OrderBase(string guid, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+    private Order(string guid, OrderType type, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller,
         (decimal SellerToExchanger, decimal ExpectedExchangerToMiners) fee, string? transferTransactionHash,
         Trader? buyer, string? buyersWalletAddress) : base(guid)
     {
         Status = status;
+        Type = type;
         Crypto = crypto;
         CryptoAmount = cryptoAmount;
         Fiat = fiat;
@@ -25,13 +26,33 @@ public abstract class OrderBase : EntityBase
         BuyersWalletAddress = buyersWalletAddress;
     }
 
+    public static Order CreateSellOrder(string guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+        decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Trader seller,
+        (decimal SellerToExchanger, decimal ExpectedExchangerToMiners) fee) => new(guid, OrderType.Sell
+        OrderStatus.WaitingConfirmBySellerOfCryptocurrencyTransferTransaction, crypto, cryptoAmount, fiat,
+        cryptoToFiatExchangeRate, paymentMethodInfo, seller, fee, null, null, null) { }
+
     public void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transferTransactionHash)
     {
         TransferTransactionHash = transferTransactionHash;
         Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
     }
 
-    public abstract void ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
+    public void ConfirmByBlockchainOfCryptocurrencyTransferTransaction()
+    {
+        if (Type == OrderType.Sell)
+            Status = OrderStatus.WaitingForBuyersResponse;
+        else
+            Status = OrderStatus.WaitingBySellerOfConfirmFiatCurrencyReceipt
+    }
+
+    public void AssignBuyer(Trader buyer, string buyersWalletAddress)
+    {
+        Status = OrderStatus.WaitingBySellerOfConfirmFiatCurrencyReceipt;
+        Buyer = buyer;
+        BuyerGuid = buyer.Guid;
+        BuyersWalletAddress = buyersWalletAddress;
+    }
 
     public void Complete()
     {
@@ -42,6 +63,8 @@ public abstract class OrderBase : EntityBase
     {
         Status = OrderStatus.Cancelled;
     }
+
+    public OrderType Type { get; }
 
     public OrderStatus Status { get; protected set; }
 
