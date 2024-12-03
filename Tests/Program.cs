@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Serilog.Formatting.Json;
 
-namespace CoreConsoleTests;
+namespace Tests;
 
 internal class Program
 {

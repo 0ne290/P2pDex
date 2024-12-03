@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Domain", "Core.Domain\Core.Domain.csproj", "{804D5384-8086-4EF0-92ED-334B648FE026}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreConsoleTests", "CoreConsoleTests\CoreConsoleTests.csproj", "{E76D8DD8-DE60-4DF6-B093-D5E00D32050D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{E76D8DD8-DE60-4DF6-B093-D5E00D32050D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{906C37E5-CA16-47F3-ACA2-661087DE91CE}"
 EndProject

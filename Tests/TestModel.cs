@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace CoreConsoleTests;
+namespace Tests;
 
 public class TestModel
 {

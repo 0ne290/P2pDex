@@ -5,5 +5,5 @@ namespace Infrastructure.Storage.Models;
 [PrimaryKey(nameof(Guid))]
 public abstract class ModelBase
 {
-    public required string Guid { get; init; }
+    public string Guid { get; init; }
 }

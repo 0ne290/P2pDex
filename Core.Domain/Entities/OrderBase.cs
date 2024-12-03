@@ -25,13 +25,23 @@ public abstract class OrderBase : EntityBase
         BuyersWalletAddress = buyersWalletAddress;
     }
 
-    public abstract void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transferTransactionHash);
+    public void ConfirmBySellerOfCryptocurrencyTransferTransaction(string transferTransactionHash)
+    {
+        TransferTransactionHash = transferTransactionHash;
+        Status = OrderStatus.WaitingConfirmByBlockchainOfCryptocurrencyTransferTransaction;
+    }
 
     public abstract void ConfirmByBlockchainOfCryptocurrencyTransferTransaction();
 
-    public abstract void Complete();
+    public void Complete()
+    {
+        Status = OrderStatus.Completed;
+    }
 
-    public abstract void Cancel();
+    public void Cancel()
+    {
+        Status = OrderStatus.Cancelled;
+    }
 
     public OrderStatus Status { get; protected set; }
 

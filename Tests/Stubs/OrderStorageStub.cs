@@ -3,7 +3,7 @@ using Core.Domain.Enums;
 using Core.Domain.Interfaces;
 using Serilog;
 
-namespace CoreConsoleTests.Stubs;
+namespace Tests.Stubs;
 
 public class OrderStorageStub : IOrderStorage, IDisposable
 {
