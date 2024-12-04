@@ -2,7 +2,7 @@ namespace Core.Domain.Entities;
 
 public abstract class EntityBase
 {
-    protected EntityBase(string guid) => Guid = guid;
+    protected EntityBase(Guid guid) => Guid = guid;
     
-    public string Guid { get; }
+    public Guid Guid { get; }
 }

@@ -1,6 +1,5 @@
 using Core.Domain.Entities;
 using Core.Domain.Enums;
-using Infrastructure.Storage.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Storage.Models;
