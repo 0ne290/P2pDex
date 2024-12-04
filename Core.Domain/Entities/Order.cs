@@ -24,7 +24,6 @@ public class Order : EntityBase
         if (fee.ExchangerToMiners <= 0)
             throw new InvariantViolationException("Exchanger to miners fee is invalid.");
 
-        Type = OrderType.NotYetDetermined;
         Status = OrderStatus.Created;
         Crypto = crypto;
         CryptoAmount = cryptoAmount;
@@ -43,12 +42,13 @@ public class Order : EntityBase
     
     public void BuyerRespond(Trader buyer, string buyerWalletAddress)
     {
-        if (Type == OrderType.NotYetDetermined)
-            Type = OrderType.Buy;
-        else if (!(Type == OrderType.Sell && Status == OrderStatus.SellerResponded))
-            throw new InvariantViolationException("Type and/or status is invalid.");
-        
-        Status = OrderStatus.BuyerResponded;
+        if (Status = OrderStatus.Created)
+            Status = OrderStatus.BuyerResponded;
+        else if (Status == OrderStatus.SellerResponded)
+            Status = OrderStatus.BuyerAndSellerResponded;
+        else
+            throw new InvariantViolationException("Status is invalid.");
+            
         Buyer = buyer;
         BuyerGuid = buyer.Guid;
         BuyerWalletAddress = buyerWalletAddress;
@@ -56,12 +56,13 @@ public class Order : EntityBase
 
     public void SellerRespond(Trader seller, string transferTransactionHash)
     {
-        if (Type == OrderType.NotYetDetermined)
-            Type = OrderType.Sell;
-        else if (!(Type == OrderType.Buy && Status == OrderStatus.BuyerResponded))
-            throw new InvariantViolationException("Type and/or status is invalid.");
+        if (Status == OrderStatus.Created)
+            Status = OrderStatus.SellerResponded;
+        else if (Status == OrderStatus.BuyerResponded)
+            Status = OrderStatus.BuyerAndSellerResponded;
+        else
+            throw new InvariantViolationException("Status is invalid.");
         
-        Status = OrderStatus.SellerResponded;
         Seller = seller;
         SellerGuid = seller.Guid;
         SellerTransferTransactionHash = transferTransactionHash;
@@ -69,17 +70,16 @@ public class Order : EntityBase
     
     public void BuyerConfirm()
     {
-        if ((Type == OrderType.Sell && Status == OrderStatus.BuyerResponded) ||
-            (Type == OrderType.Buy && Status == OrderStatus.SellerResponded))
+        if (Status == OrderStatus.BuyerAndSellerResponded)
             Status = OrderStatus.BuyerConfirmed;
         else
-            throw new InvariantViolationException("Type and status is invalid.");
+            throw new InvariantViolationException("Status is invalid.");
     }
     
     public void SellerConfirm()
     {
         if (Status == OrderStatus.BuyerConfirmed)
-            Status = OrderStatus.SellerConfirmed;
+            Status = OrderStatus.BuyerAndSellerConfirmed;
         else
             throw new InvariantViolationException("Status is invalid.");
     }
@@ -100,7 +100,7 @@ public class Order : EntityBase
     {
         if (Status == OrderStatus.FrozenForDurationOfDispute)
             Status = OrderStatus.Completed;
-        else if (Status == OrderStatus.SellerConfirmed)
+        else if (Status == OrderStatus.BuyerAndSellerConfirmed)
         {
             Status = OrderStatus.Completed;
             Seller!.IncrementSuccessfulOrdersAsSeller();
@@ -117,8 +117,6 @@ public class Order : EntityBase
     //    
     //    Status = OrderStatus.Cancelled;
     //}
-    
-    public OrderType Type { get; private set; }
     
     public OrderStatus Status { get; private set; }
     
