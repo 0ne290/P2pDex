@@ -7,6 +7,7 @@ public enum OrderStatus
     SellerResponded,
     BuyerConfirmed,
     SellerConfirmed,
+    FrozenForDurationOfDispute,
     Cancelled,
     Completed
 }

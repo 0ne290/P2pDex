@@ -43,7 +43,7 @@ public class Order : EntityBase
     
     public void BuyerRespond(Trader buyer, string buyerWalletAddress)
     {
-        if (Type == OrderType.NotYetDetermined && Status == OrderStatus.Created)
+        if (Type == OrderType.NotYetDetermined)
             Type = OrderType.Buy;
         else if (!(Type == OrderType.Sell && Status == OrderStatus.SellerResponded))
             throw new InvariantViolationException("Type and status is invalid.");
@@ -56,7 +56,7 @@ public class Order : EntityBase
 
     public void SellerRespond(Trader seller, string transferTransactionHash)
     {
-        if (Type == OrderType.NotYetDetermined && Status == OrderStatus.Created)
+        if (Type == OrderType.NotYetDetermined)
             Type = OrderType.Sell;
         else if (!(Type == OrderType.Buy && Status == OrderStatus.BuyerResponded))
             throw new InvariantViolationException("Type and status is invalid.");
@@ -69,45 +69,54 @@ public class Order : EntityBase
     
     public void BuyerConfirm()
     {
-        if (Type == OrderType.NotYetDetermined && Status == OrderStatus.Created)
-            Type = OrderType.Buy;
-        else if (!(Type == OrderType.Sell && Status == OrderStatus.SellerResponded))
+        if ((Type == OrderType.Sell && Status == OrderStatus.BuyerResponded) ||
+            (Type == OrderType.Buy && Status == OrderStatus.SellerResponded))
+            Status = OrderStatus.BuyerConfirmed;
+        else
             throw new InvariantViolationException("Type and status is invalid.");
-        
-        Status = OrderStatus.BuyerResponded;
-        Buyer = buyer;
-        BuyerGuid = buyer.Guid;
-        BuyerWalletAddress = buyerWalletAddress;
     }
-
+    
     public void SellerConfirm()
     {
-        if (Type == OrderType.NotYetDetermined && Status == OrderStatus.Created)
-            Type = OrderType.Sell;
-        else if (!(Type == OrderType.Buy && Status == OrderStatus.BuyerResponded))
-            throw new InvariantViolationException("Type and status is invalid.");
-        
-        Status = OrderStatus.SellerResponded;
-        Seller = seller;
-        SellerGuid = seller.Guid;
-        SellerTransferTransactionHash = transferTransactionHash;
+        if (Status == OrderStatus.BuyerResponded)
+            Status = OrderStatus.SellerConfirmed;
+        else
+            throw new InvariantViolationException("Status is invalid.");
     }
 
+    public Dispute SellerDeny(Guid disputeGuid)
+    {
+        if (Status == OrderStatus.BuyerResponded)
+        {
+            Status = OrderStatus.FrozenForDurationOfDispute;
+
+            return new Dispute(disputeGuid, this);
+        }
+        
+        throw new InvariantViolationException("Status is invalid.");
+    }
+    
     public void Complete()
     {
-        if (Status is OrderStatus.Completed or OrderStatus.Cancelled)
+        if (Status == OrderStatus.FrozenForDurationOfDispute)
+            Status = OrderStatus.Completed;
+        else if (Status == OrderStatus.SellerConfirmed)
+        {
+            Status = OrderStatus.Completed;
+            Seller!.IncrementSuccessfulOrdersAsSeller();
+            Buyer!.IncrementSuccessfulOrdersAsBuyer();
+        }
+        else
             throw new InvariantViolationException("Status is invalid.");
-        
-        Status = OrderStatus.Completed;
     }
 
-    public void Cancel()
-    {
-        if (Status is OrderStatus.Completed or OrderStatus.Cancelled)
-            throw new InvariantViolationException("Status is invalid.");
-        
-        Status = OrderStatus.Cancelled;
-    }
+    //public void Cancel()
+    //{
+    //    if (Status is OrderStatus.Completed or OrderStatus.Cancelled)
+    //        throw new InvariantViolationException("Status is invalid.");
+    //    
+    //    Status = OrderStatus.Cancelled;
+    //}
     
     public OrderType Type { get; private set; }
     
