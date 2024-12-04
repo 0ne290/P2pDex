@@ -5,8 +5,9 @@ public enum OrderStatus
     Created,
     BuyerResponded,
     SellerResponded,
+    BuyerAndSellerResponded,
     BuyerConfirmed,
-    SellerConfirmed,
+    BuyerAndSellerConfirmed,
     FrozenForDurationOfDispute,
     Cancelled,
     Completed
