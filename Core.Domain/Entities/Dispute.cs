@@ -41,7 +41,7 @@ public class Dispute : EntityBase
         if (Status != DisputeStatus.Active)
             throw new InvariantViolationException("Status is invalid.");
 
-        Status = DisputeStatus.ResolvedInFavorOfBuyer;
+        Status = DisputeStatus.ResolvedInFavorOfSeller;
         Administrator!.IncrementDisputeResolved();
         Order.Buyer!.IncrementLostDisputesAsBuyer();
         Order.Seller!.IncrementWonDisputesAsSeller();
