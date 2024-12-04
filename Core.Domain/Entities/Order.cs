@@ -46,7 +46,7 @@ public class Order : EntityBase
         if (Type == OrderType.NotYetDetermined)
             Type = OrderType.Buy;
         else if (!(Type == OrderType.Sell && Status == OrderStatus.SellerResponded))
-            throw new InvariantViolationException("Type and status is invalid.");
+            throw new InvariantViolationException("Type and/or status is invalid.");
         
         Status = OrderStatus.BuyerResponded;
         Buyer = buyer;
@@ -59,7 +59,7 @@ public class Order : EntityBase
         if (Type == OrderType.NotYetDetermined)
             Type = OrderType.Sell;
         else if (!(Type == OrderType.Buy && Status == OrderStatus.BuyerResponded))
-            throw new InvariantViolationException("Type and status is invalid.");
+            throw new InvariantViolationException("Type and/or status is invalid.");
         
         Status = OrderStatus.SellerResponded;
         Seller = seller;
@@ -78,7 +78,7 @@ public class Order : EntityBase
     
     public void SellerConfirm()
     {
-        if (Status == OrderStatus.BuyerResponded)
+        if (Status == OrderStatus.BuyerConfirmed)
             Status = OrderStatus.SellerConfirmed;
         else
             throw new InvariantViolationException("Status is invalid.");
@@ -86,7 +86,7 @@ public class Order : EntityBase
 
     public Dispute SellerDeny(Guid disputeGuid)
     {
-        if (Status == OrderStatus.BuyerResponded)
+        if (Status == OrderStatus.BuyerConfirmed)
         {
             Status = OrderStatus.FrozenForDurationOfDispute;
 

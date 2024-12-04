@@ -1,8 +1,10 @@
 using Core.Domain.Enums;
+using FluentResults;
+using MediatR;
 
 namespace Core.Application.Commands;
 
-public class CreateSellOrderCommand
+public class CreateOrderCommand : IRequest<Result<(Guid, OrderStatus)>>
 {
     public required Cryptocurrency Crypto { get; init; }
 
@@ -13,6 +15,4 @@ public class CreateSellOrderCommand
     public required decimal CryptoToFiatExchangeRate { get; init; }
 
     public required string PaymentMethodInfo { get; init; }
-
-    public required string SellerGuid { get; init; }
 }

@@ -5,13 +5,13 @@ namespace Core.Domain.Interfaces;
 
 public interface IOrderStorage
 {
-    Task Add(OrderBase order);
+    Task Add(Order order);
 
-    Task<OrderBase?> TryGetByGuid(string guid);
+    Task<Order?> TryGetByGuid(string guid);
     
-    Task<ICollection<OrderBase>> GetAllByStatus(OrderStatus status);
+    Task<ICollection<Order>> GetAllByStatus(OrderStatus status);
 
-    Task UpdateAll(IEnumerable<OrderBase> orders);
+    Task UpdateAll(IEnumerable<Order> orders);
     
-    Task Update(OrderBase order);
+    Task Update(Order order);
 }

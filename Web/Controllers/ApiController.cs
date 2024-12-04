@@ -16,7 +16,7 @@ public class ApiController : Controller
     
     [Route("create-sell-order")]
     [HttpPost]
-    public async Task<IActionResult> CreateSellOrder([FromBody] CreateSellOrderCommand request)
+    public async Task<IActionResult> CreateSellOrder([FromBody] CreateOrderCommand request)
     {
         var response = (Result)await _mediator.Send(request);
 

@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Core.Application.Validators;
 
-public class CreateSellOrderValidator : AbstractValidator<CreateSellOrderCommand>
+public class CreateSellOrderValidator : AbstractValidator<CreateOrderCommand>
 {
     public CreateSellOrderValidator()
     {
