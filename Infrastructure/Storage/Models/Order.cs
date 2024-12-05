@@ -12,7 +12,31 @@ public class Order : ModelBase
         var entity = new Entities.Order(System.Guid.Parse(Guid), Crypto, CryptoAmount, Fiat, CryptoToFiatExchangeRate,
             PaymentMethodInfo, (SellerToExchangerFee, ExchangerToMinersFee));
         
-        sw
+        var statusHistory = StatusHistory.Split(",").Select(s => Enum.Parse<OrderStatus>(s));
+
+        foreach (var status in statusHistory)
+        {
+            switch (Status)
+            {
+                case OrderStatus.BuyerResponded:
+                    entity.BuyerRespond(Buyer, BuyerWalletAddress);
+                    break;
+                case OrderStatus.SellerResponded:
+                    entity.SellerRespond(Seller, SellerTransferTransactionHash);
+                    break;
+                case OrderStatus.BuyerConfirmed:
+                    entity.BuyerConfirm();
+                    break;
+                case OrderStatus.SellerConfirmed:
+                    entity.SellerConfirm();
+                    break;
+                case OrderStatus.Frozen:
+                    entity.SellerDeny(Dispute);// TODO: Спор, вероятно, надо убрать из этого метода, т. к. соблюдение того, что в случае отказа продавца должен создасться спор, ссылающийся на заказ - это ответственность Application Layer. Если сущность X не вызывает методы сущности Y, то она НЕ ДОЛЖНА ИСПОЛЬЗОВАТЬ ЭТУ СУЩНОСТЬ. Вывод: неиспользуемые ссылки в Domain Layer - это бессмыслица
+                case OrderStatus.Completed:
+                    entity.Complete();// Вот тут опасный момент, т. к. этот метод под капотом вызывает методы сущностей Trader, тем самым будет выполнятся дублирующее нежелательное изменение состояния сущностей Trader
+                    break;
+            }
+        }
     }
 
     public static Order FromEntity(Entities.Order entity) => new()
@@ -31,6 +55,7 @@ public class Order : ModelBase
         SellerTransferTransactionHash = entity.SellerTransferTransactionHash,
         BuyerGuid = entity.BuyerGuid.ToString(),
         BuyerWalletAddress = entity.BuyerWalletAddress,
+        StatusHistory = string.Join(",", entity.StatusHistory)
     };
     
     public required OrderStatus Status { get; init; }
@@ -62,4 +87,6 @@ public class Order : ModelBase
     public string? BuyerGuid { get; init; }
 
     public string? BuyerWalletAddress { get; init; }
+
+    public required string StatusHistory { get; init; }
 }
