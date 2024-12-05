@@ -17,7 +17,7 @@ public class Dispute : EntityBase
     public void AssignAdministrator(Administrator administrator)
     {
         if (Status != DisputeStatus.WaitingForAdministrator)
-            throw new InvariantViolationException("Status is invalid.");
+            throw new InvariantViolationException("CurrentStatus is invalid.");
 
         Status = DisputeStatus.Active;
         Administrator = administrator;
@@ -27,7 +27,7 @@ public class Dispute : EntityBase
     public void ResolveInFavorOfBuyer()
     {
         if (Status != DisputeStatus.Active)
-            throw new InvariantViolationException("Status is invalid.");
+            throw new InvariantViolationException("CurrentStatus is invalid.");
 
         Status = DisputeStatus.ResolvedInFavorOfBuyer;
         Administrator!.IncrementDisputeResolved();
@@ -39,7 +39,7 @@ public class Dispute : EntityBase
     public void ResolveInFavorOfSeller()
     {
         if (Status != DisputeStatus.Active)
-            throw new InvariantViolationException("Status is invalid.");
+            throw new InvariantViolationException("CurrentStatus is invalid.");
 
         Status = DisputeStatus.ResolvedInFavorOfSeller;
         Administrator!.IncrementDisputeResolved();

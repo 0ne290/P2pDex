@@ -1,74 +1,65 @@
-using Core.Domain.Entities;
+using Entities = Core.Domain.Entities;
 using Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+// ReSharper disable EntityFramework.ModelValidation.UnlimitedStringLength
 
 namespace Infrastructure.Storage.Models;
 
 public class Order : ModelBase
 {
-    public Order(OrderBase o)
+    public Entities.Order ToEntity()
     {
-        Guid = o.Guid;
-        Type = o is SellOrder ? OrderType.Sell : OrderType.Buy;
-        Status = o.Status;
-        Crypto = o.Crypto;
-        CryptoAmount = o.CryptoAmount;
-        Fiat = o.Fiat;
-        CryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate;
-        FiatAmount = o.FiatAmount;
-        PaymentMethodInfo = o.PaymentMethodInfo;
-        SellerGuid = o.SellerGuid;
-        SellerToExchangerFee = o.Fee.SellerToExchanger;
-        ExchangerToMinersFee = o.Fee.ExpectedExchangerToMiners;
-        TransferTransactionHash = o.TransferTransactionHash;
-        BuyerGuid = o.BuyerGuid;
-        BuyersWalletAddress = o.BuyersWalletAddress;
+        var entity = new Entities.Order(System.Guid.Parse(Guid), Crypto, CryptoAmount, Fiat, CryptoToFiatExchangeRate,
+            PaymentMethodInfo, (SellerToExchangerFee, ExchangerToMinersFee));
+        
+        sw
     }
 
-    public Order() { }
-
-    public async Task<OrderBase> ToEntity(P2pDexContext dbContext)
+    public static Order FromEntity(Entities.Order entity) => new()
     {
-        var trader = await dbContext.Traders.FirstAsync(t => t.Guid == SellerGuid);
-
-        if (Type == OrderType.Sell)
-            return new SellOrder(Guid, Crypto, CryptoAmount, Fiat, CryptoToFiatExchangeRate, PaymentMethodInfo,
-                new Core.Domain.Entities.Trader(trader.Guid, trader.Name), (SellerToExchangerFee, ExchangerToMinersFee));
-
-        throw new Exception("Buy orders are not supported yet.");
-        //return new BuyOrder();
-    }
+        Guid = entity.Guid.ToString(),
+        Status = entity.CurrentStatus,
+        Crypto = entity.Crypto,
+        CryptoAmount = entity.CryptoAmount,
+        Fiat = entity.Fiat,
+        CryptoToFiatExchangeRate = entity.CryptoToFiatExchangeRate,
+        FiatAmount = entity.FiatAmount,
+        PaymentMethodInfo = entity.PaymentMethodInfo,
+        SellerToExchangerFee = entity.Fee.SellerToExchanger,
+        ExchangerToMinersFee = entity.Fee.ExchangerToMiners,
+        SellerGuid = entity.SellerGuid.ToString(),
+        SellerTransferTransactionHash = entity.SellerTransferTransactionHash,
+        BuyerGuid = entity.BuyerGuid.ToString(),
+        BuyerWalletAddress = entity.BuyerWalletAddress,
+    };
     
-    public OrderType Type { get; init; }
+    public required OrderStatus Status { get; init; }
     
-    public OrderStatus Status { get; init; }
+    public required Cryptocurrency Crypto { get; init; }
 
-    public Cryptocurrency Crypto { get; init; }
+    public required decimal CryptoAmount { get; init; }
 
-    public decimal CryptoAmount { get; init; }
+    public required FiatCurrency Fiat { get; init; }
 
-    public FiatCurrency Fiat { get; init; }
+    public required decimal CryptoToFiatExchangeRate { get; init; }
 
-    public decimal CryptoToFiatExchangeRate { get; init; }
+    public required decimal FiatAmount { get; init; }
 
-    public decimal FiatAmount { get; init; }
+    public required string PaymentMethodInfo { get; init; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string PaymentMethodInfo { get; init; }
+    public required decimal SellerToExchangerFee { get; init; }
+    
+    public required decimal ExchangerToMinersFee { get; init; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string SellerGuid { get; init; }
+    public Trader? Seller { get; init; }
 
-    public decimal SellerToExchangerFee { get; init; }
+    public string? SellerGuid { get; init; }
 
-    public decimal ExchangerToMinersFee { get; init; }
+    public string? SellerTransferTransactionHash { get; init; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? TransferTransactionHash { get; init; }
+    public Trader? Buyer { get; init; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? BuyerGuid { get; init; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? BuyersWalletAddress { get; init; }
+    public string? BuyerWalletAddress { get; init; }
 }

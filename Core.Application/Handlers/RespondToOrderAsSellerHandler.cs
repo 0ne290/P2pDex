@@ -31,7 +31,7 @@ public class RespondToOrderAsSellerHandler : IRequestHandler<RespondToOrderAsSel
 
         if (order == null)
             return Result.Fail("Order does not exist.");
-        if (order.Status is not OrderStatus.Created and OrderStatus.BuyerResponded)
+        if (order.CurrentStatus is not OrderStatus.Created and OrderStatus.BuyerResponded)
             return Result.Fail("Order status is invalid.");
 
         var transactionInfo = await _blockchain.TryGetTransferTransactionInfo(request.TransferTransactionHash);
@@ -65,7 +65,7 @@ public class RespondToOrderAsSellerHandler : IRequestHandler<RespondToOrderAsSel
         order.SellerRespond(seller, request.TransferTransactionHash);
         await _orderStorage.Update(order);
         
-        return Result.Ok((order.Guid, order.Status));
+        return Result.Ok((order.Guid, Status: order.CurrentStatus));
     }
 
     private readonly ITraderStorage _traderStorage;

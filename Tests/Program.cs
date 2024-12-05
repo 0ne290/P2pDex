@@ -93,7 +93,7 @@ internal class Program
     //        Log.Logger.Information("Order {@Order}.",
     //            new
     //            {
-    //                order.Guid, order.Type, order.Status, order.TransactionHash
+    //                order.Guid, order.Type, order.CurrentStatus, order.TransactionHash
     //            });
 //
     //    serviceProvider.Dispose();
@@ -152,7 +152,7 @@ internal class Program
     //        Log.Logger.Information("Order {@Order}.",
     //            new
     //            {
-    //                order.Guid, order.Type, order.Status, order.TransactionHash
+    //                order.Guid, order.Type, order.CurrentStatus, order.TransactionHash
     //            });
 //
     //    serviceProvider.Dispose();

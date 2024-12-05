@@ -31,7 +31,7 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<(Gu
         
         await _orderStorage.Add(order);
 
-        return Result.Ok((order.Guid, order.Status));
+        return Result.Ok((order.Guid, Status: order.CurrentStatus));
     }
     
     public static decimal FeeRate { get; set; }

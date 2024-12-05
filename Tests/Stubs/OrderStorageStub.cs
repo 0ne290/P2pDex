@@ -23,7 +23,7 @@ public class OrderStorageStub : IOrderStorage, IDisposable
     public ICollection<Order> GetAll() => _orders.Select(Order.CreateCopy).ToList();
     
     public async Task<ICollection<Order>> GetAllByStatus(OrderStatus status) =>
-        await Task.FromResult(_orders.Where(o => o.Status == status).Select(Order.CreateCopy).ToList());
+        await Task.FromResult(_orders.Where(o => o.CurrentStatus == status).Select(Order.CreateCopy).ToList());
 
     public Task UpdateAll(IEnumerable<Order> orders)
     {

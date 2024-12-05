@@ -24,7 +24,7 @@ public class Order : EntityBase
         if (fee.ExchangerToMiners <= 0)
             throw new InvariantViolationException("Exchanger to miners fee is invalid.");
 
-        Status = OrderStatus.Created;
+        CurrentStatus = OrderStatus.Created;
         Crypto = crypto;
         CryptoAmount = cryptoAmount;
         Fiat = fiat;
@@ -38,88 +38,99 @@ public class Order : EntityBase
         Buyer = null;
         BuyerGuid = null;
         BuyerWalletAddress = null;
+
+        StatusHistory = new List<OrderStatus>(6) { CurrentStatus };
     }
     
     public void BuyerRespond(Trader buyer, string buyerWalletAddress)
     {
-        Status = Status switch
-        {
-            OrderStatus.Created => OrderStatus.BuyerResponded,
-            OrderStatus.SellerResponded => OrderStatus.BuyerAndSellerResponded,
-            _ => throw new InvariantViolationException("Status is invalid.")
-        };
-
+        if (CurrentStatus is OrderStatus.Created or OrderStatus.SellerResponded)
+            CurrentStatus = OrderStatus.BuyerResponded;
+        else
+            throw new InvariantViolationException("Current status is invalid.");
+        
         Buyer = buyer;
         BuyerGuid = buyer.Guid;
         BuyerWalletAddress = buyerWalletAddress;
+        
+        StatusHistory.Add(CurrentStatus);
     }
 
     public void SellerRespond(Trader seller, string transferTransactionHash)
     {
-        Status = Status switch
-        {
-            OrderStatus.Created => OrderStatus.SellerResponded,
-            OrderStatus.BuyerResponded => OrderStatus.BuyerAndSellerResponded,
-            _ => throw new InvariantViolationException("Status is invalid.")
-        };
+        if (CurrentStatus is OrderStatus.Created or OrderStatus.BuyerResponded)
+            CurrentStatus = OrderStatus.SellerResponded;
+        else
+            throw new InvariantViolationException("Current status is invalid.");
 
         Seller = seller;
         SellerGuid = seller.Guid;
         SellerTransferTransactionHash = transferTransactionHash;
+        
+        StatusHistory.Add(CurrentStatus);
     }
     
     public void BuyerConfirm()
     {
-        if (Status != OrderStatus.BuyerAndSellerResponded)
-            throw new InvariantViolationException("Status is invalid.");
+        if ((StatusHistory[^1] == OrderStatus.BuyerResponded && StatusHistory[^2] == OrderStatus.SellerResponded) ||
+            (StatusHistory[^1] == OrderStatus.SellerResponded && StatusHistory[^2] == OrderStatus.BuyerResponded))
+            throw new InvariantViolationException("Status history is invalid.");
         
-        Status = OrderStatus.BuyerConfirmed;
+        CurrentStatus = OrderStatus.BuyerConfirmed;
+        
+        StatusHistory.Add(CurrentStatus);
     }
     
     public void SellerConfirm()
     {
-        if (Status != OrderStatus.BuyerConfirmed)
-            throw new InvariantViolationException("Status is invalid.");
+        if (CurrentStatus != OrderStatus.BuyerConfirmed)
+            throw new InvariantViolationException("Current status is invalid.");
         
-        Status = OrderStatus.BuyerAndSellerConfirmed;
+        CurrentStatus = OrderStatus.SellerConfirmed;
+        
+        StatusHistory.Add(CurrentStatus);
     }
 
     public void SellerDeny(Dispute dispute)
     {
-        if (Status != OrderStatus.BuyerConfirmed)
-            throw new InvariantViolationException("Status is invalid.");
-        if (dispute.OrderGuid != Guid)
+        if (CurrentStatus != OrderStatus.BuyerConfirmed)
+            throw new InvariantViolationException("Current status is invalid.");
+        if (!Equals(dispute.Order))
             throw new InvariantViolationException("Dispute is invalid.");
         
-        Status = OrderStatus.FrozenForDurationOfDispute;
+        CurrentStatus = OrderStatus.FrozenForDurationOfDispute;
+        
+        StatusHistory.Add(CurrentStatus);
     }
     
     public void Complete()
     {
-        switch (Status)
+        switch (CurrentStatus)
         {
             case OrderStatus.FrozenForDurationOfDispute:
-                Status = OrderStatus.Completed;
+                CurrentStatus = OrderStatus.Completed;
                 break;
-            case OrderStatus.BuyerAndSellerConfirmed:
-                Status = OrderStatus.Completed;
+            case OrderStatus.SellerConfirmed:
+                CurrentStatus = OrderStatus.Completed;
                 Seller!.IncrementSuccessfulOrdersAsSeller();
                 Buyer!.IncrementSuccessfulOrdersAsBuyer();
                 break;
             default:
-                throw new InvariantViolationException("Status is invalid.");
+                throw new InvariantViolationException("CurrentStatus is invalid.");
         }
+        
+        StatusHistory.Add(CurrentStatus);
     }
 
     //public void Cancel()
     //{
-    //    if (Status is OrderStatus.Completed or OrderStatus.Cancelled)
-    //        throw new InvariantViolationException("Status is invalid.");
+    //    if (CurrentStatus is OrderStatus.Completed or OrderStatus.Cancelled)
+    //        throw new InvariantViolationException("CurrentStatus is invalid.");
     //    
-    //    Status = OrderStatus.Cancelled;
+    //    CurrentStatus = OrderStatus.Cancelled;
     //}
     
-    public OrderStatus Status { get; private set; }
+    public OrderStatus CurrentStatus { get; private set; }
     
     public Cryptocurrency Crypto { get; }
 
@@ -146,4 +157,6 @@ public class Order : EntityBase
     public Guid? BuyerGuid { get; private set; }
 
     public string? BuyerWalletAddress { get; private set; }
+
+    public List<OrderStatus> StatusHistory { get; }
 }
