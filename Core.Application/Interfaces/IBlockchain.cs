@@ -1,13 +1,10 @@
-using Core.Domain.Enums;
-using Core.Domain.ValueObjects;
+using Core.Application.Models;
 
-namespace Core.Domain.Interfaces;
+namespace Core.Application.Interfaces;
 
 public interface IBlockchain
 {
     Task<decimal> GetTransferTransactionFee();
-    
-    Task<TransferTransactionStatus> GetTransferTransactionStatus(string transactionHash);
     
     Task<TransferTransactionInfo?> TryGetTransferTransactionInfo(string transactionHash);
     

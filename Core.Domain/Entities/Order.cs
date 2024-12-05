@@ -42,13 +42,13 @@ public class Order : EntityBase
     
     public void BuyerRespond(Trader buyer, string buyerWalletAddress)
     {
-        if (Status = OrderStatus.Created)
-            Status = OrderStatus.BuyerResponded;
-        else if (Status == OrderStatus.SellerResponded)
-            Status = OrderStatus.BuyerAndSellerResponded;
-        else
-            throw new InvariantViolationException("Status is invalid.");
-            
+        Status = Status switch
+        {
+            OrderStatus.Created => OrderStatus.BuyerResponded,
+            OrderStatus.SellerResponded => OrderStatus.BuyerAndSellerResponded,
+            _ => throw new InvariantViolationException("Status is invalid.")
+        };
+
         Buyer = buyer;
         BuyerGuid = buyer.Guid;
         BuyerWalletAddress = buyerWalletAddress;
@@ -56,13 +56,13 @@ public class Order : EntityBase
 
     public void SellerRespond(Trader seller, string transferTransactionHash)
     {
-        if (Status == OrderStatus.Created)
-            Status = OrderStatus.SellerResponded;
-        else if (Status == OrderStatus.BuyerResponded)
-            Status = OrderStatus.BuyerAndSellerResponded;
-        else
-            throw new InvariantViolationException("Status is invalid.");
-        
+        Status = Status switch
+        {
+            OrderStatus.Created => OrderStatus.SellerResponded,
+            OrderStatus.BuyerResponded => OrderStatus.BuyerAndSellerResponded,
+            _ => throw new InvariantViolationException("Status is invalid.")
+        };
+
         Seller = seller;
         SellerGuid = seller.Guid;
         SellerTransferTransactionHash = transferTransactionHash;
@@ -70,44 +70,45 @@ public class Order : EntityBase
     
     public void BuyerConfirm()
     {
-        if (Status == OrderStatus.BuyerAndSellerResponded)
-            Status = OrderStatus.BuyerConfirmed;
-        else
+        if (Status != OrderStatus.BuyerAndSellerResponded)
             throw new InvariantViolationException("Status is invalid.");
+        
+        Status = OrderStatus.BuyerConfirmed;
     }
     
     public void SellerConfirm()
     {
-        if (Status == OrderStatus.BuyerConfirmed)
-            Status = OrderStatus.BuyerAndSellerConfirmed;
-        else
+        if (Status != OrderStatus.BuyerConfirmed)
             throw new InvariantViolationException("Status is invalid.");
+        
+        Status = OrderStatus.BuyerAndSellerConfirmed;
     }
 
-    public Dispute SellerDeny(Guid disputeGuid)
+    public void SellerDeny(Dispute dispute)
     {
-        if (Status == OrderStatus.BuyerConfirmed)
-        {
-            Status = OrderStatus.FrozenForDurationOfDispute;
-
-            return new Dispute(disputeGuid, this);
-        }
+        if (Status != OrderStatus.BuyerConfirmed)
+            throw new InvariantViolationException("Status is invalid.");
+        if (dispute.OrderGuid != Guid)
+            throw new InvariantViolationException("Dispute is invalid.");
         
-        throw new InvariantViolationException("Status is invalid.");
+        Status = OrderStatus.FrozenForDurationOfDispute;
     }
     
     public void Complete()
     {
-        if (Status == OrderStatus.FrozenForDurationOfDispute)
-            Status = OrderStatus.Completed;
-        else if (Status == OrderStatus.BuyerAndSellerConfirmed)
+        switch (Status)
         {
-            Status = OrderStatus.Completed;
-            Seller!.IncrementSuccessfulOrdersAsSeller();
-            Buyer!.IncrementSuccessfulOrdersAsBuyer();
+            case OrderStatus.FrozenForDurationOfDispute:
+                Status = OrderStatus.Completed;
+                break;
+            case OrderStatus.BuyerAndSellerConfirmed:
+                Status = OrderStatus.Completed;
+                Seller!.IncrementSuccessfulOrdersAsSeller();
+                Buyer!.IncrementSuccessfulOrdersAsBuyer();
+                break;
+            default:
+                throw new InvariantViolationException("Status is invalid.");
         }
-        else
-            throw new InvariantViolationException("Status is invalid.");
     }
 
     //public void Cancel()

@@ -1,8 +1,7 @@
 using Core.Application.Commands;
-using Core.Application.Services;
+using Core.Application.Interfaces;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
-using Core.Domain.Interfaces;
 using FluentResults;
 using FluentValidation;
 using MediatR;
@@ -11,11 +10,10 @@ namespace Core.Application.Handlers;
 
 public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<(Guid, OrderStatus)>>
 {
-    public CreateOrderHandler(IValidator<CreateOrderCommand> validator, FeeCalculator feeCalculator,
-        IOrderStorage orderStorage)
+    public CreateOrderHandler(IValidator<CreateOrderCommand> validator, IBlockchain blockchain, IOrderStorage orderStorage)
     {
         _validator = validator;
-        _feeCalculator = feeCalculator;
+        _blockchain = blockchain;
         _orderStorage = orderStorage;
     }
 
@@ -26,18 +24,21 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<(Gu
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors.Select(e => e.ErrorMessage));
 
-        var fee = await _feeCalculator.Calculate(request.CryptoAmount);
+        var sellerToExchangerFee = request.CryptoAmount * FeeRate;
+        var exchangerToMinersFee = await _blockchain.GetTransferTransactionFee();
         var order = new Order(Guid.NewGuid(), request.Crypto, request.CryptoAmount, request.Fiat,
-            request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, fee);
+            request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, (sellerToExchangerFee, exchangerToMinersFee));
         
         await _orderStorage.Add(order);
 
         return Result.Ok((order.Guid, order.Status));
     }
+    
+    public static decimal FeeRate { get; set; }
 
     private readonly IValidator<CreateOrderCommand> _validator;
 
-    private readonly FeeCalculator _feeCalculator;
+    private readonly IBlockchain _blockchain;
 
     private readonly IOrderStorage _orderStorage;
 }

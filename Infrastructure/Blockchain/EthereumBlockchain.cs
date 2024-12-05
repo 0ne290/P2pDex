@@ -1,6 +1,6 @@
-using Core.Domain.Enums;
-using Core.Domain.Interfaces;
-using Core.Domain.ValueObjects;
+using Core.Application.Enums;
+using Core.Application.Interfaces;
+using Core.Application.Models;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 
@@ -22,22 +22,26 @@ public class EthereumBlockchain : IBlockchain
         return gasPriceInEth * GasLimitOfTransferTransaction;
     }
 
-    public async Task<TransferTransactionStatus> GetTransferTransactionStatus(string transactionHash)
-    {
-        var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
-
-        if (receipt == null)
-            return TransferTransactionStatus.WaitingConfirmation;
-        
-        return receipt.Status.Value == 1 ? TransferTransactionStatus.Confirmed : TransferTransactionStatus.Cancelled;
-    }
-
     public async Task<TransferTransactionInfo?> TryGetTransferTransactionInfo(string transactionHash)
     {
         var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash);
 
-        return transaction == null ? null : new TransferTransactionInfo
+        if (transaction == null)
+            return null;
+
+        var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
+        TransferTransactionStatus status;
+
+        if (receipt == null)
+            status = TransferTransactionStatus.WaitingConfirmation;
+        else if (receipt.Status.Value == 1)
+            status = TransferTransactionStatus.Confirmed;
+        else
+            status = TransferTransactionStatus.Rejected;
+
+        return new TransferTransactionInfo
         {
+            Status = status,
             Hash = transaction.TransactionHash,
             From = transaction.From,
             To = transaction.To,

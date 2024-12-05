@@ -1,6 +1,6 @@
 using Core.Domain.Entities;
 
-namespace Core.Domain.Interfaces;
+namespace Core.Application.Interfaces;
 
 public interface ITraderStorage
 {

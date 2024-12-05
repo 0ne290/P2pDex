@@ -1,7 +1,11 @@
-namespace Core.Domain.ValueObjects;
+using Core.Application.Enums;
+
+namespace Core.Application.Models;
 
 public class TransferTransactionInfo
 {
+    public required TransferTransactionStatus Status { get; init; }
+    
     public required string Hash { get; init; }
     
     public required string From { get; init; }

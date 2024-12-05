@@ -1,10 +1,8 @@
-using Core.Domain.Entities;
+using Core.Application.Interfaces;
 using Core.Domain.Enums;
-using Core.Domain.Interfaces;
-using Infrastructure.Storage.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Storage.Implementations;
+namespace Infrastructure.Storage;
 
 public class OrderStorage : IOrderStorage
 {
