@@ -14,7 +14,7 @@ public class ApiController : Controller
         _mediator = mediator;
     }
     
-    [Route("create-sell-order")]
+    [Route("create-sell-sellOrder")]
     [HttpPost]
     public async Task<IActionResult> CreateSellOrder([FromBody] CreateOrderCommand request)
     {

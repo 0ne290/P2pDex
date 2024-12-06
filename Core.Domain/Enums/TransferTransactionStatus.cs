@@ -1,4 +1,4 @@
-namespace Core.Application.Enums;
+namespace Core.Domain.Enums;
 
 public enum TransferTransactionStatus
 {

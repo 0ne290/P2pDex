@@ -25,31 +25,31 @@ internal class Program
     //    var trader = new Trader(faker.Random.Guid().ToString(), faker.Name.FullName());
     //    var orders = new[]
     //    {
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[0], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[0], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[1], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[1], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[2], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[2], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[3], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[3], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[4], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[4], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[5], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[5], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[6], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[6], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[7], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[7], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[8], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[8], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20)),
     //    };
@@ -78,22 +78,22 @@ internal class Program
     //        else if (input == "a&t")
     //        {
     //            var transaction = faker.Random.Hash();
-    //            var order = Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transaction,
+    //            var sellOrder = BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transaction,
     //                Cryptocurrency.Ethereum, faker.Random.Decimal(0.05m, 0.3m),
     //                FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20));
     //            blockchain.AddTransaction(transaction);
-    //            orderStorage.Add(order);
-    //            tracker.TrackOrder(order);
+    //            orderStorage.Add(sellOrder);
+    //            tracker.TrackOrder(sellOrder);
     //        }
     //        else
     //            break;
     //    }
 //
-    //    foreach (var order in orderStorage.GetAll())
-    //        Log.Logger.Information("Order {@Order}.",
+    //    foreach (var sellOrder in orderStorage.GetAll())
+    //        Log.Logger.Information("BuyOrder {@BuyOrder}.",
     //            new
     //            {
-    //                order.Guid, order.Type, order.CurrentStatus, order.TransactionHash
+    //                sellOrder.Guid, sellOrder.Type, sellOrder.CurrentStatus, sellOrder.TransactionHash
     //            });
 //
     //    serviceProvider.Dispose();
@@ -112,7 +112,7 @@ internal class Program
     //    var trader = new Trader(faker.Random.Guid().ToString(), faker.Name.FullName());
     //    var orders = new[]
     //    {
-    //        Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[0], Cryptocurrency.Ethereum,
+    //        BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transactions[0], Cryptocurrency.Ethereum,
     //            faker.Random.Decimal(0.05m, 0.3m),
     //            FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20))
     //    };
@@ -138,21 +138,21 @@ internal class Program
     //        if (input == "a&t")
     //        {
     //            var transaction = Console.ReadLine()!;
-    //            var order = Order.CreateSellOrder(faker.Random.Guid().ToString(), trader, transaction,
+    //            var sellOrder = BuyOrder.CreateSellOrder(faker.Random.Guid().ToString(), trader, transaction,
     //                Cryptocurrency.Ethereum, faker.Random.Decimal(0.05m, 0.3m),
     //                FiatCurrency.Ruble, faker.Random.Decimal(305_000m, 319_000m), faker.Random.String(20));
-    //            orderStorage.Add(order);
-    //            tracker.TrackOrder(order);
+    //            orderStorage.Add(sellOrder);
+    //            tracker.TrackOrder(sellOrder);
     //        }
     //        else
     //            break;
     //    }
 //
-    //    foreach (var order in orderStorage.GetAll())
-    //        Log.Logger.Information("Order {@Order}.",
+    //    foreach (var sellOrder in orderStorage.GetAll())
+    //        Log.Logger.Information("BuyOrder {@BuyOrder}.",
     //            new
     //            {
-    //                order.Guid, order.Type, order.CurrentStatus, order.TransactionHash
+    //                sellOrder.Guid, sellOrder.Type, sellOrder.CurrentStatus, sellOrder.TransactionHash
     //            });
 //
     //    serviceProvider.Dispose();

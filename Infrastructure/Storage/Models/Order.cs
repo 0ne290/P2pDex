@@ -7,9 +7,9 @@ namespace Infrastructure.Storage.Models;
 
 public class Order : ModelBase
 {
-    public Entities.Order ToEntity()
+    public Entities.SellOrder ToEntity()
     {
-        var entity = new Entities.Order(System.Guid.Parse(Guid), Crypto, CryptoAmount, Fiat, CryptoToFiatExchangeRate,
+        var entity = new Entities.SellOrder(System.Guid.Parse(Guid), Crypto, CryptoAmount, Fiat, CryptoToFiatExchangeRate,
             PaymentMethodInfo, (SellerToExchangerFee, ExchangerToMinersFee));
         
         var statusHistory = StatusHistory.Split(",").Select(s => Enum.Parse<OrderStatus>(s));
@@ -39,7 +39,7 @@ public class Order : ModelBase
         }
     }
 
-    public static Order FromEntity(Entities.Order entity) => new()
+    public static Order FromEntity(Entities.SellOrder entity) => new()
     {
         Guid = entity.Guid.ToString(),
         Status = entity.CurrentStatus,

@@ -1,5 +1,4 @@
 using Core.Application.Commands;
-using Core.Application.Enums;
 using Core.Application.Interfaces;
 using Core.Domain.Enums;
 using FluentResults;
@@ -30,9 +29,9 @@ public class RespondToOrderAsSellerHandler : IRequestHandler<RespondToOrderAsSel
         var order = await _orderStorage.TryGetByGuid(request.OrderGuid);
 
         if (order == null)
-            return Result.Fail("Order does not exist.");
+            return Result.Fail("BuyOrder does not exist.");
         if (order.CurrentStatus is not OrderStatus.Created and OrderStatus.BuyerResponded)
-            return Result.Fail("Order status is invalid.");
+            return Result.Fail("BuyOrder status is invalid.");
 
         var transactionInfo = await _blockchain.TryGetTransferTransactionInfo(request.TransferTransactionHash);
 

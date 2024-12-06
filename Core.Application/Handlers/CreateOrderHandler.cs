@@ -26,7 +26,7 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<(Gu
 
         var sellerToExchangerFee = request.CryptoAmount * FeeRate;
         var exchangerToMinersFee = await _blockchain.GetTransferTransactionFee();
-        var order = new Order(Guid.NewGuid(), request.Crypto, request.CryptoAmount, request.Fiat,
+        var order = new SellOrder(Guid.NewGuid(), request.Crypto, request.CryptoAmount, request.Fiat,
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, (sellerToExchangerFee, exchangerToMinersFee));
         
         await _orderStorage.Add(order);

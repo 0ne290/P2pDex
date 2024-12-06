@@ -3,13 +3,13 @@ using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
 
-public class Dispute : EntityBase
+public class Dispute : BaseEntity
 {
-    public Dispute(Guid guid, Order order) : base(guid)
+    public Dispute(Guid guid, SellOrder sellOrder) : base(guid)
     {
         Status = DisputeStatus.WaitingForAdministrator;
-        Order = order;
-        OrderGuid = order.Guid;
+        SellOrder = sellOrder;
+        OrderGuid = sellOrder.Guid;
         Administrator = null;
         AdministratorGuid = null;
     }
@@ -31,9 +31,9 @@ public class Dispute : EntityBase
 
         Status = DisputeStatus.ResolvedInFavorOfBuyer;
         Administrator!.IncrementDisputeResolved();
-        Order.Buyer!.IncrementWonDisputesAsBuyer();
-        Order.Seller!.IncrementLostDisputesAsSeller();
-        Order.Complete();
+        SellOrder.Buyer!.IncrementWonDisputesAsBuyer();
+        SellOrder.Seller!.IncrementLostDisputesAsSeller();
+        SellOrder.Complete();
     }
     
     public void ResolveInFavorOfSeller()
@@ -43,14 +43,14 @@ public class Dispute : EntityBase
 
         Status = DisputeStatus.ResolvedInFavorOfSeller;
         Administrator!.IncrementDisputeResolved();
-        Order.Buyer!.IncrementLostDisputesAsBuyer();
-        Order.Seller!.IncrementWonDisputesAsSeller();
-        Order.Complete();
+        SellOrder.Buyer!.IncrementLostDisputesAsBuyer();
+        SellOrder.Seller!.IncrementWonDisputesAsSeller();
+        SellOrder.Complete();
     }
     
     public DisputeStatus Status { get; private set; }
     
-    public Order Order { get; }
+    public SellOrder SellOrder { get; }
     
     public Guid OrderGuid { get; }
     

@@ -2,7 +2,7 @@ using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
 
-public class Administrator : EntityBase
+public class Administrator : BaseEntity
 {
     public Administrator(Guid guid, string name) : base(guid)
     {

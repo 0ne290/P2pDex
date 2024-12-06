@@ -1,10 +1,10 @@
-using Core.Application.Enums;
+using Core.Domain.Enums;
 
-namespace Core.Application.Models;
+namespace Core.Domain.ValueObjects;
 
-public class TransferTransactionInfo
+public class TransferTransaction
 {
-    public required TransferTransactionStatus Status { get; init; }
+    public required Cryptocurrency Crypto { get; init; }
     
     public required string Hash { get; init; }
     

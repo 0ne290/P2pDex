@@ -1,6 +1,6 @@
-using Core.Application.Enums;
 using Core.Application.Interfaces;
-using Core.Application.Models;
+using Core.Domain.Enums;
+using Core.Domain.ValueObjects;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 
@@ -22,7 +22,7 @@ public class EthereumBlockchain : IBlockchain
         return gasPriceInEth * GasLimitOfTransferTransaction;
     }
 
-    public async Task<TransferTransactionInfo?> TryGetTransferTransactionInfo(string transactionHash)
+    public async Task<TransferTransaction?> TryGetTransferTransactionInfo(string transactionHash)
     {
         var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash);
 
@@ -39,7 +39,7 @@ public class EthereumBlockchain : IBlockchain
         else
             status = TransferTransactionStatus.Rejected;
 
-        return new TransferTransactionInfo
+        return new TransferTransaction
         {
             Status = status,
             Hash = transaction.TransactionHash,
