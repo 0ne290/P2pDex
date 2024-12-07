@@ -85,9 +85,9 @@ public class BuyOrder : BaseOrder
     //    Status = OrderStatus.Cancelled;
     //}
 
-    public Trader Buyer { get; }
+    public Trader Buyer { get; protected init; }
 
-    public string BuyerWalletAddress { get; }
+    public string BuyerWalletAddress { get; protected init; }
 
     public Trader? Seller { get; private set; }
 

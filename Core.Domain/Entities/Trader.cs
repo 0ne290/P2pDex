@@ -1,4 +1,3 @@
-using Core.Domain.Dtos;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
@@ -19,32 +18,17 @@ public class Trader : BaseEntity
         CountOfLostDisputesAsSeller = 0;
     }
 
-    public static Trader Restore(TraderDto dto)
+    public Trader(Guid guid, string name, int countOfSuccessfulOrdersAsBuyer, int countOfSuccessfulOrdersAsSeller,
+        int countOfWonDisputesAsBuyer, int countOfLostDisputesAsBuyer, int countOfWonDisputesAsSeller,
+        int countOfLostDisputesAsSeller) : base(guid)
     {
-        if (!Guid.TryParse(dto.Guid, out var guid))
-            throw new InvariantViolationException("Guid is invalid.");
-        if (dto.CountOfSuccessfulOrdersAsBuyer < 0)
-            throw new InvariantViolationException("Count of successful orders as buyer is invalid.");
-        if (dto.CountOfSuccessfulOrdersAsSeller < 0)
-            throw new InvariantViolationException("Count of successful orders as seller is invalid.");
-        if (dto.CountOfWonDisputesAsBuyer < 0)
-            throw new InvariantViolationException("Count of won disputes as buyer is invalid.");
-        if (dto.CountOfLostDisputesAsBuyer < 0)
-            throw new InvariantViolationException("Count of lost disputes as buyer is invalid.");
-        if (dto.CountOfWonDisputesAsSeller < 0)
-            throw new InvariantViolationException("Count of won disputes as seller is invalid.");
-        if (dto.CountOfLostDisputesAsSeller < 0)
-            throw new InvariantViolationException("Count of lost disputes as seller is invalid.");
-
-        return new Trader(guid, dto.Name)
-        {
-            CountOfSuccessfulOrdersAsBuyer = dto.CountOfSuccessfulOrdersAsBuyer,
-            CountOfSuccessfulOrdersAsSeller = dto.CountOfSuccessfulOrdersAsSeller,
-            CountOfWonDisputesAsBuyer = dto.CountOfWonDisputesAsBuyer,
-            CountOfLostDisputesAsBuyer = dto.CountOfLostDisputesAsBuyer,
-            CountOfWonDisputesAsSeller = dto.CountOfWonDisputesAsSeller,
-            CountOfLostDisputesAsSeller = dto.CountOfLostDisputesAsSeller,
-        };
+        Name = name;
+        CountOfSuccessfulOrdersAsBuyer = countOfSuccessfulOrdersAsBuyer;
+        CountOfSuccessfulOrdersAsSeller = countOfSuccessfulOrdersAsSeller;
+        CountOfWonDisputesAsBuyer = countOfWonDisputesAsBuyer;
+        CountOfLostDisputesAsBuyer = countOfLostDisputesAsBuyer;
+        CountOfWonDisputesAsSeller = countOfWonDisputesAsSeller;
+        CountOfLostDisputesAsSeller = countOfLostDisputesAsSeller;
     }
 
     public void IncrementSuccessfulOrdersAsBuyer() => CountOfSuccessfulOrdersAsBuyer++;

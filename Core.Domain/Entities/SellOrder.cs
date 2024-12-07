@@ -12,7 +12,7 @@ public class SellOrder : BaseOrder
         cryptoToFiatExchangeRate, paymentMethodInfo, fee)
     {
         if (string.IsNullOrWhiteSpace(sellerToExchangerTransferTransactionHash))
-            throw new InvariantViolationException("Seller to exchanger transfer transaction hash is invalid.");
+            throw new DevelopmentErrorException("Seller to exchanger transfer transaction hash is invalid.");
 
         Seller = seller;
         SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
@@ -21,41 +21,23 @@ public class SellOrder : BaseOrder
         BuyerWalletAddress = null;
     }
 
+    /// <summary>
+    /// Небезопасный конструктор для восстановления объектов из их состояния. Состояния могут храниться, например,
+    /// в БД, файлах и т. д. Конструктор не проверяет получаемое состояние и, соответственно, восстановленный объект
+    /// может не удовлетворять бизнес-инвариантам. Для избежания этого любое сохранение состояний должно происходить
+    /// только из кода через интерфейсы репозиториев.
+    /// </summary>
     public SellOrder(Guid guid, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
-        decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
+        decimal cryptoToFiatExchangeRate, decimal fiatAmount, string paymentMethodInfo,
         (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Trader seller,
         string sellerToExchangerTransferTransactionHash, Trader? buyer, string? buyerWalletAddress,
-        string? exchangerToBuyerTransferTransactionHash) : this(guid, crypto, cryptoAmount, fiat,
-        cryptoToFiatExchangeRate, paymentMethodInfo, fee, seller, sellerToExchangerTransferTransactionHash)
+        string? exchangerToBuyerTransferTransactionHash) : base(guid, status, crypto, cryptoAmount, fiat,
+        cryptoToFiatExchangeRate, fiatAmount, paymentMethodInfo, fee, exchangerToBuyerTransferTransactionHash)
     {
-        if (!Enum.IsDefined(status) || status == OrderStatus.SellerResponded)
-            throw new InvariantViolationException("Status is invalid.");
-
-        if (status == OrderStatus.Completed)
-        {
-            Buyer = buyer ?? throw new InvariantViolationException("Status and buyer is invalid.");
-            BuyerWalletAddress = buyerWalletAddress == null || string.IsNullOrWhiteSpace(buyerWalletAddress)
-                ? throw new InvariantViolationException("Status and buyer wallet address is invalid.")
-                : buyerWalletAddress;
-
-            ExchangerToBuyerTransferTransactionHash =
-                exchangerToBuyerTransferTransactionHash == null ||
-                string.IsNullOrWhiteSpace(exchangerToBuyerTransferTransactionHash)
-                    ? throw new InvariantViolationException(
-                        "Status and exchanger to buyer transfer transaction hash is invalid.")
-                    : exchangerToBuyerTransferTransactionHash;
-
-            Status = status;
-        }
-        else if (status != OrderStatus.Created)
-        {
-            Buyer = buyer ?? throw new InvariantViolationException("Status and buyer is invalid.");
-            BuyerWalletAddress = buyerWalletAddress == null || string.IsNullOrWhiteSpace(buyerWalletAddress)
-                ? throw new InvariantViolationException("Status and buyer wallet address is invalid.")
-                : buyerWalletAddress;
-            
-            Status = status;
-        }
+        Seller = seller;
+        SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
+        Buyer = buyer;
+        BuyerWalletAddress = buyerWalletAddress;
     }
 
     public void Respond(Trader buyer, string buyerWalletAddress)
@@ -63,33 +45,31 @@ public class SellOrder : BaseOrder
         if (Status != OrderStatus.Created)
             throw new InvariantViolationException("Status is invalid.");
         if (string.IsNullOrWhiteSpace(buyerWalletAddress))
-            throw new InvariantViolationException("Buyer wallet address is invalid.");
+            throw new DevelopmentErrorException("Buyer wallet address is invalid.");
 
         Buyer = buyer;
         BuyerWalletAddress = buyerWalletAddress;
         Status = OrderStatus.BuyerResponded;
     }
 
-    public void BuyerConfirm()
+    public void Confirm(Trader trader)
     {
-        if (Status != OrderStatus.BuyerResponded)
-            throw new InvariantViolationException("Status is invalid.");
-
-        Status = OrderStatus.BuyerConfirmed;
+        Status = Status switch
+        {
+            OrderStatus.BuyerResponded when trader.Equals(Buyer) => OrderStatus.BuyerConfirmed,
+            OrderStatus.BuyerResponded => throw new InvariantViolationException("Trader is not a buyer."),
+            OrderStatus.BuyerConfirmed when trader.Equals(Seller) => OrderStatus.BuyerAndSellerConfirmed,
+            OrderStatus.BuyerConfirmed => throw new InvariantViolationException("Trader is not a seller."),
+            _ => throw new InvariantViolationException("Status is invalid.")
+        };
     }
 
-    public void SellerConfirm()
+    public void Deny(Trader trader)
     {
         if (Status != OrderStatus.BuyerConfirmed)
             throw new InvariantViolationException("Status is invalid.");
-
-        Status = OrderStatus.BuyerAndSellerConfirmed;
-    }
-
-    public void SellerDeny()
-    {
-        if (Status != OrderStatus.BuyerConfirmed)
-            throw new InvariantViolationException("Status is invalid.");
+        if (!trader.Equals(Seller))
+            throw new InvariantViolationException("Trader is not a seller.");
 
         Status = OrderStatus.FrozenForDurationOfDispute;
     }
@@ -97,7 +77,7 @@ public class SellOrder : BaseOrder
     public void Complete(string exchangerToBuyerTransferTransactionHash)
     {
         if (string.IsNullOrWhiteSpace(exchangerToBuyerTransferTransactionHash))
-            throw new InvariantViolationException("Exchanger to buyer transfer transaction hash is invalid.");
+            throw new DevelopmentErrorException("Exchanger to buyer transfer transaction hash is invalid.");
 
         switch (Status)
         {
