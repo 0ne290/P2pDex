@@ -1,5 +1,5 @@
-using Core.Application.Interfaces;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces;
 using Core.Domain.ValueObjects;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
@@ -8,10 +8,9 @@ namespace Infrastructure.Blockchain;
 
 public class EthereumBlockchain : IBlockchain
 {
-    public EthereumBlockchain(Web3 web3, string exchangerAccountAddress)
+    public EthereumBlockchain(Web3 web3)
     {
         _web3 = web3;
-        ExchangerAccountAddress = exchangerAccountAddress;
     }
 
     public async Task<decimal> GetTransferTransactionFee()
@@ -49,11 +48,9 @@ public class EthereumBlockchain : IBlockchain
         };
     }
 
-    public async Task<string> SendTransferTransaction(string to, decimal amount) =>
-        await _web3.TransactionManager.SendTransactionAsync(ExchangerAccountAddress, to,
+    public async Task<string> SendTransferTransaction(string from, string to, decimal amount) =>
+        await _web3.TransactionManager.SendTransactionAsync(from, to,
                 Web3.Convert.ToWei(amount).ToHexBigInteger());
-    
-    public string ExchangerAccountAddress { get; }
     
     private readonly Web3 _web3;
 

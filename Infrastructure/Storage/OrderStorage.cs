@@ -1,5 +1,5 @@
-using Core.Application.Interfaces;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Storage;

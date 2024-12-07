@@ -1,6 +1,6 @@
 using Core.Domain.Entities;
 
-namespace Core.Application.Interfaces;
+namespace Core.Domain.Interfaces;
 
 public interface IOrderStorage
 {

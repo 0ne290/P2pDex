@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Core.Application.Commands;
 
-public class CreateOrderCommand : IRequest<Result<(Guid, OrderStatus)>>
+public class CreateSellOrderCommand : IRequest<Result<(Guid, OrderStatus)>>
 {
     public required Cryptocurrency Crypto { get; init; }
 

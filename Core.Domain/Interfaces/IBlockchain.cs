@@ -1,14 +1,12 @@
 using Core.Domain.ValueObjects;
 
-namespace Core.Application.Interfaces;
+namespace Core.Domain.Interfaces;
 
 public interface IBlockchain
 {
-    Task<decimal> GetTransferTransactionFee();
+    Task<TransferTransaction?> TryGetConfirmedTransactionByHash(string transactionHash);
     
-    Task<TransferTransaction?> TryGetTransferTransactionInfo(string transactionHash);
+    Task<string> SendTransferTransaction(string from, string to, decimal amount);
     
-    Task<string> SendTransferTransaction(string to, decimal amount);
-
-    string ExchangerAccountAddress { get; }
+    Task<(decimal Value, double TimeToUpdateInMs)> TransferTransactionFee { get; }
 }

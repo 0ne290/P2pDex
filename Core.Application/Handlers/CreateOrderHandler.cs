@@ -1,23 +1,23 @@
 using Core.Application.Commands;
-using Core.Application.Interfaces;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces;
 using FluentResults;
 using FluentValidation;
 using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<(Guid, OrderStatus)>>
+public class CreateOrderHandler : IRequestHandler<CreateSellOrderCommand, Result<(Guid, OrderStatus)>>
 {
-    public CreateOrderHandler(IValidator<CreateOrderCommand> validator, IBlockchain blockchain, IOrderStorage orderStorage)
+    public CreateOrderHandler(IValidator<CreateSellOrderCommand> validator, IBlockchain blockchain, IOrderStorage orderStorage)
     {
         _validator = validator;
         _blockchain = blockchain;
         _orderStorage = orderStorage;
     }
 
-    public async Task<Result<(Guid, OrderStatus)>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Result<(Guid, OrderStatus)>> Handle(CreateSellOrderCommand request, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(request, cancellationToken);
 
@@ -36,7 +36,7 @@ public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Result<(Gu
     
     public static decimal FeeRate { get; set; }
 
-    private readonly IValidator<CreateOrderCommand> _validator;
+    private readonly IValidator<CreateSellOrderCommand> _validator;
 
     private readonly IBlockchain _blockchain;
 

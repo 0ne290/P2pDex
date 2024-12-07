@@ -1,6 +1,6 @@
 using Core.Application.Commands;
-using Core.Application.Interfaces;
 using Core.Domain.Enums;
+using Core.Domain.Interfaces;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;

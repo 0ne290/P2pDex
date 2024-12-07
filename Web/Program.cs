@@ -1,7 +1,7 @@
 using Core.Application.Commands;
-using Core.Application.Interfaces;
 using Core.Application.PipelineBehaviors;
 using Core.Application.Services;
+using Core.Domain.Interfaces;
 using FluentResults;
 using Infrastructure.Blockchain;
 using MediatR;
