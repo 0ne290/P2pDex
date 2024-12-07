@@ -15,4 +15,8 @@ public class CreateSellOrderCommand : IRequest<Result<(Guid, OrderStatus)>>
     public required decimal CryptoToFiatExchangeRate { get; init; }
 
     public required string PaymentMethodInfo { get; init; }
+    
+    public required Guid SellerGuid { get; init; }
+    
+    public required string TransferTransactionHash { get; init; }
 }

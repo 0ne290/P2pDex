@@ -2,15 +2,16 @@ using Core.Application.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.Interfaces;
+using Core.Domain.Services;
 using FluentResults;
 using FluentValidation;
 using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class CreateOrderHandler : IRequestHandler<CreateSellOrderCommand, Result<(Guid, OrderStatus)>>
+public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Result<(Guid, OrderStatus)>>
 {
-    public CreateOrderHandler(IValidator<CreateSellOrderCommand> validator, IBlockchain blockchain, IOrderStorage orderStorage)
+    public CreateSellOrderHandler(IOrderStorage orderStorage, Exchanger exchanger)
     {
         _validator = validator;
         _blockchain = blockchain;
@@ -34,11 +35,7 @@ public class CreateOrderHandler : IRequestHandler<CreateSellOrderCommand, Result
         return Result.Ok((order.Guid, Status: order.CurrentStatus));
     }
     
-    public static decimal FeeRate { get; set; }
-
-    private readonly IValidator<CreateSellOrderCommand> _validator;
-
-    private readonly IBlockchain _blockchain;
-
     private readonly IOrderStorage _orderStorage;
+    
+    private readonly Exchanger
 }
