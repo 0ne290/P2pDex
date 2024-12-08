@@ -1,7 +1,6 @@
-using Infrastructure.Storage.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Storage;
+namespace Infrastructure.Persistence;
 
 public class P2pDexContext : DbContext
 {

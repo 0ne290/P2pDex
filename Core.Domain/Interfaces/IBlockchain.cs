@@ -1,4 +1,4 @@
-using Core.Domain.ValueObjects;
+using Core.Domain.Models;
 
 namespace Core.Domain.Interfaces;
 
@@ -8,5 +8,5 @@ public interface IBlockchain
     
     Task<string> SendTransferTransaction(string from, string to, decimal amount);
     
-    Task<(decimal Value, double TimeToUpdateInMs)> TransferTransactionFee { get; }
+    (decimal Value, double TimeToUpdateInMs) TransferTransactionFee { get; }
 }

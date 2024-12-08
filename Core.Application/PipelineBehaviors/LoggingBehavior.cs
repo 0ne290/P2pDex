@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Core.Application.Errors;
+using Core.Domain.Exceptions;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -30,16 +31,37 @@ public class LoggingBehavior : IPipelineBehavior<IRequest<IResultBase>, IResultB
             
             _logger.LogInformation(
                 "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, execution time in ms: {executionTime}, response: {@response}.",
-                "END", requestName, requestGuid, request, stopwatch.ElapsedMilliseconds, response);
+                "SUCCESSFUL END", requestName, requestGuid, request, stopwatch.ElapsedMilliseconds, response);
 
             return response;
+        }
+        catch (InvariantViolationException e)
+        {
+            stopwatch.Stop();
+            _logger.LogInformation(
+                "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, message: {message}.",
+                "FAILED END", requestName, requestGuid, request, e.Message);
+
+            return Result.Fail(e.Message);
+        }
+        catch (DevelopmentErrorException e)
+        {
+            stopwatch.Stop();
+            _logger.LogError(
+                "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, error detail: {@errorDetail}.",
+                "KNOWN ERROR", requestName, requestGuid, request, e);
+
+            return Result.Fail(
+                new DevelopmentError().WithMetadata(
+                    new Dictionary<string, object>(
+                        [new KeyValuePair<string, object>(nameof(requestGuid), requestGuid)])));
         }
         catch (Exception e)
         {
             stopwatch.Stop();
             _logger.LogError(
                 "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, error detail: {@errorDetail}.",
-                "ERROR", requestName, requestGuid, request, e);
+                "UNKNOWN ERROR", requestName, requestGuid, request, e);
 
             return Result.Fail(
                 new DevelopmentError().WithMetadata(

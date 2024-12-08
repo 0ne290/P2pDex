@@ -50,7 +50,7 @@ public class Exchanger
     }
 
     private async Task<(decimal SellerToExchanger, decimal ExchangerToMiners)> CalculateFee(decimal cryptoAmount) =>
-        (cryptoAmount * _feeRate, (await _blockchain.TransferTransactionFee).Value);
+        (cryptoAmount * _feeRate, _blockchain.TransferTransactionFee.Value);
 
     private readonly IBlockchain _blockchain;
 
