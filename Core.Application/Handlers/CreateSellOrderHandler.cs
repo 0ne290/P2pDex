@@ -9,9 +9,9 @@ namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Result<(Guid, OrderStatus)>>
 {
-    public CreateSellOrderHandler(IOrderStorage orderStorage, Exchanger exchanger)
+    public CreateSellOrderHandler(IUnitOfWork unitOfWork, Exchanger exchanger)
     {
-        _orderStorage = orderStorage;
+        _unitOfWork = unitOfWork;
         _exchanger = exchanger;
     }
 
@@ -21,12 +21,13 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Re
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, request.SellerGuid,
             request.TransferTransactionHash);
 
-        await _orderStorage.Add(order);
+        await _unitOfWork.Repository.Add(order);
+        await _unitOfWork.Save();
         
         return Result.Ok((order.Guid, order.Status));
     }
     
-    private readonly IOrderStorage _orderStorage;
+    private readonly IUnitOfWork _unitOfWork;
 
     private readonly Exchanger _exchanger;
 }

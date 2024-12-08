@@ -6,7 +6,7 @@ namespace Infrastructure.Persistence;
 
 public class Repository : IRepository
 {
-    public Repository(P2pDexContext dbContext)
+    public Repository(P2PDexContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -17,5 +17,5 @@ public class Repository : IRepository
     public async Task<TEntity?> TryGetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity =>
         await _dbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Guid.Equals(guid));
 
-    private readonly P2pDexContext _dbContext;
+    private readonly P2PDexContext _dbContext;
 }

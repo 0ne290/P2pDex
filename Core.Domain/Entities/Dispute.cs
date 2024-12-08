@@ -5,13 +5,13 @@ namespace Core.Domain.Entities;
 
 public class Dispute : BaseEntity
 {
-    public Dispute(Guid guid, SellOrder sellOrder) : base(guid)
+    public Dispute(Guid guid, SellOrder sellOrder, Trader trader) : base(guid)
     {
         Status = DisputeStatus.WaitingForAdministrator;
         SellOrder = sellOrder;
-        OrderGuid = sellOrder.Guid;
         Administrator = null;
-        AdministratorGuid = null;
+        
+        sellOrder.Deny(trader);
     }
 
     public void AssignAdministrator(Administrator administrator)
@@ -21,10 +21,9 @@ public class Dispute : BaseEntity
 
         Status = DisputeStatus.Active;
         Administrator = administrator;
-        AdministratorGuid = administrator.Guid;
     }
     
-    public void ResolveInFavorOfBuyer()
+    public void ResolveInFavorOfBuyer(string exchangerToBuyerTransferTransactionHash)
     {
         if (Status != DisputeStatus.Active)
             throw new InvariantViolationException("CurrentStatus is invalid.");
@@ -33,10 +32,10 @@ public class Dispute : BaseEntity
         Administrator!.IncrementDisputeResolved();
         SellOrder.Buyer!.IncrementWonDisputesAsBuyer();
         SellOrder.Seller!.IncrementLostDisputesAsSeller();
-        SellOrder.Complete();
+        SellOrder.Complete(exchangerToBuyerTransferTransactionHash);
     }
     
-    public void ResolveInFavorOfSeller()
+    public void ResolveInFavorOfSeller(string exchangerToBuyerTransferTransactionHash)
     {
         if (Status != DisputeStatus.Active)
             throw new InvariantViolationException("CurrentStatus is invalid.");
@@ -45,16 +44,12 @@ public class Dispute : BaseEntity
         Administrator!.IncrementDisputeResolved();
         SellOrder.Buyer!.IncrementLostDisputesAsBuyer();
         SellOrder.Seller!.IncrementWonDisputesAsSeller();
-        SellOrder.Complete();
+        SellOrder.Complete(exchangerToBuyerTransferTransactionHash);
     }
     
     public DisputeStatus Status { get; private set; }
     
     public SellOrder SellOrder { get; }
     
-    public Guid OrderGuid { get; }
-    
     public Administrator? Administrator { get; private set; }
-    
-    public Guid? AdministratorGuid { get; private set; }
 }

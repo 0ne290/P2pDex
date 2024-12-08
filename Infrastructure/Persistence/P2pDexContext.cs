@@ -1,27 +1,28 @@
+using Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class P2pDexContext : DbContext
+public class P2PDexContext : DbContext
 {
-    public P2pDexContext(DbContextOptions<P2pDexContext> options) : base(options) { }
+    public P2PDexContext(DbContextOptions<P2PDexContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Trader>()
-            .HasMany<Order>()
-            .WithOne()
-            .HasForeignKey(o => o.BuyerGuid)
-            .IsRequired(false);
-
-        modelBuilder.Entity<Trader>()
-            .HasMany<Order>()
-            .WithOne()
-            .HasForeignKey(o => o.SellerGuid)
-            .IsRequired(false);
+        modelBuilder.Entity<SellOrder>()
+            .HasOne(o => o.Seller)
+            .WithMany()
+            .HasForeignKey("SellerGuid")
+            .IsRequired();
+        
+        modelBuilder.Entity<SellOrder>()
+            .HasOne(o => o.Buyer)
+            .WithMany()
+            .HasForeignKey("BuyerGuid")
+            .IsRequired();
     }
 
     public DbSet<Trader> Traders { get; set; } = null!;
 
-    public DbSet<Order> Orders { get; set; } = null!;
+    public DbSet<SellOrder> SellOrders { get; set; } = null!;
 }
