@@ -1,86 +1,90 @@
-using Core.Application.Commands;
-using Core.Application.PipelineBehaviors;
-using Core.Application.Services;
-using Core.Domain.Interfaces;
-using FluentResults;
+using Core.Application;
 using Infrastructure.Blockchain;
-using MediatR;
-using Nethereum.Web3;
-using Nethereum.Web3.Accounts.Managed;
+using Infrastructure.Persistence;
+using Nethereum.Model;
 
 namespace Web;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main()
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder();
 
-        // Add services to the container.
-        builder.Services.AddControllersWithViews();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
 
-        var app = builder.Build();
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
+                .WithDefaultDestructurers()
+                .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() }))
 
-        // Configure the HTTP request pipeline.
-        if (!app.Environment.IsDevelopment())
+            .WriteTo.Async(a => a.File(new JsonFormatter(),
+                builder.Configuration.GetRequiredSection("CustomLogging")["FilePath"] ??
+                throw new Exception("Config.CustomLogging.FilePath is not found"), retainedFileCountLimit: 4,
+                rollOnFileSizeLimit: true, fileSizeLimitBytes: 5_368_709_120))
+
+            .CreateLogger();
+
+        try
         {
-            app.UseExceptionHandler("/Home/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            app.UseHsts();
+            await CompositionRoot(builder.Services, builder.Configuration);
+            
+            // Add services to the container.
+            builder.Services.AddControllersWithViews();
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Api}/{action=Index}/{id?}");
+
+            await app.RunAsync();
         }
-
-        app.UseHttpsRedirection();
-        app.UseStaticFiles();
-
-        app.UseRouting();
-
-        app.UseAuthorization();
-
-        app.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Api}/{action=Index}/{id?}");
-
-        app.Run();
-    }
-
-    private static async Task BuildApplicatioc(IServiceCollection services, string exchangerAccountAddress, string exchangerAccountPassword, string netUrl, double intervalInMs)
-    {
-        await ValidateWeb3(CreateWeb3(exchangerAccountAddress, exchangerAccountPassword, netUrl), exchangerAccountAddress);
-        
-        services.AddMediatR(cfg =>
+        catch (Exception e)
         {
-            cfg.RegisterServicesFromAssembly(typeof(ConfirmBySellerOfCryptocurrencyTransferTransactionCommand)
-                .Assembly);
-            cfg.AddBehavior<IPipelineBehavior<IRequest<IResultBase>, IResultBase>, LoggingBehavior>();
-        });
-
-        services.AddKeyedSingleton<Web3>("Singleton",
-            (_, _) => new Web3(new ManagedAccount(exchangerAccountAddress, exchangerAccountPassword), netUrl));
-        services.AddKeyedScoped<Web3>("Scoped",
-            (_, _) => new Web3(new ManagedAccount(exchangerAccountAddress, exchangerAccountPassword), netUrl));
-        
-        services.AddKeyedSingleton<IBlockchain, EthereumBlockchain>("Singleton",
-            (serviceProvider, _) => new EthereumBlockchain(serviceProvider.GetRequiredKeyedService<Web3>("Singleton"), exchangerAccountAddress));
-        services.AddKeyedScoped<IBlockchain, EthereumBlockchain>("Scoped",
-            (serviceProvider, _) => new EthereumBlockchain(serviceProvider.GetRequiredKeyedService<Web3>("Scoped"), exchangerAccountAddress));
-        
-        
-
-        services.AddSingleton<OrderTransferTransactionTracker>(sp =>
-            new OrderTransferTransactionTracker(sp.GetRequiredKeyedService<IBlockchain>("Singleton"), intervalInMs));
+            Log.Fatal(e, "Failed to build host.");
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
+        }
     }
 
-    private static Web3 CreateWeb3(string exchangerAccountAddress, string exchangerAccountPassword, string netUrl)
+    private static async Task CompositionRoot(IServiceCollection services, IConfiguration config)
     {
-        var exchangerAccount = new ManagedAccount(exchangerAccountAddress, exchangerAccountPassword);
+        var blockchainConfig = config.GetRequiredSection("Blockchain");
+        var persistenceConfig = config.GetRequiredSection("Persistence");
+
+        var netUrl = blockchainConfig["NetUrl"] ?? throw new Exception("Config.Blockchain.NetUrl is not found.");
+        var exchangerWalletAddress = blockchainConfig["ExchangerWalletAddress"] ?? throw new Exception("Config.Blockchain.ExchangerWalletAddress is not found.");
+        var exchangerWalletPassword = blockchainConfig["ExchangerWalletPassword"] ?? throw new Exception("Config.Blockchain.ExchangerWalletPassword is not found.");
+        var exchangerFeeRateInPercent = decimal.Parse(blockchainConfig["ExchangerFeeRate"] ?? throw new Exception("Config.Blockchain.ExchangerFeeRate is not found."));
+        var exchangerFeeRate = exchangerFeeRateInPercent / 100;
+        const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
         
-        return new Web3(exchangerAccount, netUrl);
-    }
-    
-    private static async Task ValidateWeb3(Web3 web3, string exchangerAccountAddress)
-    {
-        var unlockedAccounts = await web3.Personal.ListAccounts.SendRequestAsync();
-        if (!Array.Exists(unlockedAccounts, ua => ua == exchangerAccountAddress))
-            throw new Exception("Failed to unlock exchanger account. Address and/or password are invalid.");
+        var connectionString = persistenceConfig["ConnectionString"] ?? throw new Exception("Config.Persistence.ConnectionString is not found.");
+
+        await services.AddPersistence(connectionString);
+        await services.AddBlockchain(netUrl, exchangerWalletAddress, exchangerWalletPassword,
+            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
+        services.AddApplication(exchangerWalletAddress, exchangerFeeRate);
     }
 }

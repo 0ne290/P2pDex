@@ -1,6 +1,5 @@
 using Core.Domain.Interfaces;
 using Core.Domain.Models;
-using Infrastructure.Blockchain.Services;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 

@@ -4,7 +4,7 @@ namespace Infrastructure.Persistence;
 
 public class UnitOfWork : IUnitOfWork
 {
-    public UnitOfWork(P2PDexContext dbContext, Repository repository)
+    public UnitOfWork(P2PDexDbContext dbContext, Repository repository)
     {
         _dbContext = dbContext;
         Repository = repository;
@@ -14,5 +14,5 @@ public class UnitOfWork : IUnitOfWork
     
     public IRepository Repository { get; }
 
-    private readonly P2PDexContext _dbContext;
+    private readonly P2PDexDbContext _dbContext;
 }

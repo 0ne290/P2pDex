@@ -2,7 +2,7 @@ using System.Timers;
 using Nethereum.Web3;
 using Timer = System.Timers.Timer;
 
-namespace Infrastructure.Blockchain.Services;
+namespace Infrastructure.Blockchain;
 
 public class TransferTransactionFeeTracker : IDisposable
 {

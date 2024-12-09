@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class P2PDexContext : DbContext
+public class P2PDexDbContext : DbContext
 {
-    public P2PDexContext(DbContextOptions<P2PDexContext> options) : base(options) { }
+    public P2PDexDbContext(DbContextOptions<P2PDexDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -15,7 +15,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Re
         _exchanger = exchanger;
     }
 
-    public async Task<Result<(Guid, OrderStatus)>> Handle(CreateSellOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Result<(Guid, OrderStatus)>> Handle(CreateSellOrderCommand request, CancellationToken _)
     {
         var order = await _exchanger.CreateSellOrder(request.Crypto, request.CryptoAmount, request.Fiat,
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, request.SellerGuid,
