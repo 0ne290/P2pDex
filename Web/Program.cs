@@ -85,7 +85,7 @@ public class Program
         var exchangerFeeRate = exchangerFeeRateInPercent / 100;
         const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
         
-        var connectionString = persistenceConfig["ConnectionString"] ?? throw new Exception("Config.Persistence.ConnectionString is not found.");
+        var connectionString = persistenceConfig["SqliteConnectionString"] ?? throw new Exception("Config.Persistence.SqliteConnectionString is not found.");
 
         await services.AddPersistence(connectionString);
         var unlockAccount = await services.AddBlockchain(netUrl, "encryptedKeystore", exchangerAccountPassword,
