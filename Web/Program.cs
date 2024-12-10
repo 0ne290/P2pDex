@@ -1,7 +1,12 @@
 using Core.Application;
 using Infrastructure.Blockchain;
 using Infrastructure.Persistence;
-using Nethereum.Model;
+using Serilog;
+using Serilog.Events;
+using Serilog.Exceptions;
+using Serilog.Exceptions.Core;
+using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
+using Serilog.Formatting.Json;
 
 namespace Web;
 
@@ -19,7 +24,7 @@ public class Program
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
                 .WithDefaultDestructurers()
-                .WithDestructurers(new[] { new DbUpdateExceptionDestructurer() }))
+                .WithDestructurers([new DbUpdateExceptionDestructurer()]))
 
             .WriteTo.Async(a => a.File(new JsonFormatter(),
                 builder.Configuration.GetRequiredSection("CustomLogging")["FilePath"] ??
@@ -30,6 +35,8 @@ public class Program
 
         try
         {
+            Log.Information("Starting host build.");
+            
             await CompositionRoot(builder.Services, builder.Configuration);
             
             // Add services to the container.
@@ -55,6 +62,8 @@ public class Program
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Api}/{action=Index}/{id?}");
+            
+            Log.Information("Success to build host. Starting web application.");
 
             await app.RunAsync();
         }

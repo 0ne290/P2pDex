@@ -6,5 +6,7 @@ public interface IRepository
 {
     Task Add<TEntity>(TEntity entity) where TEntity : BaseEntity;
     
-    Task<TEntity?> TryGetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity;
+    Task<bool> Exists<TEntity>(Predicate<TEntity> condition) where TEntity : BaseEntity;
+    
+    Task<TEntity> GetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity;
 }

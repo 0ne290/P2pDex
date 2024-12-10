@@ -14,7 +14,7 @@ public class Repository : IRepository
     public async Task Add<TEntity>(TEntity entity) where TEntity : BaseEntity =>
         await _dbContext.Set<TEntity>().AddAsync(entity);
 
-    public async Task<TEntity?> TryGetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity =>
+    public async Task<TEntity?> GetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity =>
         await _dbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Guid.Equals(guid));
 
     private readonly P2PDexDbContext _dbContext;

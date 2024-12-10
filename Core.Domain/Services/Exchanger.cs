@@ -7,10 +7,10 @@ namespace Core.Domain.Services;
 
 public class Exchanger
 {
-    public Exchanger(IBlockchain blockchain, ITraderStorage traderStorage, string walletAddress, decimal feeRate)
+    public Exchanger(IBlockchain blockchain, IRepository repository, string walletAddress, decimal feeRate)
     {
         _blockchain = blockchain;
-        _traderStorage = traderStorage;
+        _repository = repository;
         _walletAddress = walletAddress;
         _feeRate = feeRate;
     }
@@ -19,9 +19,7 @@ public class Exchanger
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Guid sellerGuid,
         string sellerToExchangerTransferTransactionHash)
     {
-        var seller = await _traderStorage.TryGetByGuid(sellerGuid);
-
-        if (seller == null)
+        if (!await _repository.Exists<Trader>(t => t.Guid.Equals(sellerGuid)))
             throw new InvariantViolationException("Seller does not exists.");
 
         var transaction = await _blockchain.TryGetConfirmedTransactionByHash(sellerToExchangerTransferTransactionHash);
@@ -33,7 +31,7 @@ public class Exchanger
             throw new InvariantViolationException(
                 "Cryptocurrency was transferred to the wrong address. For a refund, contact the recipient.");
 
-        var fee = await CalculateFee(cryptoAmount);
+        var fee = CalculateFee(cryptoAmount);
         var expectedCryptoAmount = cryptoAmount + fee.SellerToExchanger + fee.ExchangerToMiners;
 
         if (expectedCryptoAmount != transaction.Amount)
@@ -46,15 +44,15 @@ public class Exchanger
         }
 
         return new SellOrder(Guid.NewGuid(), crypto, cryptoAmount, fiat, cryptoToFiatExchangeRate, paymentMethodInfo,
-            fee, seller, sellerToExchangerTransferTransactionHash);
+            fee, sellerGuid, sellerToExchangerTransferTransactionHash);
     }
 
-    private async Task<(decimal SellerToExchanger, decimal ExchangerToMiners)> CalculateFee(decimal cryptoAmount) =>
+    private (decimal SellerToExchanger, decimal ExchangerToMiners) CalculateFee(decimal cryptoAmount) =>
         (cryptoAmount * _feeRate, _blockchain.TransferTransactionFee.Value);
 
     private readonly IBlockchain _blockchain;
 
-    private readonly ITraderStorage _traderStorage;
+    private readonly IRepository _repository;
 
     private readonly string _walletAddress;
 
