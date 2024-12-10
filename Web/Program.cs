@@ -16,6 +16,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder();
 
+        builder.Configuration.GetRequiredSection("Kestrel");
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
@@ -36,24 +38,18 @@ public class Program
         try
         {
             Log.Information("Starting host build.");
-            
+
             await CompositionRoot(builder.Services, builder.Configuration);
-            
+
             // Add services to the container.
-            builder.Services.AddControllers().AddNewtonsoftJson();
+            builder.Services.AddSerilog().AddControllers().AddNewtonsoftJson();
 
             var app = builder.Build();
+            
+            app.UseSerilogRequestLogging();
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
+            app.UseHsts();
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -62,7 +58,7 @@ public class Program
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Api}/{action=Index}/{id?}");
-            
+
             Log.Information("Success to build host. Starting web application.");
 
             await app.RunAsync();
@@ -83,8 +79,8 @@ public class Program
         var persistenceConfig = config.GetRequiredSection("Persistence");
 
         var netUrl = blockchainConfig["NetUrl"] ?? throw new Exception("Config.Blockchain.NetUrl is not found.");
-        var exchangerWalletAddress = blockchainConfig["ExchangerWalletAddress"] ?? throw new Exception("Config.Blockchain.ExchangerWalletAddress is not found.");
-        var exchangerWalletPassword = blockchainConfig["ExchangerWalletPassword"] ?? throw new Exception("Config.Blockchain.ExchangerWalletPassword is not found.");
+        //var encryptedKeystore = await File.ReadAllTextAsync(blockchainConfig["EncryptedKeystoreFilePath"] ?? throw new Exception("Config.Blockchain.EncryptedKeystoreFilePath is not found."));
+        var exchangerAccountPassword = blockchainConfig["ExchangerAccountPassword"] ?? throw new Exception("Config.Blockchain.ExchangerAccountPassword is not found.");
         var exchangerFeeRateInPercent = decimal.Parse(blockchainConfig["ExchangerFeeRate"] ?? throw new Exception("Config.Blockchain.ExchangerFeeRate is not found."));
         var exchangerFeeRate = exchangerFeeRateInPercent / 100;
         const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
@@ -92,8 +88,8 @@ public class Program
         var connectionString = persistenceConfig["ConnectionString"] ?? throw new Exception("Config.Persistence.ConnectionString is not found.");
 
         await services.AddPersistence(connectionString);
-        await services.AddBlockchain(netUrl, exchangerWalletAddress, exchangerWalletPassword,
+        var unlockAccount = await services.AddBlockchain(netUrl, "encryptedKeystore", exchangerAccountPassword,
             TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
-        services.AddApplication(exchangerWalletAddress, exchangerFeeRate);
+        services.AddApplication(unlockAccount, exchangerFeeRate);
     }
 }
