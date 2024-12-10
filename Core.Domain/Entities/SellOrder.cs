@@ -7,17 +7,17 @@ public class SellOrder : BaseOrder
 {
     public SellOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
-        (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Trader seller,
+        (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Guid sellerGuid,
         string sellerToExchangerTransferTransactionHash) : base(guid, crypto, cryptoAmount, fiat,
         cryptoToFiatExchangeRate, paymentMethodInfo, fee)
     {
         if (string.IsNullOrWhiteSpace(sellerToExchangerTransferTransactionHash))
             throw new DevelopmentErrorException("Seller to exchanger transfer transaction hash is invalid.");
 
-        Seller = seller;
+        SellerGuid = sellerGuid;
         SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
 
-        Buyer = null;
+        BuyerGuid = null;
         BuyerWalletAddress = null;
     }
 
@@ -29,46 +29,46 @@ public class SellOrder : BaseOrder
     /// </summary>
     public SellOrder(Guid guid, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, decimal fiatAmount, string paymentMethodInfo,
-        (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Trader seller,
-        string sellerToExchangerTransferTransactionHash, Trader? buyer, string? buyerWalletAddress,
+        (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Guid sellerGuid,
+        string sellerToExchangerTransferTransactionHash, Guid? buyerGuid, string? buyerWalletAddress,
         string? exchangerToBuyerTransferTransactionHash) : base(guid, status, crypto, cryptoAmount, fiat,
         cryptoToFiatExchangeRate, fiatAmount, paymentMethodInfo, fee, exchangerToBuyerTransferTransactionHash)
     {
-        Seller = seller;
+        SellerGuid = sellerGuid;
         SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
-        Buyer = buyer;
+        BuyerGuid = buyerGuid;
         BuyerWalletAddress = buyerWalletAddress;
     }
 
-    public void Respond(Trader buyer, string buyerWalletAddress)
+    public void Respond(Guid buyerGuid, string buyerWalletAddress)
     {
         if (Status != OrderStatus.Created)
             throw new InvariantViolationException("Status is invalid.");
         if (string.IsNullOrWhiteSpace(buyerWalletAddress))
             throw new DevelopmentErrorException("Buyer wallet address is invalid.");
 
-        Buyer = buyer;
+        BuyerGuid = buyerGuid;
         BuyerWalletAddress = buyerWalletAddress;
         Status = OrderStatus.BuyerResponded;
     }
 
-    public void Confirm(Trader trader)
+    public void Confirm(Guid traderGuid)
     {
         Status = Status switch
         {
-            OrderStatus.BuyerResponded when trader.Equals(Buyer) => OrderStatus.BuyerConfirmed,
+            OrderStatus.BuyerResponded when traderGuid.Equals(BuyerGuid) => OrderStatus.BuyerConfirmed,
             OrderStatus.BuyerResponded => throw new InvariantViolationException("Trader is not a buyer."),
-            OrderStatus.BuyerConfirmed when trader.Equals(Seller) => OrderStatus.BuyerAndSellerConfirmed,
+            OrderStatus.BuyerConfirmed when traderGuid.Equals(SellerGuid) => OrderStatus.BuyerAndSellerConfirmed,
             OrderStatus.BuyerConfirmed => throw new InvariantViolationException("Trader is not a seller."),
             _ => throw new InvariantViolationException("Status is invalid.")
         };
     }
 
-    public void Deny(Trader trader)
+    public void Deny(Guid traderGuid)
     {
         if (Status != OrderStatus.BuyerConfirmed)
             throw new InvariantViolationException("Status is invalid.");
-        if (!trader.Equals(Seller))
+        if (!traderGuid.Equals(SellerGuid))
             throw new InvariantViolationException("Trader is not a seller.");
 
         Status = OrderStatus.FrozenForDurationOfDispute;
@@ -84,8 +84,8 @@ public class SellOrder : BaseOrder
             case OrderStatus.FrozenForDurationOfDispute:
                 break;
             case OrderStatus.BuyerAndSellerConfirmed:
-                Seller.IncrementSuccessfulOrdersAsSeller();
-                Buyer!.IncrementSuccessfulOrdersAsBuyer();
+                //Seller.IncrementSuccessfulOrdersAsSeller();
+                //Buyer!.IncrementSuccessfulOrdersAsBuyer();
                 break;
             default:
                 throw new InvariantViolationException("Status is invalid.");
@@ -103,11 +103,11 @@ public class SellOrder : BaseOrder
     //    Status = OrderStatus.Cancelled;
     //}
 
-    public Trader Seller { get; }
+    public Guid SellerGuid { get; }
 
     public string SellerToExchangerTransferTransactionHash { get; }
 
-    public Trader? Buyer { get; private set; }
+    public Guid? BuyerGuid { get; private set; }
 
     public string? BuyerWalletAddress { get; private set; }
 }
