@@ -40,7 +40,7 @@ public class Program
             await CompositionRoot(builder.Services, builder.Configuration);
             
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllers().AddNewtonsoftJson();
 
             var app = builder.Build();
 

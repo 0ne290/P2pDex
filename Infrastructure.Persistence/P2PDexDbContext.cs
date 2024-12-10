@@ -9,17 +9,17 @@ public class P2PDexDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SellOrder>()
-            .HasOne(o => o.Seller)
-            .WithMany()
-            .HasForeignKey("SellerGuid")
+        modelBuilder.Entity<Trader>()
+            .HasMany<SellOrder>()
+            .WithOne()
+            .HasForeignKey(o => o.SellerGuid)
             .IsRequired();
         
-        modelBuilder.Entity<SellOrder>()
-            .HasOne(o => o.Buyer)
-            .WithMany()
-            .HasForeignKey("BuyerGuid")
-            .IsRequired();
+        modelBuilder.Entity<Trader>()
+            .HasMany<SellOrder>()
+            .WithOne()
+            .HasForeignKey(o => o.BuyerGuid)
+            .IsRequired(false);
     }
 
     public DbSet<Trader> Traders { get; set; } = null!;

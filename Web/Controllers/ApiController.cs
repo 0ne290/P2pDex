@@ -1,6 +1,5 @@
 using Core.Application.Commands;
 using Core.Application.Errors;
-using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,17 +13,52 @@ public class ApiController : Controller
         _mediator = mediator;
     }
     
-    [Route("create-sell-sellOrder")]
+    [Route("create-sell-order")]
     [HttpPost]
     public async Task<IActionResult> CreateSellOrder([FromBody] CreateSellOrderCommand request)
     {
-        var response = (Result)await _mediator.Send(request);
+        var result = await _mediator.Send(request);
 
-        if (response.IsSuccess)
-            return Ok();
-        if (response.HasError<DevelopmentError>())
-            return ServerError(response.Errors.Select(e => e.Message));
-        return BadRequest(response.Errors.Select(e => e.Message));
+        if (!result.IsSuccess)
+            return result.HasError<DevelopmentError>()
+                ? StatusCode(500, Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson())
+                : BadRequest(Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson());
+        
+        var resultValue = result.Value;
+            
+        return Ok(Web.Response.Success(("guid", resultValue.Item1), ("status", resultValue.Item2)).ToJson());
+
+    }
+    
+    [Route("create-trader")]
+    [HttpPost]
+    public async Task<IActionResult> CreateTrader([FromBody] CreateTraderCommand request)
+    {
+        var result = await _mediator.Send(request);
+
+        if (!result.IsSuccess)
+            return result.HasError<DevelopmentError>()
+                ? StatusCode(500, Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson())
+                : BadRequest(Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson());
+        
+        return Ok(Web.Response.Success(("guid", result.Value)).ToJson());
+    }
+    
+    [Route("get-transfer-transaction-fee")]
+    [HttpGet]
+    public async Task<IActionResult> GetTransferTransactionFee()
+    {
+        var result = await _mediator.Send(new GetTransferTransactionFeeCommand());
+
+        if (!result.IsSuccess)
+            return result.HasError<DevelopmentError>()
+                ? StatusCode(500, Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson())
+                : BadRequest(Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson());
+        
+        var resultValue = result.Value;
+            
+        return Ok(Web.Response.Success(("fee", resultValue.Item1), ("timeToUpdateInMs", resultValue.Item2)).ToJson());
+
     }
 
     private readonly IMediator _mediator;

@@ -13,7 +13,7 @@ public static class Extensions
     public static IServiceCollection AddApplication(this IServiceCollection services, string exchangerWalletAddress, decimal feeRate)
     {
         services.AddScoped<Exchanger>(sp => new Exchanger(sp.GetRequiredService<IBlockchain>(),
-            sp.GetRequiredService<ITraderStorage>(), exchangerWalletAddress, feeRate));
+            sp.GetRequiredService<IRepository>(), exchangerWalletAddress, feeRate));
         
         services.AddMediatR(cfg =>
         {
