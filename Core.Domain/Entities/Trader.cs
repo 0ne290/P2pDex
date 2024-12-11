@@ -4,6 +4,8 @@ namespace Core.Domain.Entities;
 
 public class Trader : BaseEntity
 {
+    private Trader() { }
+    
     public Trader(Guid guid, string name) : base(guid)
     {
         if (string.IsNullOrWhiteSpace(name) || name.Length > 32)
@@ -18,19 +20,6 @@ public class Trader : BaseEntity
         CountOfLostDisputesAsSeller = 0;
     }
 
-    public Trader(Guid guid, string name, int countOfSuccessfulOrdersAsBuyer, int countOfSuccessfulOrdersAsSeller,
-        int countOfWonDisputesAsBuyer, int countOfLostDisputesAsBuyer, int countOfWonDisputesAsSeller,
-        int countOfLostDisputesAsSeller) : base(guid)
-    {
-        Name = name;
-        CountOfSuccessfulOrdersAsBuyer = countOfSuccessfulOrdersAsBuyer;
-        CountOfSuccessfulOrdersAsSeller = countOfSuccessfulOrdersAsSeller;
-        CountOfWonDisputesAsBuyer = countOfWonDisputesAsBuyer;
-        CountOfLostDisputesAsBuyer = countOfLostDisputesAsBuyer;
-        CountOfWonDisputesAsSeller = countOfWonDisputesAsSeller;
-        CountOfLostDisputesAsSeller = countOfLostDisputesAsSeller;
-    }
-
     public void IncrementSuccessfulOrdersAsBuyer() => CountOfSuccessfulOrdersAsBuyer++;
     
     public void IncrementSuccessfulOrdersAsSeller() => CountOfSuccessfulOrdersAsSeller++;
@@ -43,7 +32,7 @@ public class Trader : BaseEntity
     
     public void IncrementLostDisputesAsSeller() => CountOfLostDisputesAsSeller++;
 
-    public string Name { get; }
+    public string Name { get; private set; }
     
     public int CountOfSuccessfulOrdersAsBuyer { get; private set; }
     

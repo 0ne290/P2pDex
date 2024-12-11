@@ -1,4 +1,4 @@
-using Core.Domain.Enums;
+/*using Core.Domain.Enums;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
@@ -92,4 +92,4 @@ public class BuyOrder : BaseOrder
     public Trader? Seller { get; private set; }
 
     public string? SellerToExchangerTransferTransactionHash { get; private set; }
-}
+}*/

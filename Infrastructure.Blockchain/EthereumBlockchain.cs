@@ -7,9 +7,10 @@ namespace Infrastructure.Blockchain;
 
 public class EthereumBlockchain : IBlockchain
 {
-    public EthereumBlockchain(Web3 web3, TransferTransactionFeeTracker transferTransactionFeeTracker)
+    public EthereumBlockchain(Web3 web3, string accountAddress, TransferTransactionFeeTracker transferTransactionFeeTracker)
     {
         _web3 = web3;
+        AccountAddress = accountAddress;
         _transferTransactionFeeTracker = transferTransactionFeeTracker;
     }
 
@@ -30,9 +31,11 @@ public class EthereumBlockchain : IBlockchain
         };
     }
 
-    public async Task<string> SendTransferTransaction(string from, string to, decimal amount) =>
-        await _web3.TransactionManager.SendTransactionAsync(from, to,
+    public async Task<string> SendTransferTransaction(string to, decimal amount) =>
+        await _web3.TransactionManager.SendTransactionAsync(AccountAddress, to,
                 Web3.Convert.ToWei(amount).ToHexBigInteger());
+    
+    public string AccountAddress { get; }
 
     public (decimal Value, double TimeToUpdateInMs) TransferTransactionFee => (_transferTransactionFeeTracker.Fee,
         _transferTransactionFeeTracker.TimeToUpdateInMs);

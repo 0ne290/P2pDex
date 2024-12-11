@@ -10,15 +10,15 @@ namespace Core.Application;
 
 public static class Extensions
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services, string exchangerWalletAddress, decimal feeRate)
+    public static IServiceCollection AddApplication(this IServiceCollection services, decimal feeRate)
     {
         services.AddScoped<Exchanger>(sp => new Exchanger(sp.GetRequiredService<IBlockchain>(),
-            sp.GetRequiredService<IRepository>(), exchangerWalletAddress, feeRate));
+            sp.GetRequiredService<IRepository>(), feeRate));
         
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(CreateSellOrderCommand).Assembly);
-            cfg.AddBehavior<IPipelineBehavior<IRequest<IResultBase>, IResultBase>, LoggingBehavior>();
+            cfg.AddBehavior<IPipelineBehavior<GetTransferTransactionFeeCommand, Result<(decimal Value, double TimeToUpdateInMs)>>, LoggingBehavior<(decimal Value, double TimeToUpdateInMs)>>();
         });
 
         return services;

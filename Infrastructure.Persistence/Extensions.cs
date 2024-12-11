@@ -16,6 +16,7 @@ public static class Extensions
         services.AddDbContext<P2PDexDbContext>(options => options.UseSqlite(connectionString));
 
         services.AddScoped<IRepository, Repository>();
+        services.AddScoped<Repository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

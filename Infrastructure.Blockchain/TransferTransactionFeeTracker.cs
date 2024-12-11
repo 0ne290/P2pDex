@@ -11,11 +11,12 @@ public class TransferTransactionFeeTracker : IDisposable
         _synchronizer = 0;
 
         _web3 = web3;
+
+        _timer = new Timer { AutoReset = true, Enabled = false, Interval = intervalInMs };
+        _timer.Elapsed += ElapsedEventHandler;
         
         UpdateFee(DateTime.Now).GetAwaiter().GetResult();
         
-        _timer = new Timer { AutoReset = true, Enabled = false, Interval = intervalInMs };
-        _timer.Elapsed += ElapsedEventHandler;
         _timer.Start();
     }
 
@@ -28,7 +29,7 @@ public class TransferTransactionFeeTracker : IDisposable
         var gasPriceInEth = Web3.Convert.FromWei(gasPriceInWei);
 
         Fee = gasPriceInEth * GasLimitOfTransferTransaction;
-        _lastUpdate = updateTime;
+        _expectedNextUpdate = updateTime + TimeSpan.FromMilliseconds(_timer.Interval);
     }
 
     private async Task ExecuteConcurrently(Func<Task> action)
@@ -61,9 +62,17 @@ public class TransferTransactionFeeTracker : IDisposable
     
     public decimal Fee { get; private set; }
 
-    public double TimeToUpdateInMs => (DateTime.Now - _lastUpdate).Milliseconds;
+    public double TimeToUpdateInMs
+    {
+        get
+        {
+            var ret = (_expectedNextUpdate - DateTime.Now).TotalMilliseconds;
+            
+            return ret < 0 ? 0 : ret;
+        }
+    }
 
-    private DateTime _lastUpdate;
+    private DateTime _expectedNextUpdate;
     
     private int _synchronizer;
 

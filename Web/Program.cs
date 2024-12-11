@@ -76,20 +76,21 @@ public class Program
     private static async Task CompositionRoot(IServiceCollection services, IConfiguration config)
     {
         var blockchainConfig = config.GetRequiredSection("Blockchain");
+        var exchangerConfig = config.GetRequiredSection("Exchanger");
         var persistenceConfig = config.GetRequiredSection("Persistence");
 
-        var netUrl = blockchainConfig["NetUrl"] ?? throw new Exception("Config.Blockchain.NetUrl is not found.");
-        //var encryptedKeystore = await File.ReadAllTextAsync(blockchainConfig["EncryptedKeystoreFilePath"] ?? throw new Exception("Config.Blockchain.EncryptedKeystoreFilePath is not found."));
-        var exchangerAccountPassword = blockchainConfig["ExchangerAccountPassword"] ?? throw new Exception("Config.Blockchain.ExchangerAccountPassword is not found.");
-        var exchangerFeeRateInPercent = decimal.Parse(blockchainConfig["ExchangerFeeRate"] ?? throw new Exception("Config.Blockchain.ExchangerFeeRate is not found."));
-        var exchangerFeeRate = exchangerFeeRateInPercent / 100;
+        var blockchainUrl = blockchainConfig["Url"] ?? throw new Exception("Config.Blockchain.Url is not found.");
+        var blockchainAccountPrivateKey = blockchainConfig["PrivateKey"] ?? throw new Exception("Config.Blockchain.PrivateKey is not found.");
+        var blockchainId = int.Parse(blockchainConfig["ChainId"] ?? throw new Exception("Config.Blockchain.ChainId is not found."));
         const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
+        
+        var exchangerFeeRateInPercent = decimal.Parse(exchangerConfig["FeeRate"] ?? throw new Exception("Config.Exchanger.FeeRate is not found."));
+        var exchangerFeeRate = exchangerFeeRateInPercent / 100;
         
         var connectionString = persistenceConfig["SqliteConnectionString"] ?? throw new Exception("Config.Persistence.SqliteConnectionString is not found.");
 
         await services.AddPersistence(connectionString);
-        var unlockAccount = await services.AddBlockchain(netUrl, "encryptedKeystore", exchangerAccountPassword,
-            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
-        services.AddApplication(unlockAccount, exchangerFeeRate);
+        await services.AddBlockchain(blockchainUrl, blockchainAccountPrivateKey, blockchainId, TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
+        services.AddApplication(exchangerFeeRate);
     }
 }

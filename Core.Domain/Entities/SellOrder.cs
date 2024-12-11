@@ -5,11 +5,13 @@ namespace Core.Domain.Entities;
 
 public class SellOrder : BaseOrder
 {
+    private SellOrder() { }
+    
     public SellOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
-        (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Guid sellerGuid,
+        decimal sellerToExchangerFee, decimal exchangerToMinersFee, Guid sellerGuid,
         string sellerToExchangerTransferTransactionHash) : base(guid, crypto, cryptoAmount, fiat,
-        cryptoToFiatExchangeRate, paymentMethodInfo, fee)
+        cryptoToFiatExchangeRate, paymentMethodInfo, sellerToExchangerFee, exchangerToMinersFee)
     {
         if (string.IsNullOrWhiteSpace(sellerToExchangerTransferTransactionHash))
             throw new DevelopmentErrorException("Seller to exchanger transfer transaction hash is invalid.");
@@ -19,25 +21,6 @@ public class SellOrder : BaseOrder
 
         BuyerGuid = null;
         BuyerWalletAddress = null;
-    }
-
-    /// <summary>
-    /// Небезопасный конструктор для восстановления объектов из их состояния. Состояния могут храниться, например,
-    /// в БД, файлах и т. д. Конструктор не проверяет получаемое состояние и, соответственно, восстановленный объект
-    /// может не удовлетворять бизнес-инвариантам. Для избежания этого любое сохранение состояний должно происходить
-    /// только из кода через интерфейсы репозиториев.
-    /// </summary>
-    public SellOrder(Guid guid, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
-        decimal cryptoToFiatExchangeRate, decimal fiatAmount, string paymentMethodInfo,
-        (decimal SellerToExchanger, decimal ExchangerToMiners) fee, Guid sellerGuid,
-        string sellerToExchangerTransferTransactionHash, Guid? buyerGuid, string? buyerWalletAddress,
-        string? exchangerToBuyerTransferTransactionHash) : base(guid, status, crypto, cryptoAmount, fiat,
-        cryptoToFiatExchangeRate, fiatAmount, paymentMethodInfo, fee, exchangerToBuyerTransferTransactionHash)
-    {
-        SellerGuid = sellerGuid;
-        SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
-        BuyerGuid = buyerGuid;
-        BuyerWalletAddress = buyerWalletAddress;
     }
 
     public void Respond(Guid buyerGuid, string buyerWalletAddress)
@@ -103,9 +86,9 @@ public class SellOrder : BaseOrder
     //    Status = OrderStatus.Cancelled;
     //}
 
-    public Guid SellerGuid { get; }
+    public Guid SellerGuid { get; private set; }
 
-    public string SellerToExchangerTransferTransactionHash { get; }
+    public string SellerToExchangerTransferTransactionHash { get; private set; }
 
     public Guid? BuyerGuid { get; private set; }
 

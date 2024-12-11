@@ -9,6 +9,9 @@ public class P2PDexDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SellOrder>().HasKey(o => o.Guid);
+        modelBuilder.Entity<Trader>().HasKey(t => t.Guid);
+        
         modelBuilder.Entity<Trader>()
             .HasMany<SellOrder>()
             .WithOne()

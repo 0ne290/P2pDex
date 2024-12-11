@@ -7,14 +7,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Application.PipelineBehaviors;
 
-public class LoggingBehavior : IPipelineBehavior<IRequest<IResultBase>, IResultBase>
+public class LoggingBehavior<TResponse> : IPipelineBehavior<IRequest<Result<TResponse>>, Result<TResponse>>
 {
-    public LoggingBehavior(ILogger<IRequest<IResultBase>> logger)
+    public LoggingBehavior(ILogger<LoggingBehavior<TResponse>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<IResultBase> Handle(IRequest<IResultBase> request, RequestHandlerDelegate<IResultBase> next,
+    public async Task<Result<TResponse>> Handle(IRequest<Result<TResponse>> request, RequestHandlerDelegate<Result<TResponse>> next,
         CancellationToken cancellationToken)
     {
         var requestName = request.GetType().Name;
@@ -70,5 +70,5 @@ public class LoggingBehavior : IPipelineBehavior<IRequest<IResultBase>, IResultB
         }
     }
 
-    private readonly ILogger<IRequest<IResultBase>> _logger;
+    private readonly ILogger<LoggingBehavior<TResponse>> _logger;
 }

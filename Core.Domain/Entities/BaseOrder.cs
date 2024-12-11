@@ -5,9 +5,11 @@ namespace Core.Domain.Entities;
 
 public abstract class BaseOrder : BaseEntity
 {
+    protected BaseOrder() { }
+    
     protected BaseOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
-        (decimal SellerToExchanger, decimal ExchangerToMiners) fee) : base(guid)
+        decimal sellerToExchangerFee, decimal exchangerToMinersFee) : base(guid)
     {
         if (!Enum.IsDefined(crypto))
             throw new InvariantViolationException("Crypto is invalid.");
@@ -19,9 +21,9 @@ public abstract class BaseOrder : BaseEntity
             throw new InvariantViolationException("Crypto to fiat exchange rate is invalid.");
         if (string.IsNullOrWhiteSpace(paymentMethodInfo) || paymentMethodInfo.Length > 64)
             throw new InvariantViolationException("Payment method info is invalid.");
-        if (fee.SellerToExchanger < 0)
+        if (sellerToExchangerFee < 0)
             throw new DevelopmentErrorException("Seller to exchanger fee is invalid.");
-        if (fee.ExchangerToMiners <= 0)
+        if (exchangerToMinersFee <= 0)
             throw new DevelopmentErrorException("Exchanger to miners fee is invalid.");
 
         Status = OrderStatus.Created;
@@ -31,42 +33,28 @@ public abstract class BaseOrder : BaseEntity
         CryptoToFiatExchangeRate = cryptoToFiatExchangeRate;
         FiatAmount = cryptoAmount * cryptoToFiatExchangeRate;
         PaymentMethodInfo = paymentMethodInfo;
-        Fee = fee;
+        SellerToExchangerFee = sellerToExchangerFee;
+        ExchangerToMinersFee = exchangerToMinersFee;
         ExchangerToBuyerTransferTransactionHash = null;
-    }
-
-    protected BaseOrder(Guid guid, OrderStatus status, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
-        decimal cryptoToFiatExchangeRate, decimal fiatAmount, string paymentMethodInfo,
-        (decimal SellerToExchanger, decimal ExchangerToMiners) fee,
-        string? exchangerToBuyerTransferTransactionHash) : base(guid)
-    {
-        Status = status;
-        Crypto = crypto;
-        CryptoAmount = cryptoAmount;
-        Fiat = fiat;
-        CryptoToFiatExchangeRate = cryptoToFiatExchangeRate;
-        FiatAmount = fiatAmount;
-        PaymentMethodInfo = paymentMethodInfo;
-        Fee = fee;
-        ExchangerToBuyerTransferTransactionHash = null;
-        ExchangerToBuyerTransferTransactionHash = exchangerToBuyerTransferTransactionHash;
     }
 
     public OrderStatus Status { get; protected set; }
 
-    public Cryptocurrency Crypto { get; }
+    public Cryptocurrency Crypto { get; private set; }
 
-    public decimal CryptoAmount { get; }
+    public decimal CryptoAmount { get; private set; }
 
-    public FiatCurrency Fiat { get; }
+    public FiatCurrency Fiat { get; private set; }
 
-    public decimal CryptoToFiatExchangeRate { get; }
+    public decimal CryptoToFiatExchangeRate { get; private set; }
 
-    public decimal FiatAmount { get; }
+    public decimal FiatAmount { get; private set; }
 
-    public string PaymentMethodInfo { get; }
+    public string PaymentMethodInfo { get; private set; }
 
-    public (decimal SellerToExchanger, decimal ExchangerToMiners) Fee { get; }
+    public decimal SellerToExchangerFee { get; private set; }
+    
+    public decimal ExchangerToMinersFee { get; private set; }
 
     public string? ExchangerToBuyerTransferTransactionHash { get; protected set; }
 }
