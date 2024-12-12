@@ -1,13 +1,11 @@
 using Core.Application.Commands;
-using Core.Domain.Enums;
 using Core.Domain.Interfaces;
 using Core.Domain.Services;
-using FluentResults;
 using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Result<(Guid, OrderStatus)>>
+public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, CommandResult>
 {
     public CreateSellOrderHandler(IUnitOfWork unitOfWork, Exchanger exchanger)
     {
@@ -15,7 +13,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Re
         _exchanger = exchanger;
     }
 
-    public async Task<Result<(Guid, OrderStatus)>> Handle(CreateSellOrderCommand request, CancellationToken _)
+    public async Task<CommandResult> Handle(CreateSellOrderCommand request, CancellationToken _)
     {
         var order = await _exchanger.CreateSellOrder(request.Crypto, request.CryptoAmount, request.Fiat,
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, request.SellerGuid,
@@ -24,7 +22,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Re
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.Save();
         
-        return Result.Ok((order.Guid, order.Status));
+        return new CommandResult(new { guid = order.Guid, status = order.Status });
     }
     
     private readonly IUnitOfWork _unitOfWork;

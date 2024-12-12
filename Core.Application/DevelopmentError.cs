@@ -1,6 +1,6 @@
 using FluentResults;
 
-namespace Core.Application.Errors;
+namespace Core.Application;
 
 /// <summary>
 /// FluentResults.Error - ошибки клиентов, а Core.Application.Errors.DevelopmentError - ошибки разработки. Разница в

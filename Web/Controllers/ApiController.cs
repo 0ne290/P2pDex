@@ -1,5 +1,4 @@
 using Core.Application.Commands;
-using Core.Application.Errors;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,15 +18,7 @@ public class ApiController : Controller
     {
         var result = await _mediator.Send(request);
 
-        if (!result.IsSuccess)
-            return result.HasError<DevelopmentError>()
-                ? StatusCode(500, Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson())
-                : BadRequest(Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson());
-        
-        var resultValue = result.Value;
-            
-        return Ok(Web.Response.Success(("guid", resultValue.Item1), ("status", resultValue.Item2)).ToJson());
-
+        return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
     [Route("create-trader")]
@@ -36,12 +27,7 @@ public class ApiController : Controller
     {
         var result = await _mediator.Send(request);
 
-        if (!result.IsSuccess)
-            return result.HasError<DevelopmentError>()
-                ? StatusCode(500, Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson())
-                : BadRequest(Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson());
-        
-        return Ok(Web.Response.Success(("guid", result.Value)).ToJson());
+        return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
     [Route("get-transfer-transaction-fee")]
@@ -50,15 +36,7 @@ public class ApiController : Controller
     {
         var result = await _mediator.Send(new GetTransferTransactionFeeCommand());
 
-        if (!result.IsSuccess)
-            return result.HasError<DevelopmentError>()
-                ? StatusCode(500, Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson())
-                : BadRequest(Web.Response.Fail(("messages", result.Errors.Select(e => e.Message))).ToJson());
-        
-        var resultValue = result.Value;
-            
-        return Ok(Web.Response.Success(("fee", resultValue.Item1), ("timeToUpdateInMs", resultValue.Item2)).ToJson());
-
+        return ActionResultHelper.CreateResponse(result, HttpContext);
     }
 
     private readonly IMediator _mediator;

@@ -4,23 +4,15 @@ namespace Web;
 
 public class Response
 {
-    private Response(string status) => Status = status;
-    
-    private Response(string status, params (string Key, object Value)[] data)
+    private Response(string status, object data)
     {
         Status = status;
-
-        foreach (var keyValuePair in data)
-            Data.Add(keyValuePair.Key, keyValuePair.Value);
+        Data = data;
     }
-
-    public static Response Success() => new("Success.");
     
-    public static Response Success(params (string Key, object Value)[] data) => new("Success.", data);
+    public static Response Success(object data) => new("Success.", data);
     
-    public static Response Fail() => new("Fail.");
-    
-    public static Response Fail(params (string Key, object Value)[] data) => new("Fail.", data);
+    public static Response Fail(object data) => new("Fail.", data);
 
     public string ToJson() => JsonConvert.SerializeObject(this);
     
@@ -28,5 +20,5 @@ public class Response
     public string Status { get; }
 
     [JsonProperty(PropertyName = "data")]
-    public Dictionary<string, object> Data { get; } = new();
+    public object Data { get; }
 }

@@ -1,20 +1,24 @@
 using Core.Application.Commands;
 using Core.Domain.Interfaces;
-using FluentResults;
 using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class GetTransferTransactionFeeHandler : IRequestHandler<GetTransferTransactionFeeCommand,
-    Result<(decimal Value, double TimeToUpdateInMs)>>
+public class GetTransferTransactionFeeHandler : IRequestHandler<GetTransferTransactionFeeCommand, CommandResult>
 {
     public GetTransferTransactionFeeHandler(IBlockchain blockchain)
     {
         _blockchain = blockchain;
     }
 
-    public Task<Result<(decimal Value, double TimeToUpdateInMs)>> Handle(GetTransferTransactionFeeCommand _,
-        CancellationToken __) => Task.FromResult(Result.Ok(_blockchain.TransferTransactionFee));
+    public Task<CommandResult> Handle(GetTransferTransactionFeeCommand _, CancellationToken __)
+    {
+        var ret = _blockchain.TransferTransactionFee;
+
+        return Task.FromResult(new CommandResult(new
+            { fee = ret.Value, timeToUpdateInMs = ret.TimeToUpdateInMs }));
+    }
+        
 
     private readonly IBlockchain _blockchain;
 }

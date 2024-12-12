@@ -1,8 +1,6 @@
 using Core.Application.Commands;
-using Core.Application.PipelineBehaviors;
 using Core.Domain.Interfaces;
 using Core.Domain.Services;
-using FluentResults;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,11 +12,19 @@ public static class Extensions
     {
         services.AddScoped<Exchanger>(sp => new Exchanger(sp.GetRequiredService<IBlockchain>(),
             sp.GetRequiredService<IRepository>(), feeRate));
-        
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(CreateSellOrderCommand).Assembly);
-            cfg.AddBehavior<IPipelineBehavior<GetTransferTransactionFeeCommand, Result<(decimal Value, double TimeToUpdateInMs)>>, LoggingBehavior<(decimal Value, double TimeToUpdateInMs)>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<GetTransferTransactionFeeCommand, CommandResult>,
+                LoggingBehavior<GetTransferTransactionFeeCommand, CommandResult>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<CreateTraderCommand, CommandResult>,
+                LoggingBehavior<CreateTraderCommand, CommandResult>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<CreateSellOrderCommand, CommandResult>,
+                LoggingBehavior<CreateSellOrderCommand, CommandResult>>();
         });
 
         return services;
