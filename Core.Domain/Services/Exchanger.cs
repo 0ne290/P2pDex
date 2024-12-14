@@ -26,12 +26,15 @@ public class Exchanger
         if (transaction == null)
             throw new InvariantViolationException(
                 "Transaction either does not exist, has not yet been confirmed, or has been rejected.");
+        
         if (transaction.To != _blockchain.AccountAddress)
             throw new InvariantViolationException(
                 "Cryptocurrency was transferred to the wrong address. For a refund, contact the recipient.");
 
         var fee = CalculateFee(cryptoAmount);
         var expectedCryptoAmount = cryptoAmount + fee.SellerToExchanger + fee.ExchangerToMiners;
+        
+        Console.WriteLine($"{expectedCryptoAmount} {transaction.Amount}");
 
         if (expectedCryptoAmount != transaction.Amount)
         {

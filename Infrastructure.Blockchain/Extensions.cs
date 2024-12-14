@@ -24,7 +24,7 @@ public static class Extensions
 
         services.AddScoped<IBlockchain, EthereumBlockchain>(sp =>
             new EthereumBlockchain(sp.GetRequiredKeyedService<Web3>("Scoped"),
-                account.Address, sp.GetRequiredService<TransferTransactionFeeTracker>()));
+                account.Address.ToLower(), sp.GetRequiredService<TransferTransactionFeeTracker>()));
 
         return services;
     }
