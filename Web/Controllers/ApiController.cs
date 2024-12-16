@@ -29,12 +29,13 @@ public class ApiController : Controller
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
-    
-    [Route("get-transfer-transaction-fee")]
+
+    [Route("calculate-final-crypto-amount-for-transfer")]
     [HttpGet]
-    public async Task<IActionResult> GetTransferTransactionFee()
+    public async Task<IActionResult> CalculateFinalCryptoAmountForTransfer(
+        [FromBody] CalculateFinalCryptoAmountForTransferCommand request)
     {
-        var result = await _mediator.Send(new GetTransferTransactionFeeCommand());
+        var result = await _mediator.Send(request);
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }

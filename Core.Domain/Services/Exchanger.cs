@@ -1,5 +1,4 @@
 using Core.Domain.Entities;
-using Core.Domain.Enums;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
 
@@ -14,7 +13,17 @@ public class Exchanger
         _feeRate = feeRate;
     }
 
-    public async Task<SellOrder> CreateSellOrder(Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+    public (decimal FinalCryptoAmount, double RelevanceTimeInMs) CalculateFinalCryptoAmountForTransfer(decimal cryptoAmount)
+    {
+        var exchangerToMinersFee = _blockchain.TransferTransactionFee;
+        var sellerToExchangerFee = cryptoAmount * _feeRate;
+
+        var finalCryptoAmount = cryptoAmount + exchangerToMinersFee.Value + sellerToExchangerFee;
+
+        return (finalCryptoAmount, exchangerToMinersFee.TimeToUpdateInMs);
+    }
+
+    public async Task<SellOrder> CreateSellOrder(string crypto, decimal cryptoAmount, string fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo, Guid sellerGuid,
         string sellerToExchangerTransferTransactionHash)
     {
@@ -34,7 +43,7 @@ public class Exchanger
         var fee = CalculateFee(cryptoAmount);
         var expectedCryptoAmount = cryptoAmount + fee.SellerToExchanger + fee.ExchangerToMiners;
         
-        Console.WriteLine($"{expectedCryptoAmount} {transaction.Amount}");
+        Console.WriteLine($"{expectedCryptoAmount} {transaction.Amount} {fee.ExchangerToMiners}");
 
         if (expectedCryptoAmount != transaction.Amount)
         {

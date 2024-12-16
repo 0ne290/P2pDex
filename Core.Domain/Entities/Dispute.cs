@@ -1,4 +1,4 @@
-using Core.Domain.Enums;
+using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;

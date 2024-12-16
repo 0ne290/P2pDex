@@ -17,8 +17,8 @@ public static class Extensions
         {
             cfg.RegisterServicesFromAssembly(typeof(CreateSellOrderCommand).Assembly);
             
-            cfg.AddBehavior<IPipelineBehavior<GetTransferTransactionFeeCommand, CommandResult>,
-                LoggingBehavior<GetTransferTransactionFeeCommand, CommandResult>>();
+            cfg.AddBehavior<IPipelineBehavior<CalculateFinalCryptoAmountForTransferCommand, CommandResult>,
+                LoggingBehavior<CalculateFinalCryptoAmountForTransferCommand, CommandResult>>();
             
             cfg.AddBehavior<IPipelineBehavior<CreateTraderCommand, CommandResult>,
                 LoggingBehavior<CreateTraderCommand, CommandResult>>();

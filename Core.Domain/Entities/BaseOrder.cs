@@ -1,4 +1,4 @@
-using Core.Domain.Enums;
+using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
@@ -7,15 +7,15 @@ public abstract class BaseOrder : BaseEntity
 {
     protected BaseOrder() { }
     
-    protected BaseOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+    protected BaseOrder(Guid guid, string crypto, decimal cryptoAmount, string fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
         decimal sellerToExchangerFee, decimal exchangerToMinersFee) : base(guid)
     {
-        if (!Enum.IsDefined(crypto))
+        if (!Cryptocurrency.IsCryptocurrency(crypto))
             throw new InvariantViolationException("Crypto is invalid.");
         if (cryptoAmount <= 0)
-            throw new InvariantViolationException("Crypto amount is invalid.");
-        if (!Enum.IsDefined(fiat))
+            throw new DevelopmentErrorException("Crypto amount is invalid.");
+        if (!FiatCurrency.IsFiatCurrency(fiat))
             throw new InvariantViolationException("Fiat is invalid.");
         if (cryptoToFiatExchangeRate <= 0)
             throw new InvariantViolationException("Crypto to fiat exchange rate is invalid.");
@@ -40,11 +40,11 @@ public abstract class BaseOrder : BaseEntity
 
     public OrderStatus Status { get; protected set; }
 
-    public Cryptocurrency Crypto { get; private set; }
+    public string Crypto { get; private set; }
 
     public decimal CryptoAmount { get; private set; }
 
-    public FiatCurrency Fiat { get; private set; }
+    public string Fiat { get; private set; }
 
     public decimal CryptoToFiatExchangeRate { get; private set; }
 

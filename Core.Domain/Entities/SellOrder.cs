@@ -1,4 +1,4 @@
-using Core.Domain.Enums;
+using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
@@ -7,7 +7,7 @@ public class SellOrder : BaseOrder
 {
     private SellOrder() { }
     
-    public SellOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
+    public SellOrder(Guid guid, string crypto, decimal cryptoAmount, string fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
         decimal sellerToExchangerFee, decimal exchangerToMinersFee, Guid sellerGuid,
         string sellerToExchangerTransferTransactionHash) : base(guid, crypto, cryptoAmount, fiat,
