@@ -14,7 +14,7 @@ public class BuyOrder : BaseOrder
             throw new InvariantViolationException("Buyer wallet address is invalid.");
 
         Buyer = buyer;
-        BuyerWalletAddress = buyerWalletAddress;
+        BuyerAccountAddress = buyerWalletAddress;
 
         Seller = null;
         SellerToExchangerTransferTransactionHash = null;
@@ -87,7 +87,7 @@ public class BuyOrder : BaseOrder
 
     public Trader Buyer { get; protected init; }
 
-    public string BuyerWalletAddress { get; protected init; }
+    public string BuyerAccountAddress { get; protected init; }
 
     public Trader? Seller { get; private set; }
 

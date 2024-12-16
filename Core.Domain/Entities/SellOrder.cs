@@ -20,18 +20,18 @@ public class SellOrder : BaseOrder
         SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
 
         BuyerGuid = null;
-        BuyerWalletAddress = null;
+        BuyerAccountAddress = null;
     }
 
-    public void Respond(Guid buyerGuid, string buyerWalletAddress)
+    public void Respond(Guid buyerGuid, string buyerAccountAddress)
     {
         if (Status != OrderStatus.Created)
             throw new InvariantViolationException("Status is invalid.");
-        if (string.IsNullOrWhiteSpace(buyerWalletAddress))
+        if (string.IsNullOrWhiteSpace(buyerAccountAddress))
             throw new DevelopmentErrorException("Buyer wallet address is invalid.");
 
         BuyerGuid = buyerGuid;
-        BuyerWalletAddress = buyerWalletAddress;
+        BuyerAccountAddress = buyerAccountAddress;
         Status = OrderStatus.BuyerResponded;
     }
 
@@ -92,5 +92,5 @@ public class SellOrder : BaseOrder
 
     public Guid? BuyerGuid { get; private set; }
 
-    public string? BuyerWalletAddress { get; private set; }
+    public string? BuyerAccountAddress { get; private set; }
 }

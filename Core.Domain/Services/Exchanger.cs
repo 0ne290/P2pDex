@@ -29,6 +29,9 @@ public class Exchanger
     {
         if (!await _repository.Exists<Trader>(t => t.Guid.Equals(sellerGuid)))
             throw new InvariantViolationException("Seller does not exists.");
+        
+        if (await _repository.Exists<SellOrder>(o => o.SellerToExchangerTransferTransactionHash == sellerToExchangerTransferTransactionHash))
+            throw new InvariantViolationException("Transaction has already been used to pay for the order.");
 
         var transaction = await _blockchain.TryGetConfirmedTransactionByHash(sellerToExchangerTransferTransactionHash);
 
