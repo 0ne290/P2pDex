@@ -14,7 +14,7 @@ public partial class SellOrder : BaseOrder
         string sellerToExchangerTransferTransactionHash) : base(guid, crypto, cryptoAmount, fiat,
         cryptoToFiatExchangeRate, paymentMethodInfo, sellerToExchangerFee, exchangerToMinersFee)
     {
-        if (!EthereumAccountAddressRegex.IsMatch(sellerToExchangerTransferTransactionHash))
+        if (!EthereumTransactionHashRegex.IsMatch(sellerToExchangerTransferTransactionHash))
             throw new DevelopmentErrorException("Seller to exchanger transfer transaction hash is invalid.");
 
         SellerGuid = sellerGuid;
@@ -36,31 +36,35 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.BuyerResponded;
     }
 
-    public void Confirm(Guid traderGuid)
+    public void ConfirmByBuyer()
     {
-        Status = Status switch
-        {
-            OrderStatus.BuyerResponded when traderGuid.Equals(BuyerGuid) => OrderStatus.BuyerConfirmed,
-            OrderStatus.BuyerResponded => throw new InvariantViolationException("Trader is not a buyer."),
-            OrderStatus.BuyerConfirmed when traderGuid.Equals(SellerGuid) => OrderStatus.BuyerAndSellerConfirmed,
-            OrderStatus.BuyerConfirmed => throw new InvariantViolationException("Trader is not a seller."),
-            _ => throw new InvariantViolationException("Status is invalid.")
-        };
+        if (Status != OrderStatus.BuyerResponded)
+            throw new InvariantViolationException("Status is invalid.");
+
+        Status = OrderStatus.BuyerConfirmed;
     }
 
-    public void Deny(Guid traderGuid)
+    public void ConfirmBySeller(string exchangerToBuyerTransferTransactionHash)
     {
         if (Status != OrderStatus.BuyerConfirmed)
             throw new InvariantViolationException("Status is invalid.");
-        if (!traderGuid.Equals(SellerGuid))
-            throw new InvariantViolationException("Trader is not a seller.");
+
+        Status = OrderStatus.BuyerConfirmed;
+        
+        Complete(exchangerToBuyerTransferTransactionHash);
+    }
+
+    public void Deny()
+    {
+        if (Status != OrderStatus.BuyerConfirmed)
+            throw new InvariantViolationException("Status is invalid.");
 
         Status = OrderStatus.FrozenForDurationOfDispute;
     }
 
     public void Complete(string exchangerToBuyerTransferTransactionHash)
     {
-        if (string.IsNullOrWhiteSpace(exchangerToBuyerTransferTransactionHash))
+        if (!EthereumTransactionHashRegex.IsMatch(exchangerToBuyerTransferTransactionHash))
             throw new DevelopmentErrorException("Exchanger to buyer transfer transaction hash is invalid.");
 
         switch (Status)
@@ -95,7 +99,7 @@ public partial class SellOrder : BaseOrder
 
     public string? BuyerAccountAddress { get; private set; }
     
-    private static readonly Regex EthereumTransactionHashRegex = CreateEthereumAccountAddressRegex();
+    private static readonly Regex EthereumTransactionHashRegex = CreateEthereumTransactionHashRegex();
 
     private static readonly Regex EthereumAccountAddressRegex = CreateEthereumAccountAddressRegex();
     

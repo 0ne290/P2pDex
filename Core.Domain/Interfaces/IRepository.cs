@@ -9,5 +9,5 @@ public interface IRepository
     
     Task<bool> Exists<TEntity>(Expression<Func<TEntity, bool>> condition) where TEntity : BaseEntity;
     
-    Task<TEntity> GetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity;
+    Task<TEntity?> TryGetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity;
 }

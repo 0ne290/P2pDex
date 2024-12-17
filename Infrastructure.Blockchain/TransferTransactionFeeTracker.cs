@@ -80,5 +80,5 @@ public class TransferTransactionFeeTracker : IDisposable
     
     private readonly Timer _timer;
     
-    private const decimal GasLimitOfTransferTransaction = 21_000m;
+    public const decimal GasLimitOfTransferTransaction = 21_000m;
 }

@@ -1,6 +1,8 @@
+using System.Numerics;
 using Core.Domain.Interfaces;
 using Core.Domain.Models;
 using Nethereum.Hex.HexTypes;
+using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
 
 namespace Infrastructure.Blockchain;
@@ -31,9 +33,19 @@ public class EthereumBlockchain : IBlockchain
         };
     }
 
-    public async Task<string> SendTransferTransaction(string to, decimal amount) =>
-        await _web3.TransactionManager.SendTransactionAsync(AccountAddress, to,
-                Web3.Convert.ToWei(amount).ToHexBigInteger());
+    public async Task<string> SendTransferTransaction(string to, decimal amount)
+    {
+        var transactionInput = new TransactionInput(null, to, AccountAddress,
+            new HexBigInteger(new BigInteger(TransferTransactionFeeTracker.GasLimitOfTransferTransaction)),
+            new HexBigInteger(Web3.Convert
+                .ToWei(TransferTransactionFee.Value / TransferTransactionFeeTracker.GasLimitOfTransferTransaction)
+                .ToHexBigInteger()), Web3.Convert.ToWei(amount).ToHexBigInteger());
+        
+        //await _web3.TransactionManager.SendTransactionAsync(AccountAddress, to,
+        //    Web3.Convert.ToWei(amount).ToHexBigInteger());
+
+        return await _web3.TransactionManager.SendTransactionAsync(transactionInput);
+    }
     
     public string AccountAddress { get; }
 
