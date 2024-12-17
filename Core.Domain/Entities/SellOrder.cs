@@ -44,14 +44,12 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.BuyerConfirmed;
     }
 
-    public void ConfirmBySeller(string exchangerToBuyerTransferTransactionHash)
+    public void ConfirmBySeller()
     {
         if (Status != OrderStatus.BuyerConfirmed)
             throw new InvariantViolationException("Status is invalid.");
 
-        Status = OrderStatus.BuyerConfirmed;
-        
-        Complete(exchangerToBuyerTransferTransactionHash);
+        Status = OrderStatus.SellerConfirmed;
     }
 
     public void Deny()
