@@ -8,7 +8,7 @@ public class Trader : BaseEntity
     
     public Trader(Guid guid, string name) : base(guid)
     {
-        if (string.IsNullOrWhiteSpace(name) || name.Length > 32)
+        if (string.IsNullOrWhiteSpace(name))
             throw new InvariantViolationException("Name is invalid.");
         
         Name = name;

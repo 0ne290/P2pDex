@@ -1,9 +1,10 @@
+using System.Text.RegularExpressions;
 using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
 
-public class SellOrder : BaseOrder
+public partial class SellOrder : BaseOrder
 {
     private SellOrder() { }
     
@@ -13,7 +14,7 @@ public class SellOrder : BaseOrder
         string sellerToExchangerTransferTransactionHash) : base(guid, crypto, cryptoAmount, fiat,
         cryptoToFiatExchangeRate, paymentMethodInfo, sellerToExchangerFee, exchangerToMinersFee)
     {
-        if (string.IsNullOrWhiteSpace(sellerToExchangerTransferTransactionHash))
+        if (!EthereumAccountAddressRegex.IsMatch(sellerToExchangerTransferTransactionHash))
             throw new DevelopmentErrorException("Seller to exchanger transfer transaction hash is invalid.");
 
         SellerGuid = sellerGuid;
@@ -27,7 +28,7 @@ public class SellOrder : BaseOrder
     {
         if (Status != OrderStatus.Created)
             throw new InvariantViolationException("Status is invalid.");
-        if (string.IsNullOrWhiteSpace(buyerAccountAddress))
+        if (!EthereumAccountAddressRegex.IsMatch(buyerAccountAddress))
             throw new DevelopmentErrorException("Buyer wallet address is invalid.");
 
         BuyerGuid = buyerGuid;
@@ -93,4 +94,14 @@ public class SellOrder : BaseOrder
     public Guid? BuyerGuid { get; private set; }
 
     public string? BuyerAccountAddress { get; private set; }
+    
+    private static readonly Regex EthereumTransactionHashRegex = CreateEthereumAccountAddressRegex();
+
+    private static readonly Regex EthereumAccountAddressRegex = CreateEthereumAccountAddressRegex();
+    
+    [GeneratedRegex("^0x[0-9a-fA-F]{64}$")]
+    private static partial Regex CreateEthereumTransactionHashRegex();
+
+    [GeneratedRegex("^0x[0-9a-fA-F]{40}$")]
+    private static partial Regex CreateEthereumAccountAddressRegex();
 }

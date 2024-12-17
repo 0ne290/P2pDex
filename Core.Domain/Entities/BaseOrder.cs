@@ -19,7 +19,7 @@ public abstract class BaseOrder : BaseEntity
             throw new InvariantViolationException("Fiat is invalid.");
         if (cryptoToFiatExchangeRate <= 0)
             throw new InvariantViolationException("Crypto to fiat exchange rate is invalid.");
-        if (string.IsNullOrWhiteSpace(paymentMethodInfo) || paymentMethodInfo.Length > 64)
+        if (string.IsNullOrWhiteSpace(paymentMethodInfo))
             throw new InvariantViolationException("Payment method info is invalid.");
         if (sellerToExchangerFee < 0)
             throw new DevelopmentErrorException("Seller to exchanger fee is invalid.");
