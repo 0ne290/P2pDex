@@ -6,14 +6,15 @@ using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class ConfirmOrderBySellerHandler : IRequestHandler<ConfirmOrderBySellerCommand, CommandResult>
+public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmBySellerAndCompleteOrderCommand, CommandResult>
 {
-    public ConfirmOrderBySellerHandler(IUnitOfWork unitOfWork)
+    public ConfirmBySellerAndCompleteOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain)
     {
         _unitOfWork = unitOfWork;
+        _blockchain = blockchain;
     }
     
-    public async Task<CommandResult> Handle(ConfirmOrderBySellerCommand request, CancellationToken _)
+    public async Task<CommandResult> Handle(ConfirmBySellerAndCompleteOrderCommand request, CancellationToken _)
     {
         var order = await _unitOfWork.Repository.TryGetByGuid<SellOrder>(request.OrderGuid);
 
@@ -24,6 +25,9 @@ public class ConfirmOrderBySellerHandler : IRequestHandler<ConfirmOrderBySellerC
 
         if (!Equals(order.SellerGuid, request.SellerGuid))
             throw new InvariantViolationException("Trader is not a buyer.");
+
+        var transactionHash = await _blockchain.SendTransaction(order.BuyerWalletAddress, order.CryptoAmount);
+        order.Complete(transactionHash);
         
         await _unitOfWork.Save();
         
@@ -31,4 +35,6 @@ public class ConfirmOrderBySellerHandler : IRequestHandler<ConfirmOrderBySellerC
     }
 
     private readonly IUnitOfWork _unitOfWork;
+
+    private readonly IBlockchain _blockchain;
 }
