@@ -53,7 +53,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.Save();
 
-        return new CommandResult(new { guid = order.Guid, status = order.Status });
+        return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
 
     private readonly IBlockchain _blockchain;

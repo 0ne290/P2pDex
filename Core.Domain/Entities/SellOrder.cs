@@ -28,6 +28,8 @@ public partial class SellOrder : BaseOrder
     {
         if (Status != OrderStatus.Created)
             throw new InvariantViolationException("Status is invalid.");
+        if (SellerGuid.Equals(buyerGuid))
+            throw new InvariantViolationException("Trader cannot be both a seller and a buyer at the same time.");
         if (!EthereumAccountAddressRegex.IsMatch(buyerAccountAddress))
             throw new DevelopmentErrorException("Buyer wallet address is invalid.");
 

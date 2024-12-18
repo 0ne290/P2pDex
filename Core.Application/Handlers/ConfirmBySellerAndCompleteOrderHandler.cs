@@ -25,7 +25,7 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
         order.ConfirmBySeller();
 
         if (!Equals(order.SellerGuid, request.SellerGuid))
-            throw new InvariantViolationException("Trader is not a buyer.");
+            throw new InvariantViolationException("Trader is not a seller.");
 
         var transactionHash = await _blockchain.SendTransferTransaction(_exchangerConfiguration.AccountAddress,
             order.BuyerAccountAddress!, order.CryptoAmount);
@@ -33,7 +33,7 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
         
         await _unitOfWork.Save();
         
-        return new CommandResult(new { guid = order.Guid, status = order.Status });
+        return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
 
     private readonly IUnitOfWork _unitOfWork;

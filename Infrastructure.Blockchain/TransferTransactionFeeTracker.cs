@@ -1,4 +1,5 @@
 using System.Timers;
+using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 using Timer = System.Timers.Timer;
 
@@ -61,6 +62,8 @@ public class TransferTransactionFeeTracker : IDisposable
     }
     
     public decimal Fee { get; private set; }
+    
+    public HexBigInteger BaseFee { get; private set; }
 
     public double TimeToUpdateInMs
     {
@@ -79,6 +82,4 @@ public class TransferTransactionFeeTracker : IDisposable
     private readonly Web3 _web3;
     
     private readonly Timer _timer;
-    
-    public const decimal GasLimitOfTransferTransaction = 21_000m;
 }

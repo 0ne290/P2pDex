@@ -3,6 +3,7 @@ using Core.Domain.Interfaces;
 using Core.Domain.Models;
 using Nethereum.Hex.HexTypes;
 using Nethereum.RPC.Eth.DTOs;
+using Nethereum.Util;
 using Nethereum.Web3;
 
 namespace Infrastructure.Blockchain;
@@ -48,6 +49,11 @@ public class EthereumBlockchain : IBlockchain
 
     public (decimal Value, double TimeToUpdateInMs) TransferTransactionFee => (_transferTransactionFeeTracker.Fee,
         _transferTransactionFeeTracker.TimeToUpdateInMs);
+
+    private static readonly HexBigInteger PriorityFee =
+        new(Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei));
+    
+    public const decimal GasLimitOfTransferTransaction = 21_000m;
     
     private readonly Web3 _web3;
 
