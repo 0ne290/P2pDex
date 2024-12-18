@@ -8,10 +8,11 @@ namespace Core.Application.Handlers;
 
 public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmBySellerAndCompleteOrderCommand, CommandResult>
 {
-    public ConfirmBySellerAndCompleteOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain)
+    public ConfirmBySellerAndCompleteOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain, ExchangerConfiguration exchangerConfiguration)
     {
         _unitOfWork = unitOfWork;
         _blockchain = blockchain;
+        _exchangerConfiguration = exchangerConfiguration;
     }
     
     public async Task<CommandResult> Handle(ConfirmBySellerAndCompleteOrderCommand request, CancellationToken _)
@@ -26,7 +27,8 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
         if (!Equals(order.SellerGuid, request.SellerGuid))
             throw new InvariantViolationException("Trader is not a buyer.");
 
-        var transactionHash = await _blockchain.SendTransaction(order.BuyerWalletAddress, order.CryptoAmount);
+        var transactionHash = await _blockchain.SendTransferTransaction(_exchangerConfiguration.AccountAddress,
+            order.BuyerAccountAddress!, order.CryptoAmount);
         order.Complete(transactionHash);
         
         await _unitOfWork.Save();
@@ -37,4 +39,6 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IBlockchain _blockchain;
+
+    private readonly ExchangerConfiguration _exchangerConfiguration;
 }

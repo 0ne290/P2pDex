@@ -6,16 +6,16 @@ namespace Core.Application.Handlers;
 
 public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<CalculateFinalCryptoAmountForTransferCommand, CommandResult>
 {
-    public CalculateFinalCryptoAmountForTransferHandler(IBlockchain blockchain, decimal feeRate)
+    public CalculateFinalCryptoAmountForTransferHandler(IBlockchain blockchain, ExchangerConfiguration exchangerConfiguration)
     {
         _blockchain = blockchain;
-        _feeRate = feeRate;
+        _exchangerConfiguration = exchangerConfiguration;
     }
 
     public Task<CommandResult> Handle(CalculateFinalCryptoAmountForTransferCommand request, CancellationToken _)
     {
         var exchangerToMinersFee = _blockchain.TransferTransactionFee;
-        var sellerToExchangerFee = request.CryptoAmount * _feeRate;
+        var sellerToExchangerFee = request.CryptoAmount * _exchangerConfiguration.FeeRate;
         var finalCryptoAmount = request.CryptoAmount + exchangerToMinersFee.Value + sellerToExchangerFee;
 
         return Task.FromResult(new CommandResult(new
@@ -24,5 +24,5 @@ public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<Calc
     
     private readonly IBlockchain _blockchain;
 
-    private readonly decimal _feeRate;
+    private readonly ExchangerConfiguration _exchangerConfiguration;
 }

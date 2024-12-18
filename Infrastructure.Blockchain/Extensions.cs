@@ -7,10 +7,8 @@ namespace Infrastructure.Blockchain;
 
 public static class Extensions
 {
-    public static async Task<IServiceCollection> AddBlockchain(this IServiceCollection services, string url,
-        string privateKey, int chainId, double feeUpdateIntervalInMs)
+    public static async Task<IServiceCollection> AddBlockchain(this IServiceCollection services, string url, Account account, double feeUpdateIntervalInMs)
     {
-        var account = new Account(privateKey, chainId);
         var testWeb3 = new Web3(account, url);
         await testWeb3.Eth.GasPrice.SendRequestAsync();
 
@@ -24,7 +22,7 @@ public static class Extensions
 
         services.AddScoped<IBlockchain, EthereumBlockchain>(sp =>
             new EthereumBlockchain(sp.GetRequiredKeyedService<Web3>("Scoped"),
-                account.Address.ToLower(), sp.GetRequiredService<TransferTransactionFeeTracker>()));
+                sp.GetRequiredService<TransferTransactionFeeTracker>()));
 
         return services;
     }

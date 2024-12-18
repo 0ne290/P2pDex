@@ -49,7 +49,7 @@ public partial class SellOrder : BaseOrder
         if (Status != OrderStatus.BuyerConfirmed)
             throw new InvariantViolationException("Status is invalid.");
 
-        Status = OrderStatus.SellerConfirmed;
+        Status = OrderStatus.BuyerAndSellerConfirmed;
     }
 
     public void Deny()

@@ -39,6 +39,15 @@ public class ApiController : Controller
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
+    
+    [Route("get-exchanger-account-address")]
+    [HttpGet]
+    public async Task<IActionResult> CalculateFinalCryptoAmountForTransfer()
+    {
+        var result = await _mediator.Send(new GetExchangerAccountAddressCommand());
+
+        return ActionResultHelper.CreateResponse(result, HttpContext);
+    }
 
     private readonly IMediator _mediator;
 }

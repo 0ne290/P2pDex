@@ -1,6 +1,7 @@
 using Core.Application;
 using Infrastructure.Blockchain;
 using Infrastructure.Persistence;
+using Nethereum.Web3.Accounts;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -45,7 +46,7 @@ public class Program
             builder.Services.AddSerilog().AddControllers().AddNewtonsoftJson();
 
             var app = builder.Build();
-            
+
             app.UseSerilogRequestLogging();
 
             app.UseHsts();
@@ -80,17 +81,23 @@ public class Program
         var persistenceConfig = config.GetRequiredSection("Persistence");
 
         var blockchainUrl = blockchainConfig["Url"] ?? throw new Exception("Config.Blockchain.Url is not found.");
-        var blockchainAccountPrivateKey = blockchainConfig["PrivateKey"] ?? throw new Exception("Config.Blockchain.PrivateKey is not found.");
-        var blockchainId = int.Parse(blockchainConfig["ChainId"] ?? throw new Exception("Config.Blockchain.ChainId is not found."));
+        var blockchainAccountPrivateKey = blockchainConfig["PrivateKey"] ??
+                                          throw new Exception("Config.Blockchain.PrivateKey is not found.");
+        var blockchainId = int.Parse(blockchainConfig["ChainId"] ??
+                                     throw new Exception("Config.Blockchain.ChainId is not found."));
+        var blockchainAccount = new Account(blockchainAccountPrivateKey, blockchainId);
         const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
-        
-        var exchangerFeeRateInPercent = decimal.Parse(exchangerConfig["FeeRate"] ?? throw new Exception("Config.Exchanger.FeeRate is not found."));
+
+        var exchangerFeeRateInPercent = decimal.Parse(exchangerConfig["FeeRate"] ??
+                                                      throw new Exception("Config.Exchanger.FeeRate is not found."));
         var exchangerFeeRate = exchangerFeeRateInPercent / 100;
-        
-        var connectionString = persistenceConfig["SqliteConnectionString"] ?? throw new Exception("Config.Persistence.SqliteConnectionString is not found.");
+
+        var connectionString = persistenceConfig["SqliteConnectionString"] ??
+                               throw new Exception("Config.Persistence.SqliteConnectionString is not found.");
 
         await services.AddPersistence(connectionString);
-        await services.AddBlockchain(blockchainUrl, blockchainAccountPrivateKey, blockchainId, TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
-        services.AddApplication(exchangerFeeRate);
+        await services.AddBlockchain(blockchainUrl, blockchainAccount,
+            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
+        services.AddApplication(exchangerFeeRate, blockchainAccount.Address.ToLower());
     }
 }
