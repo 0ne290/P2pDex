@@ -18,12 +18,24 @@ public static class Extensions
 
             cfg.AddBehavior<IPipelineBehavior<CalculateFinalCryptoAmountForTransferCommand, CommandResult>,
                 LoggingBehavior<CalculateFinalCryptoAmountForTransferCommand, CommandResult>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<GetExchangerAccountAddressCommand, CommandResult>,
+                LoggingBehavior<GetExchangerAccountAddressCommand, CommandResult>>();
 
             cfg.AddBehavior<IPipelineBehavior<CreateTraderCommand, CommandResult>,
                 LoggingBehavior<CreateTraderCommand, CommandResult>>();
 
             cfg.AddBehavior<IPipelineBehavior<CreateSellOrderCommand, CommandResult>,
                 LoggingBehavior<CreateSellOrderCommand, CommandResult>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<RespondToSellOrderCommand, CommandResult>,
+                LoggingBehavior<RespondToSellOrderCommand, CommandResult>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<ConfirmOrderByBuyerCommand, CommandResult>,
+                LoggingBehavior<ConfirmOrderByBuyerCommand, CommandResult>>();
+            
+            cfg.AddBehavior<IPipelineBehavior<ConfirmBySellerAndCompleteOrderCommand, CommandResult>,
+                LoggingBehavior<ConfirmBySellerAndCompleteOrderCommand, CommandResult>>();
         });
 
         return services;

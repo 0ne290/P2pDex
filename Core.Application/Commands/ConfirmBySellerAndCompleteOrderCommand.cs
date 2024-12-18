@@ -5,9 +5,9 @@ namespace Core.Application.Commands;
 
 public class ConfirmBySellerAndCompleteOrderCommand : IRequest<CommandResult>
 {
-    [JsonProperty(PropertyName = "orderGuid")]
+    [JsonProperty(Required = Required.Always, PropertyName = "orderGuid")]
     public required Guid OrderGuid { get; init; }
     
-    [JsonProperty(PropertyName = "sellerGuid")]
+    [JsonProperty(Required = Required.Always, PropertyName = "sellerGuid")]
     public required Guid SellerGuid { get; init; }
 }

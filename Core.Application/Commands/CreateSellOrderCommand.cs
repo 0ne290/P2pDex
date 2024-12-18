@@ -5,24 +5,24 @@ namespace Core.Application.Commands;
 
 public class CreateSellOrderCommand : IRequest<CommandResult>
 {
-    [JsonProperty(PropertyName = "crypto")]
+    [JsonProperty(Required = Required.Always, PropertyName = "crypto")]
     public required string Crypto { get; init; }
 
-    [JsonProperty(PropertyName = "cryptoAmount")]
+    [JsonProperty(Required = Required.Always, PropertyName = "cryptoAmount")]
     public required decimal CryptoAmount { get; init; }
 
-    [JsonProperty(PropertyName = "fiat")]
+    [JsonProperty(Required = Required.Always, PropertyName = "fiat")]
     public required string Fiat { get; init; }
 
-    [JsonProperty(PropertyName = "cryptoToFiatExchangeRate")]
+    [JsonProperty(Required = Required.Always, PropertyName = "cryptoToFiatExchangeRate")]
     public required decimal CryptoToFiatExchangeRate { get; init; }
 
-    [JsonProperty(PropertyName = "paymentMethodInfo")]
+    [JsonProperty(Required = Required.Always, PropertyName = "paymentMethodInfo")]
     public required string PaymentMethodInfo { get; init; }
     
-    [JsonProperty(PropertyName = "sellerGuid")]
+    [JsonProperty(Required = Required.Always, PropertyName = "sellerGuid")]
     public required Guid SellerGuid { get; init; }
     
-    [JsonProperty(PropertyName = "transferTransactionHash")]
+    [JsonProperty(Required = Required.Always, PropertyName = "transferTransactionHash")]
     public required string TransferTransactionHash { get; init; }
 }

@@ -5,6 +5,6 @@ namespace Core.Application.Commands;
 
 public class CalculateFinalCryptoAmountForTransferCommand : IRequest<CommandResult>
 {
-    [JsonProperty(PropertyName = "cryptoAmount")]
+    [JsonProperty(Required = Required.Always, PropertyName = "cryptoAmount")]
     public required decimal CryptoAmount { get; init; }
 }

@@ -5,6 +5,6 @@ namespace Core.Application.Commands;
 
 public class CreateTraderCommand : IRequest<CommandResult>
 {
-    [JsonProperty(PropertyName = "name")]
+    [JsonProperty(Required = Required.Always, PropertyName = "name")]
     public required string Name { get; init; }
 }
