@@ -1,4 +1,3 @@
-using System.Numerics;
 using Core.Domain.Interfaces;
 using Core.Domain.Models;
 using Nethereum.Hex.HexTypes;
@@ -35,11 +34,9 @@ public class EthereumBlockchain : IBlockchain
 
     public async Task<string> SendTransferTransaction(string from, string to, decimal amount)
     {
-        var transactionInput = new TransactionInput(null, to, from,
-            new HexBigInteger(new BigInteger(TransferTransactionFeeTracker.GasLimitOfTransferTransaction)),
-            new HexBigInteger(Web3.Convert
-                .ToWei(TransferTransactionFee.Value / TransferTransactionFeeTracker.GasLimitOfTransferTransaction)
-                .ToHexBigInteger()), Web3.Convert.ToWei(amount).ToHexBigInteger());
+        var transactionInput = new TransactionInput(new HexBigInteger(2), null, to, from,
+            new HexBigInteger(GasLimitOfTransferTransaction), Web3.Convert.ToWei(amount).ToHexBigInteger(),
+            _transferTransactionFeeTracker.BaseFee, PriorityFee);
         
         //await _web3.TransactionManager.SendTransactionAsync(AccountAddress, to,
         //    Web3.Convert.ToWei(amount).ToHexBigInteger());
@@ -53,7 +50,7 @@ public class EthereumBlockchain : IBlockchain
     private static readonly HexBigInteger PriorityFee =
         new(Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei));
     
-    public const decimal GasLimitOfTransferTransaction = 21_000m;
+    public const int GasLimitOfTransferTransaction = 21_000;
     
     private readonly Web3 _web3;
 

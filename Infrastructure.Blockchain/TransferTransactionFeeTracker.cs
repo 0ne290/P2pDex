@@ -16,7 +16,8 @@ public class TransferTransactionFeeTracker : IDisposable
         _timer = new Timer { AutoReset = true, Enabled = false, Interval = intervalInMs };
         _timer.Elapsed += ElapsedEventHandler;
         
-        UpdateFee(DateTime.Now).GetAwaiter().GetResult();
+        BaseFee = (_web3.Eth.GasPrice.SendRequestAsync().GetAwaiter().GetResult().Value * 2).ToHexBigInteger();
+        _expectedNextUpdate = DateTime.Now + TimeSpan.FromMilliseconds(_timer.Interval);
         
         _timer.Start();
     }
@@ -26,10 +27,7 @@ public class TransferTransactionFeeTracker : IDisposable
 
     private async Task UpdateFee(DateTime updateTime)
     {
-        var gasPriceInWei = await _web3.Eth.GasPrice.SendRequestAsync();
-        var gasPriceInEth = Web3.Convert.FromWei(gasPriceInWei);
-
-        Fee = gasPriceInEth * GasLimitOfTransferTransaction;
+        BaseFee = ((await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2).ToHexBigInteger();
         _expectedNextUpdate = updateTime + TimeSpan.FromMilliseconds(_timer.Interval);
     }
 
@@ -60,8 +58,6 @@ public class TransferTransactionFeeTracker : IDisposable
         while (_synchronizer != 0)
             Thread.Yield();
     }
-    
-    public decimal Fee { get; private set; }
     
     public HexBigInteger BaseFee { get; private set; }
 
