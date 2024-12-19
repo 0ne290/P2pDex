@@ -9,10 +9,16 @@ namespace Infrastructure.Blockchain;
 
 public class EthereumBlockchain : IBlockchain
 {
-    public EthereumBlockchain(Web3 web3, TransferTransactionFeeTracker transferTransactionFeeTracker)
+    static EthereumBlockchain()
+    {
+        var priorityFeeValueInWei = Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei);
+        PriorityFee = (priorityFeeValueInWei.ToHexBigInteger(), Web3.Convert.FromWei(priorityFeeValueInWei));
+    }
+    
+    public EthereumBlockchain(Web3 web3, FeePerGasTracker feePerGasTracker)
     {
         _web3 = web3;
-        _transferTransactionFeeTracker = transferTransactionFeeTracker;
+        _feePerGasTracker = feePerGasTracker;
     }
 
     public async Task<TransferTransaction?> TryGetConfirmedTransactionByHash(string transactionHash)
@@ -36,7 +42,7 @@ public class EthereumBlockchain : IBlockchain
     {
         var transactionInput = new TransactionInput(new HexBigInteger(2), null, to, from,
             new HexBigInteger(GasLimitOfTransferTransaction), Web3.Convert.ToWei(amount).ToHexBigInteger(),
-            _transferTransactionFeeTracker.BaseFee, PriorityFee);
+            _feePerGasTracker.Value.InWei, PriorityFee.ValueInWei);
         
         //await _web3.TransactionManager.SendTransactionAsync(AccountAddress, to,
         //    Web3.Convert.ToWei(amount).ToHexBigInteger());
@@ -44,15 +50,15 @@ public class EthereumBlockchain : IBlockchain
         return await _web3.TransactionManager.SendTransactionAsync(transactionInput);
     }
 
-    public (decimal Value, double TimeToUpdateInMs) TransferTransactionFee => (_transferTransactionFeeTracker.Fee,
-        _transferTransactionFeeTracker.TimeToUpdateInMs);
+    public (decimal Value, double TimeToUpdateInMs) TransferTransactionFee => (
+        GasLimitOfTransferTransaction * (PriorityFee.ValueInEth + _feePerGasTracker.Value.InEth),
+        _feePerGasTracker.TimeToUpdateInMs);
 
-    private static readonly HexBigInteger PriorityFee =
-        new(Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei));
+    private static readonly (HexBigInteger ValueInWei, decimal ValueInEth) PriorityFee;
     
     public const int GasLimitOfTransferTransaction = 21_000;
     
     private readonly Web3 _web3;
 
-    private readonly TransferTransactionFeeTracker _transferTransactionFeeTracker;
+    private readonly FeePerGasTracker _feePerGasTracker;
 }

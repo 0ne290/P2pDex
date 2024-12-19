@@ -1,13 +1,21 @@
 using System.Timers;
 using Nethereum.Hex.HexTypes;
+using Nethereum.Util;
 using Nethereum.Web3;
 using Timer = System.Timers.Timer;
 
 namespace Infrastructure.Blockchain;
 
-public class TransferTransactionFeeTracker : IDisposable
+public class FeePerGasTracker : IDisposable
 {
-    public TransferTransactionFeeTracker(Web3 web3, double intervalInMs)
+    static FeePerGasTracker()
+    {
+        var maxPriorityInWei = Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei);
+        MaxPriorityValueInWei = maxPriorityInWei.ToHexBigInteger();
+        MaxPriorityValueInEth = Web3.Convert.FromWei(maxPriorityInWei);
+    }
+    
+    public FeePerGasTracker(Web3 web3, double intervalInMs)
     {
         _synchronizer = 0;
 
@@ -16,7 +24,8 @@ public class TransferTransactionFeeTracker : IDisposable
         _timer = new Timer { AutoReset = true, Enabled = false, Interval = intervalInMs };
         _timer.Elapsed += ElapsedEventHandler;
         
-        BaseFee = (_web3.Eth.GasPrice.SendRequestAsync().GetAwaiter().GetResult().Value * 2).ToHexBigInteger();
+        var valueInWei = (_web3.Eth.GasPrice.SendRequestAsync().GetAwaiter().GetResult().Value * 2);
+        Value = (valueInWei.ToHexBigInteger(), Web3.Convert.FromWei(valueInWei));
         _expectedNextUpdate = DateTime.Now + TimeSpan.FromMilliseconds(_timer.Interval);
         
         _timer.Start();
@@ -27,7 +36,10 @@ public class TransferTransactionFeeTracker : IDisposable
 
     private async Task UpdateFee(DateTime updateTime)
     {
-        BaseFee = ((await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2).ToHexBigInteger();
+        var baseInWei = (await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2;
+        var maxInWei = baseInWei + MaxPriorityValueInWei.Value;
+        var maxInEth = Web3.Convert.FromWei(maxInWei);
+        MaxValue = (maxInWei.ToHexBigInteger(), maxInEth);
         _expectedNextUpdate = updateTime + TimeSpan.FromMilliseconds(_timer.Interval);
     }
 
@@ -59,7 +71,11 @@ public class TransferTransactionFeeTracker : IDisposable
             Thread.Yield();
     }
     
-    public HexBigInteger BaseFee { get; private set; }
+    public (HexBigInteger InWei, decimal InEth) MaxValue { get; private set; }
+
+    public static readonly HexBigInteger MaxPriorityValueInWei;
+    
+    public static readonly decimal MaxPriorityValueInEth;
 
     public double TimeToUpdateInMs
     {
