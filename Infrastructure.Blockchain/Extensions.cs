@@ -17,12 +17,12 @@ public static class Extensions
         services.AddKeyedScoped<Web3>("Scoped",
             (_, _) => new Web3(account, url));
 
-        services.AddSingleton<FeePerGasTracker>(sp =>
-            new FeePerGasTracker(sp.GetRequiredKeyedService<Web3>("Singleton"), feeUpdateIntervalInMs));
+        services.AddSingleton<FeeTracker>(sp =>
+            new FeeTracker(sp.GetRequiredKeyedService<Web3>("Singleton"), feeUpdateIntervalInMs));
 
         services.AddScoped<IBlockchain, EthereumBlockchain>(sp =>
             new EthereumBlockchain(sp.GetRequiredKeyedService<Web3>("Scoped"),
-                sp.GetRequiredService<FeePerGasTracker>()));
+                sp.GetRequiredService<FeeTracker>()));
 
         return services;
     }

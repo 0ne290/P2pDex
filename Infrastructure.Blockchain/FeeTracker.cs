@@ -1,21 +1,13 @@
 using System.Timers;
 using Nethereum.Hex.HexTypes;
-using Nethereum.Util;
 using Nethereum.Web3;
 using Timer = System.Timers.Timer;
 
 namespace Infrastructure.Blockchain;
 
-public class FeePerGasTracker : IDisposable
+public class FeeTracker : IDisposable
 {
-    static FeePerGasTracker()
-    {
-        var maxPriorityInWei = Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei);
-        MaxPriorityValueInWei = maxPriorityInWei.ToHexBigInteger();
-        MaxPriorityValueInEth = Web3.Convert.FromWei(maxPriorityInWei);
-    }
-    
-    public FeePerGasTracker(Web3 web3, double intervalInMs)
+    public FeeTracker(Web3 web3, double intervalInMs)
     {
         _synchronizer = 0;
 
@@ -24,8 +16,12 @@ public class FeePerGasTracker : IDisposable
         _timer = new Timer { AutoReset = true, Enabled = false, Interval = intervalInMs };
         _timer.Elapsed += ElapsedEventHandler;
         
-        var valueInWei = (_web3.Eth.GasPrice.SendRequestAsync().GetAwaiter().GetResult().Value * 2);
-        Value = (valueInWei.ToHexBigInteger(), Web3.Convert.FromWei(valueInWei));
+        var baseFeeInWei = _web3.Eth.GasPrice.SendRequestAsync().GetAwaiter().GetResult().Value * 2;
+        var maxFeePerGasInWei = baseFeeInWei + EthereumBlockchain.MaxPriorityFeePerGasInWei.Value;
+
+        MaxFeePerGasInWei = maxFeePerGasInWei.ToHexBigInteger();
+        TransferTransactionFeeInEth =
+            Web3.Convert.FromWei(maxFeePerGasInWei * EthereumBlockchain.GasLimitOfTransferTransaction.Value);
         _expectedNextUpdate = DateTime.Now + TimeSpan.FromMilliseconds(_timer.Interval);
         
         _timer.Start();
@@ -36,10 +32,12 @@ public class FeePerGasTracker : IDisposable
 
     private async Task UpdateFee(DateTime updateTime)
     {
-        var baseInWei = (await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2;
-        var maxInWei = baseInWei + MaxPriorityValueInWei.Value;
-        var maxInEth = Web3.Convert.FromWei(maxInWei);
-        MaxValue = (maxInWei.ToHexBigInteger(), maxInEth);
+        var baseFeeInWei = (await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2;
+        var maxFeePerGasInWei = baseFeeInWei + EthereumBlockchain.MaxPriorityFeePerGasInWei.Value;
+
+        MaxFeePerGasInWei = maxFeePerGasInWei.ToHexBigInteger();
+        TransferTransactionFeeInEth =
+            Web3.Convert.FromWei(maxFeePerGasInWei * EthereumBlockchain.GasLimitOfTransferTransaction.Value);
         _expectedNextUpdate = updateTime + TimeSpan.FromMilliseconds(_timer.Interval);
     }
 
@@ -71,11 +69,9 @@ public class FeePerGasTracker : IDisposable
             Thread.Yield();
     }
     
-    public (HexBigInteger InWei, decimal InEth) MaxValue { get; private set; }
-
-    public static readonly HexBigInteger MaxPriorityValueInWei;
+    public HexBigInteger MaxFeePerGasInWei { get; private set; }
     
-    public static readonly decimal MaxPriorityValueInEth;
+    public decimal TransferTransactionFeeInEth { get; private set; }
 
     public double TimeToUpdateInMs
     {
