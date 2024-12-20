@@ -25,7 +25,7 @@ public class ApiController : Controller
 
     private readonly ExchangerConfiguration _exchangerConfiguration;
 
-    private int _synchronizer = 0;
+    private static int _synchronizer = 0;
     
     [Route("testing-nonce")]
     [HttpGet]
