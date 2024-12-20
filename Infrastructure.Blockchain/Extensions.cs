@@ -12,17 +12,24 @@ public static class Extensions
         var testWeb3 = new Web3(account, url);
         await testWeb3.Eth.GasPrice.SendRequestAsync();
 
-        services.AddKeyedSingleton<Web3>("Singleton",
-            (_, _) => new Web3(account, url));
-        services.AddKeyedScoped<Web3>("Scoped",
-            (_, _) => new Web3(account, url));
+        //services.AddKeyedSingleton<Web3>("Singleton",
+        //    (_, _) => new Web3(account, url));
+        //services.AddKeyedScoped<Web3>("Scoped",
+        //    (_, _) => new Web3(account, url));
 
+        services.AddSingleton<Web3>(_ => new Web3(account, url));
+
+        //services.AddSingleton<FeeTracker>(sp =>
+        //    new FeeTracker(sp.GetRequiredKeyedService<Web3>("Singleton"), feeUpdateIntervalInMs));
+        
         services.AddSingleton<FeeTracker>(sp =>
-            new FeeTracker(sp.GetRequiredKeyedService<Web3>("Singleton"), feeUpdateIntervalInMs));
+            new FeeTracker(sp.GetRequiredService<Web3>(), feeUpdateIntervalInMs));
 
-        services.AddScoped<IBlockchain, EthereumBlockchain>(sp =>
-            new EthereumBlockchain(sp.GetRequiredKeyedService<Web3>("Scoped"),
-                sp.GetRequiredService<FeeTracker>()));
+        //services.AddScoped<IBlockchain, EthereumBlockchain>(sp =>
+        //    new EthereumBlockchain(sp.GetRequiredKeyedService<Web3>("Scoped"),
+        //        sp.GetRequiredService<FeeTracker>()));
+        
+        services.AddSingleton<IBlockchain, EthereumBlockchain>();
 
         return services;
     }

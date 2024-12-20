@@ -3,30 +3,70 @@ using Core.Application.Commands;
 using Core.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Nethereum.RPC.Eth.DTOs;
+using Nethereum.Web3;
 
 namespace Web.Controllers;
 
 [Route("api")]
 public class ApiController : Controller
 {
-    public ApiController(IMediator mediator, IBlockchain blockchain, ExchangerConfiguration exchangerConfiguration)
+    public ApiController(IMediator mediator, IBlockchain blockchain, Web3 web3, ExchangerConfiguration exchangerConfiguration)
     {
         _mediator = mediator;
         _blockchain = blockchain;
+        _web3 = web3;
         _exchangerConfiguration = exchangerConfiguration;
     }
 
     private readonly IBlockchain _blockchain;
 
+    private readonly Web3 _web3;
+
     private readonly ExchangerConfiguration _exchangerConfiguration;
+
+    private int _synchronizer = 0;
     
     [Route("testing-nonce")]
     [HttpGet]
     public async Task<IActionResult> TestingNonce(string to, decimal amount)
     {
+        Interlocked.Increment(ref _synchronizer);
+        
+        Console.WriteLine($"{_synchronizer} begin");
+        
+        while (_synchronizer < 10)
+            Thread.Yield();
+        
         var transactionHash = await _blockchain.SendTransferTransaction(_exchangerConfiguration.AccountAddress, to, amount);
 
-        return Ok(transactionHash);
+        var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash);
+        
+        Console.WriteLine($"{_synchronizer} end");
+        
+        Interlocked.Decrement(ref _synchronizer);
+        
+        while (_synchronizer != 0)
+            Thread.Yield();
+        
+        return Ok(transaction);
+    }
+    
+    [Route("testing-transaction-count")]
+    [HttpGet]
+    public async Task<IActionResult> TestingTransactionCount()
+    {
+        var x =
+            (int)(await _web3.Eth.Transactions.GetTransactionCount.SendRequestAsync(
+                _web3.TransactionManager.Account.Address, BlockParameter.CreatePending())).Value;
+        var c =
+            (int)(await _web3.Eth.Transactions.GetTransactionCount.SendRequestAsync(
+                _web3.TransactionManager.Account.Address, BlockParameter.CreateLatest())).Value;
+        //var v =
+        //    (int)(await _web3.Eth.Transactions.GetTransactionCount.SendRequestAsync(
+        //        _web3.TransactionManager.Account.Address, BlockParameter.CreateEarliest())).Value;
+
+        return Ok(new { pending = x, latest = c });
     }
     
     [Route("testing-fee")]
