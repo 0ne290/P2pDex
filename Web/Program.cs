@@ -1,6 +1,8 @@
 using Core.Application;
 using Infrastructure.Blockchain;
 using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Serilog;
 using Serilog.Events;
@@ -95,9 +97,9 @@ public class Program
         var connectionString = persistenceConfig["SqliteConnectionString"] ??
                                throw new Exception("Config.Persistence.SqliteConnectionString is not found.");
 
-        await services.AddPersistence(connectionString);
-        await services.AddBlockchain(blockchainUrl, blockchainAccount,
-            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
-        services.AddApplication(exchangerFeeRate, blockchainAccount.Address.ToLower());
+        await services.AddPersistence(options => options.UseSqlite(connectionString));
+        await services.AddBlockchain(_ => new Web3(blockchainAccount, blockchainUrl),
+            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds, blockchainAccount.Address);
+        services.AddApplication(_ => new ExchangerConfiguration(exchangerFeeRate, blockchainAccount.Address.ToLower()));
     }
 }

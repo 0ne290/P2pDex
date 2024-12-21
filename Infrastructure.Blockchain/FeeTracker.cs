@@ -1,5 +1,6 @@
 using System.Timers;
 using Nethereum.Hex.HexTypes;
+using Nethereum.Util;
 using Nethereum.Web3;
 using Timer = System.Timers.Timer;
 
@@ -17,11 +18,11 @@ public class FeeTracker : IDisposable
         _timer.Elapsed += ElapsedEventHandler;
         
         var baseFeeInWei = _web3.Eth.GasPrice.SendRequestAsync().GetAwaiter().GetResult().Value * 2;
-        var maxFeePerGasInWei = baseFeeInWei + EthereumBlockchain.MaxPriorityFeePerGasInWei.Value;
+        var maxFeePerGasInWei = baseFeeInWei + MaxPriorityFeePerGasInWei.Value;
 
         MaxFeePerGasInWei = maxFeePerGasInWei.ToHexBigInteger();
         TransferTransactionFeeInEth =
-            Web3.Convert.FromWei(maxFeePerGasInWei * EthereumBlockchain.GasLimitOfTransferTransaction.Value);
+            Web3.Convert.FromWei(maxFeePerGasInWei * GasLimitOfTransferTransaction.Value);
         _expectedNextUpdate = DateTime.Now + TimeSpan.FromMilliseconds(_timer.Interval);
         
         _timer.Start();
@@ -33,11 +34,11 @@ public class FeeTracker : IDisposable
     private async Task UpdateFee(DateTime updateTime)
     {
         var baseFeeInWei = (await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2;
-        var maxFeePerGasInWei = baseFeeInWei + EthereumBlockchain.MaxPriorityFeePerGasInWei.Value;
+        var maxFeePerGasInWei = baseFeeInWei + MaxPriorityFeePerGasInWei.Value;
 
         MaxFeePerGasInWei = maxFeePerGasInWei.ToHexBigInteger();
         TransferTransactionFeeInEth =
-            Web3.Convert.FromWei(maxFeePerGasInWei * EthereumBlockchain.GasLimitOfTransferTransaction.Value);
+            Web3.Convert.FromWei(maxFeePerGasInWei * GasLimitOfTransferTransaction.Value);
         _expectedNextUpdate = updateTime + TimeSpan.FromMilliseconds(_timer.Interval);
     }
 
@@ -71,7 +72,12 @@ public class FeeTracker : IDisposable
     
     public HexBigInteger MaxFeePerGasInWei { get; private set; }
     
+    public readonly HexBigInteger MaxPriorityFeePerGasInWei =
+        Web3.Convert.ToWei(2, UnitConversion.EthUnit.Gwei).ToHexBigInteger();
+    
     public decimal TransferTransactionFeeInEth { get; private set; }
+    
+    public readonly HexBigInteger GasLimitOfTransferTransaction = new(21_000);
 
     public double TimeToUpdateInMs
     {

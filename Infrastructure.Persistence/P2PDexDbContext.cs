@@ -5,7 +5,7 @@ namespace Infrastructure.Persistence;
 
 public class P2PDexDbContext : DbContext
 {
-    public P2PDexDbContext(DbContextOptions<P2PDexDbContext> options) : base(options) { }
+    public P2PDexDbContext(DbContextOptions options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

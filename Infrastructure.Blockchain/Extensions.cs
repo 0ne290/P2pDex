@@ -1,35 +1,22 @@
 using Core.Domain.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Nethereum.Web3;
-using Nethereum.Web3.Accounts;
 
 namespace Infrastructure.Blockchain;
 
 public static class Extensions
 {
-    public static async Task<IServiceCollection> AddBlockchain(this IServiceCollection services, string url, Account account, double feeUpdateIntervalInMs)
+    public static async Task<IServiceCollection> AddBlockchain(this IServiceCollection services, Func<IServiceProvider, Web3> web3Factory, double feeUpdateIntervalInMs, string accountAddress)
     {
-        var testWeb3 = new Web3(account, url);
+        var testWeb3 = web3Factory(services.BuildServiceProvider());
         await testWeb3.Eth.GasPrice.SendRequestAsync();
 
-        //services.AddKeyedSingleton<Web3>("Singleton",
-        //    (_, _) => new Web3(account, url));
-        //services.AddKeyedScoped<Web3>("Scoped",
-        //    (_, _) => new Web3(account, url));
-
-        services.AddSingleton<Web3>(_ => new Web3(account, url));
-
-        //services.AddSingleton<FeeTracker>(sp =>
-        //    new FeeTracker(sp.GetRequiredKeyedService<Web3>("Singleton"), feeUpdateIntervalInMs));
+        services.AddSingleton(web3Factory);
         
-        services.AddSingleton<FeeTracker>(sp =>
-            new FeeTracker(sp.GetRequiredService<Web3>(), feeUpdateIntervalInMs));
+        services.AddSingleton<FeeTracker>(sp => new FeeTracker(sp.GetRequiredService<Web3>(), feeUpdateIntervalInMs));
 
-        //services.AddScoped<IBlockchain, EthereumBlockchain>(sp =>
-        //    new EthereumBlockchain(sp.GetRequiredKeyedService<Web3>("Scoped"),
-        //        sp.GetRequiredService<FeeTracker>()));
-        
-        services.AddSingleton<IBlockchain, EthereumBlockchain>();
+        services.AddSingleton<IBlockchain, EthereumBlockchain>(sp =>
+            new EthereumBlockchain(sp.GetRequiredService<Web3>(), accountAddress, sp.GetRequiredService<FeeTracker>()));
 
         return services;
     }

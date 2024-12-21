@@ -6,11 +6,9 @@ namespace Core.Application;
 
 public static class Extensions
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services, decimal exchangerFeeRate,
-        string exchangerAccountAddress)
+    public static IServiceCollection AddApplication(this IServiceCollection services, Func<IServiceProvider, ExchangerConfiguration> exchangerConfigurationFactory)
     {
-        services.AddSingleton<ExchangerConfiguration>(_ =>
-            new ExchangerConfiguration(exchangerFeeRate, exchangerAccountAddress));
+        services.AddSingleton(exchangerConfigurationFactory);
 
         services.AddMediatR(cfg =>
         {

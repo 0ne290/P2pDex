@@ -7,13 +7,16 @@ namespace Infrastructure.Persistence;
 public static class Extensions
 {
     public static async Task<IServiceCollection> AddPersistence(this IServiceCollection services,
-        string connectionString)
+        Action<DbContextOptionsBuilder> optionsAction)
     {
+        var dbContextOptionsBuilder = new DbContextOptionsBuilder();
+        optionsAction(dbContextOptionsBuilder);
+        
         var testDbContext =
-            new P2PDexDbContext(new DbContextOptionsBuilder<P2PDexDbContext>().UseSqlite(connectionString).Options);
+            new P2PDexDbContext(dbContextOptionsBuilder.Options);
         await testDbContext.Database.EnsureCreatedAsync();
 
-        services.AddDbContext<P2PDexDbContext>(options => options.UseSqlite(connectionString));
+        services.AddDbContext<P2PDexDbContext>(optionsAction);
 
         services.AddScoped<IRepository, Repository>();
         services.AddScoped<Repository>();

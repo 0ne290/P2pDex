@@ -43,8 +43,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
         if (expectedCryptoAmount != transaction.Amount)
         {
             var refundTransactionHash =
-                await _blockchain.SendTransferTransaction(_exchangerConfiguration.AccountAddress, transaction.From,
-                    transaction.Amount - exchangerToMinersFee);
+                await _blockchain.SendTransferTransaction(transaction.From, transaction.Amount - exchangerToMinersFee);
 
             throw new InvariantViolationException(
                 $"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain. Refund transaction hash: {refundTransactionHash}.");
