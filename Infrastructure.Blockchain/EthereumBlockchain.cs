@@ -67,8 +67,6 @@ public class EthereumBlockchain : IBlockchain
             throw;
         }
     }
-    
-    
 
     public (decimal Value, double TimeToUpdateInMs) TransferTransactionFee =>
         (_feeTracker.TransferTransactionFeeInEth, _feeTracker.TimeToUpdateInMs);
