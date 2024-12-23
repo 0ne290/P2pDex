@@ -3,11 +3,12 @@ namespace Core.Domain.Constants;
 public enum OrderStatus
 {
     Created,
-    BuyerResponded,
-    SellerResponded,
-    BuyerConfirmed,
-    BuyerAndSellerConfirmed,
+    SellerToExchangerTransferTransactionConfirmed,
+    RespondedByBuyer,
+    RespondedBySeller,
+    TransferFiatToSellerConfirmedByBuyer,
+    ReceiptFiatFromBuyerConfirmedBySeller,
     FrozenForDurationOfDispute,
     //Cancelled,
-    Completed
+    ExchangerToBuyerTransferTransactionConfirmed
 }

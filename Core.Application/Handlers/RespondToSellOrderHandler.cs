@@ -20,7 +20,7 @@ public class RespondToSellOrderHandler : IRequestHandler<RespondToSellOrderComma
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
-        order.Respond(request.BuyerGuid, request.BuyerAccountAddress);
+        order.RespondByBuyer(request.BuyerGuid, request.BuyerAccountAddress);
         
         if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Guid.Equals(request.BuyerGuid)))
             throw new InvariantViolationException("Buyer does not exists.");

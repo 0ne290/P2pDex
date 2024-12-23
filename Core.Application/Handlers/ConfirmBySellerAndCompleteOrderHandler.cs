@@ -21,7 +21,7 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
-        order.ConfirmBySeller();
+        order.ConfirmBySellerReceiptFiatFromBuyer();
 
         if (!Equals(order.SellerGuid, request.SellerGuid))
             throw new InvariantViolationException("Trader is not a seller.");

@@ -20,7 +20,7 @@ public class ConfirmOrderByBuyerHandler : IRequestHandler<ConfirmOrderByBuyerCom
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
-        order.ConfirmByBuyer();
+        order.ConfirmByBuyerTransferFiatToSeller();
 
         if (!Equals(order.BuyerGuid, request.BuyerGuid))
             throw new InvariantViolationException("Trader is not a buyer.");

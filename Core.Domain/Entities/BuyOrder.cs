@@ -20,7 +20,7 @@ public class BuyOrder : BaseOrder
         SellerToExchangerTransferTransactionHash = null;
     }
 
-    public void Respond(Trader seller, string sellerToExchangerTransferTransactionHash)
+    public void RespondByBuyer(Trader seller, string sellerToExchangerTransferTransactionHash)
     {
         if (Status != OrderStatus.Created)
             throw new InvariantViolationException("Status is invalid.");
@@ -29,28 +29,28 @@ public class BuyOrder : BaseOrder
 
         Seller = seller;
         SellerToExchangerTransferTransactionHash = sellerToExchangerTransferTransactionHash;
-        Status = OrderStatus.SellerResponded;
+        Status = OrderStatus.RespondedBySeller;
     }
 
     public void BuyerConfirm()
     {
-        if (Status != OrderStatus.SellerResponded)
+        if (Status != OrderStatus.RespondedBySeller)
             throw new InvariantViolationException("Status is invalid.");
 
-        Status = OrderStatus.BuyerConfirmed;
+        Status = OrderStatus.TransferFiatToSellerConfirmedByBuyer;
     }
 
     public void SellerConfirm()
     {
-        if (Status != OrderStatus.BuyerConfirmed)
+        if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
             throw new InvariantViolationException("Status is invalid.");
 
-        Status = OrderStatus.BuyerAndSellerConfirmed;
+        Status = OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller;
     }
 
     public void SellerDeny()
     {
-        if (Status != OrderStatus.BuyerConfirmed)
+        if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
             throw new InvariantViolationException("Status is invalid.");
 
         Status = OrderStatus.FrozenForDurationOfDispute;
@@ -65,7 +65,7 @@ public class BuyOrder : BaseOrder
         {
             case OrderStatus.FrozenForDurationOfDispute:
                 break;
-            case OrderStatus.BuyerAndSellerConfirmed:
+            case OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller:
                 Seller!.IncrementSuccessfulOrdersAsSeller();
                 Buyer.IncrementSuccessfulOrdersAsBuyer();
                 break;
