@@ -46,7 +46,7 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.RespondedByBuyer;
     }
 
-    public void ConfirmByBuyerTransferFiatToSeller()
+    public void ConfirmTransferFiatToSellerByBuyer()
     {
         if (Status != OrderStatus.RespondedByBuyer)
             throw new InvariantViolationException("Status is invalid.");
@@ -54,10 +54,10 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.TransferFiatToSellerConfirmedByBuyer;
     }
 
-    public void ConfirmBySellerReceiptFiatFromBuyer(string exchangerToBuyerTransferTransactionHash)
+    public void ConfirmReceiptFiatFromBuyerBySeller(string exchangerToBuyerTransferTransactionHash)
     {
         if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
-            throw new InvariantViolationException("Status is invalid.");
+            throw new DevelopmentErrorException("Status is invalid.");
         if (!EthereumTransactionHashRegex.IsMatch(exchangerToBuyerTransferTransactionHash))
             throw new DevelopmentErrorException("Exchanger to buyer transfer transaction hash is invalid.");
 
@@ -65,20 +65,20 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller;
     }
 
-    public void DenyBySellerReceiptFiatFromBuyer()
-    {
-        if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
-            throw new InvariantViolationException("Status is invalid.");
-
-        Status = OrderStatus.FrozenForDurationOfDispute;
-    }
+    //public void DenyReceiptFiatFromBuyerBySeller()
+    //{
+    //    if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
+    //        throw new InvariantViolationException("Status is invalid.");
+//
+    //    Status = OrderStatus.FrozenForDurationOfDispute;
+    //}
     
     public void ConfirmExchangerToBuyerTransferTransaction()
     {
         switch (Status)
         {
-            case OrderStatus.FrozenForDurationOfDispute:
-                break;
+            //case OrderStatus.FrozenForDurationOfDispute:
+            //    break;
             case OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller:
                 //Seller.IncrementSuccessfulOrdersAsSeller();
                 //Buyer!.IncrementSuccessfulOrdersAsBuyer();

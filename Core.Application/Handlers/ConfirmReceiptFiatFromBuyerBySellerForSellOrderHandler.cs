@@ -1,4 +1,5 @@
 using Core.Application.Commands;
+using Core.Domain.Constants;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
@@ -6,12 +7,13 @@ using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmBySellerAndCompleteOrderCommand, CommandResult>
+public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmBySellerAndCompleteOrderCommand, CommandResult>
 {
-    public ConfirmBySellerAndCompleteOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain)
+    public ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain, OrderTransferTransactionTracker orderTransferTransactionTracker)
     {
         _unitOfWork = unitOfWork;
         _blockchain = blockchain;
+        _orderTransferTransactionTracker = orderTransferTransactionTracker;
     }
     
     public async Task<CommandResult> Handle(ConfirmBySellerAndCompleteOrderCommand request, CancellationToken _)
@@ -20,16 +22,17 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
 
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
-        
-        order.ConfirmBySellerReceiptFiatFromBuyer();
-
         if (!Equals(order.SellerGuid, request.SellerGuid))
             throw new InvariantViolationException("Trader is not a seller.");
-
+        if (order.Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
+            throw new InvariantViolationException("Order status is invalid.");
+        
         var transactionHash = await _blockchain.SendTransferTransaction(order.BuyerAccountAddress!, order.CryptoAmount);
-        order.Complete(transactionHash);
+        order.ConfirmReceiptFiatFromBuyerBySeller(transactionHash);
         
         await _unitOfWork.SaveAllTrackedEntities();
+        
+        _orderTransferTransactionTracker.Track(order);
         
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
@@ -37,4 +40,6 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IBlockchain _blockchain;
+
+    private readonly OrderTransferTransactionTracker _orderTransferTransactionTracker;
 }

@@ -8,11 +8,12 @@ namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, CommandResult>
 {
-    public CreateSellOrderHandler(IBlockchain blockchain, IUnitOfWork unitOfWork, ExchangerConfiguration exchangerConfiguration)
+    public CreateSellOrderHandler(IBlockchain blockchain, IUnitOfWork unitOfWork, ExchangerConfiguration exchangerConfiguration, OrderTransferTransactionTracker orderTransferTransactionTracker)
     {
         _blockchain = blockchain;
         _unitOfWork = unitOfWork;
         _exchangerConfiguration = exchangerConfiguration;
+        _orderTransferTransactionTracker = orderTransferTransactionTracker;
     }
 
     public async Task<CommandResult> Handle(CreateSellOrderCommand request, CancellationToken _)
@@ -51,6 +52,8 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
 
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.SaveAllTrackedEntities();
+        
+        _orderTransferTransactionTracker.Track(order);
 
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
@@ -60,4 +63,6 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly ExchangerConfiguration _exchangerConfiguration;
+
+    private readonly OrderTransferTransactionTracker _orderTransferTransactionTracker;
 }

@@ -6,27 +6,27 @@ using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class RespondToSellOrderHandler : IRequestHandler<RespondToSellOrderCommand, CommandResult>
+public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHandler<ConfirmOrderByBuyerCommand, CommandResult>
 {
-    public RespondToSellOrderHandler(IUnitOfWork unitOfWork)
+    public ConfirmTransferFiatToSellerByBuyerForSellOrderHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
     
-    public async Task<CommandResult> Handle(RespondToSellOrderCommand request, CancellationToken _)
+    public async Task<CommandResult> Handle(ConfirmOrderByBuyerCommand request, CancellationToken _)
     {
         var order = await _unitOfWork.Repository.TryGetByGuid<SellOrder>(request.OrderGuid);
 
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
-        order.RespondByBuyer(request.BuyerGuid, request.BuyerAccountAddress);
-        
-        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Guid.Equals(request.BuyerGuid)))
-            throw new InvariantViolationException("Buyer does not exists.");
-    
-        await _unitOfWork.SaveAllTrackedEntities();
+        order.ConfirmTransferFiatToSellerByBuyer();
 
+        if (!Equals(order.BuyerGuid, request.BuyerGuid))
+            throw new InvariantViolationException("Trader is not a buyer.");
+
+        await _unitOfWork.SaveAllTrackedEntities();
+        
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
 

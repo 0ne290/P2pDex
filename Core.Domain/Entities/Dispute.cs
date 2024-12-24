@@ -11,7 +11,7 @@ public class Dispute : BaseEntity
         OrderGuid = orderGuid;
         AdministratorGuid = null;
         
-        //sellOrder.DenyBySellerReceiptFiatFromBuyer(trader);
+        //sellOrder.DenyReceiptFiatFromBuyerBySeller(trader);
     }
 
     public void AssignAdministrator(Guid administratorGuid)
