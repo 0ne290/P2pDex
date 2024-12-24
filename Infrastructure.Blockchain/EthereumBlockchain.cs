@@ -36,6 +36,13 @@ public class EthereumBlockchain : IBlockchain
         };
     }
 
+    public async Task<bool> TransactionIsConfirmed(string transactionHash)
+    {
+        var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
+
+        return receipt != null && receipt.Status.Value == 1;
+    }
+
     public async Task<string> SendTransferTransaction(string to, decimal amount)
     {
         try

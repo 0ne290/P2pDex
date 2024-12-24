@@ -25,7 +25,7 @@ public class RespondToSellOrderHandler : IRequestHandler<RespondToSellOrderComma
         if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Guid.Equals(request.BuyerGuid)))
             throw new InvariantViolationException("Buyer does not exists.");
     
-        await _unitOfWork.Save();
+        await _unitOfWork.SaveAllTrackedEntities();
 
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }

@@ -5,6 +5,8 @@ namespace Core.Domain.Interfaces;
 public interface IBlockchain
 {
     Task<TransferTransaction?> TryGetConfirmedTransactionByHash(string transactionHash);
+
+    Task<bool> TransactionIsConfirmed(string transactionHash);
     
     Task<string> SendTransferTransaction(string to, decimal amount);
     

@@ -25,7 +25,7 @@ public class ConfirmOrderByBuyerHandler : IRequestHandler<ConfirmOrderByBuyerCom
         if (!Equals(order.BuyerGuid, request.BuyerGuid))
             throw new InvariantViolationException("Trader is not a buyer.");
 
-        await _unitOfWork.Save();
+        await _unitOfWork.SaveAllTrackedEntities();
         
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }

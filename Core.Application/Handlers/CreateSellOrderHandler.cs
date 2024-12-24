@@ -50,7 +50,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
         }
 
         await _unitOfWork.Repository.Add(order);
-        await _unitOfWork.Save();
+        await _unitOfWork.SaveAllTrackedEntities();
 
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }

@@ -10,7 +10,7 @@ public class UnitOfWork : IUnitOfWork
         Repository = repository;
     }
 
-    public async Task Save() => await _dbContext.SaveChangesAsync();
+    public async Task SaveAllTrackedEntities() => await _dbContext.SaveChangesAsync();
     
     public IRepository Repository { get; }
 

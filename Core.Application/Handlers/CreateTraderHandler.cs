@@ -17,7 +17,7 @@ public class CreateTraderHandler : IRequestHandler<CreateTraderCommand, CommandR
         var trader = new Trader(Guid.NewGuid(), request.Name);
 
         await _unitOfWork.Repository.Add(trader);
-        await _unitOfWork.Save();
+        await _unitOfWork.SaveAllTrackedEntities();
         
         return new CommandResult(new { guid = trader.Guid });
     }

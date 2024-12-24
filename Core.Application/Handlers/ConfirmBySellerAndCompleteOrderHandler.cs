@@ -29,7 +29,7 @@ public class ConfirmBySellerAndCompleteOrderHandler : IRequestHandler<ConfirmByS
         var transactionHash = await _blockchain.SendTransferTransaction(order.BuyerAccountAddress!, order.CryptoAmount);
         order.Complete(transactionHash);
         
-        await _unitOfWork.Save();
+        await _unitOfWork.SaveAllTrackedEntities();
         
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
