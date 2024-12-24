@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmBySellerAndCompleteOrderCommand, CommandResult>
+public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>
 {
     public ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain, OrderTransferTransactionTracker orderTransferTransactionTracker)
     {
@@ -16,7 +16,7 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
         _orderTransferTransactionTracker = orderTransferTransactionTracker;
     }
     
-    public async Task<CommandResult> Handle(ConfirmBySellerAndCompleteOrderCommand request, CancellationToken _)
+    public async Task<CommandResult> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
     {
         var order = await _unitOfWork.Repository.TryGetByGuid<SellOrder>(request.OrderGuid);
 
@@ -26,8 +26,9 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
             throw new InvariantViolationException("Trader is not a seller.");
         if (order.Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
             throw new InvariantViolationException("Order status is invalid.");
-        
-        var transactionHash = await _blockchain.SendTransferTransaction(order.BuyerAccountAddress!, order.CryptoAmount);
+
+        var transactionHash = await _blockchain.SendTransferTransaction(order.BuyerAccountAddress!, order.CryptoAmount,
+            order.ExchangerToMinersFee);
         order.ConfirmReceiptFiatFromBuyerBySeller(transactionHash);
         
         await _unitOfWork.SaveAllTrackedEntities();

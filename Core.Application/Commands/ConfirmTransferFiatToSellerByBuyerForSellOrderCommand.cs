@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Core.Application.Commands;
 
-public class ConfirmOrderByBuyerCommand : IRequest<CommandResult>
+public class ConfirmTransferFiatToSellerByBuyerForSellOrderCommand : IRequest<CommandResult>
 {
     [JsonProperty(Required = Required.Always, PropertyName = "orderGuid")]
     public required Guid OrderGuid { get; init; }

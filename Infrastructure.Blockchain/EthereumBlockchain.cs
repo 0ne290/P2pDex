@@ -1,3 +1,4 @@
+using Core.Domain.Constants;
 using Core.Domain.Interfaces;
 using Core.Domain.Models;
 using Nethereum.Hex.HexTypes;
@@ -36,11 +37,14 @@ public class EthereumBlockchain : IBlockchain
         };
     }
 
-    public async Task<bool> TransactionIsConfirmed(string transactionHash)
+    public async Task<TransferTransactionStatus?> TryGetTransactionStatus(string transactionHash)
     {
         var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
 
-        return receipt != null && receipt.Status.Value == 1;
+        if (receipt == null)
+            return null;
+
+        return receipt.Status.Value == 1 ? TransferTransactionStatus.Confirmed : TransferTransactionStatus.Rejected;
     }
 
     public async Task<string> SendTransferTransaction(string to, decimal amount)
@@ -53,6 +57,42 @@ public class EthereumBlockchain : IBlockchain
                 transactionInput = new TransactionInput(TransactionType.EIP1559.AsHexBigInteger(), null, to, _accountAddress,
                     _feeTracker.GasLimitOfTransferTransaction, Web3.Convert.ToWei(amount).ToHexBigInteger(),
                     _feeTracker.MaxFeePerGasInWei, _feeTracker.MaxPriorityFeePerGasInWei) { Nonce = _currentNonce };
+
+                _currentNonce = (_currentNonce.Value + 1).ToHexBigInteger();
+            }
+
+            var transactionHash = await _web3.TransactionManager.SendTransactionAsync(transactionInput);
+
+            return transactionHash;
+        }
+        catch (Exception)
+        {
+            var currentNonce =
+                await _web3.Eth.Transactions.GetTransactionCount.SendRequestAsync(
+                    _accountAddress, BlockParameter.CreatePending());
+            lock (_locker)
+            {
+                _currentNonce = currentNonce;
+            }
+            
+            throw;
+        }
+    }
+    
+    public async Task<string> SendTransferTransaction(string to, decimal amount, decimal fee)
+    {
+        var maxFeePerGasInWei = Web3.Convert.ToWei(fee) / _feeTracker.GasLimitOfTransferTransaction;
+        var baseFeeInWei = (await _web3.Eth.GasPrice.SendRequestAsync()).Value * 2;
+        var maxPriorityFeePerGasInWei = maxFeePerGasInWei - baseFeeInWei;
+        
+        try
+        {
+            TransactionInput transactionInput;
+            lock (_locker)
+            {
+                transactionInput = new TransactionInput(TransactionType.EIP1559.AsHexBigInteger(), null, to, _accountAddress,
+                    _feeTracker.GasLimitOfTransferTransaction, Web3.Convert.ToWei(amount).ToHexBigInteger(),
+                    maxFeePerGasInWei.ToHexBigInteger(), maxPriorityFeePerGasInWei.ToHexBigInteger()) { Nonce = _currentNonce };
 
                 _currentNonce = (_currentNonce.Value + 1).ToHexBigInteger();
             }

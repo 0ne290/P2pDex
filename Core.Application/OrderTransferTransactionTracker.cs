@@ -1,6 +1,7 @@
 using System.Timers;
 using Core.Domain.Constants;
 using Core.Domain.Entities;
+using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
@@ -72,9 +73,34 @@ public class OrderTransferTransactionTracker : IDisposable
                 transactionHash = order.ExchangerToBuyerTransferTransactionHash!;
                 confirmTransaction = order.ConfirmExchangerToBuyerTransferTransaction;
             }
-
-            if (!await _blockchain.TransactionIsConfirmed(transactionHash))
+            
+            var transactionStatus = await _blockchain.TryGetTransactionStatus(transactionHash);
+            if (transactionStatus == null)
                 continue;
+            // TODO: Доработать/переделать систему комиссий.
+            // Этот очень мутный кейс возникает в двух условиях:
+            // 1. Если продавец указал в команде создания заказа на продажу хэш "херовой" транзакции, которая либо
+            // изначально была отменена, либо отменилась уже после вызова команды. Это условие можно и нужно легко
+            // протестировать.
+            // 2. Если P2P DEX сама создала какую-то "херовую" транзакцию. Это может произойти, если курс комиссии
+            // (неважно - базовой или приоритетной - но если я правильно понимаю Ethereum, кейс с базовой комиссией
+            // наиболее вероятен, если вообще не единственный) слишком сильно изменился с момента ее назначения заказу
+            // (в случае с заказом на продажу это момент создания заказа, а в случае с заказом на покупку это момент
+            // отклика продавца).
+            // Этот кейс максимально мутный из-за второго условия, т. к. его невозможно воспроизвести и протестировать
+            // и на него невозможно выработать какую-то ответную реакцию. Какие могут быть варианты? Обработать админу
+            // заказ в частном порядке в обход P2P DEX? Кинуть мэссэдж "Извините, на данный момент комиссия в сети
+            // Ethereum слишком высока"? И тот и другой варианты - полная х*%№я - поэтому вероятность такого события
+            // должна быть либо равна 0, либо сведена к минимуму, а для этого требуется доработать/переделать систему
+            // комиссий
+            if (transactionStatus == TransferTransactionStatus.Rejected)
+            {
+                _logger.LogCritical(
+                    "Order transfer transaction is rejected. Order GUID: {OrderGuid}; Transaction hash: {TransactionHash}.",
+                    order.Guid, transactionHash);
+                
+                throw new DevelopmentErrorException($"Order transfer transaction is rejected. Order GUID: {order.Guid}; Transaction hash: {transactionHash}.");
+            }
             
             confirmTransaction();
             updatedOrders.Add(order);

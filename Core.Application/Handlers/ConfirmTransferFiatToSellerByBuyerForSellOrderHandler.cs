@@ -6,14 +6,14 @@ using MediatR;
 
 namespace Core.Application.Handlers;
 
-public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHandler<ConfirmOrderByBuyerCommand, CommandResult>
+public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHandler<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, CommandResult>
 {
     public ConfirmTransferFiatToSellerByBuyerForSellOrderHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
     
-    public async Task<CommandResult> Handle(ConfirmOrderByBuyerCommand request, CancellationToken _)
+    public async Task<CommandResult> Handle(ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request, CancellationToken _)
     {
         var order = await _unitOfWork.Repository.TryGetByGuid<SellOrder>(request.OrderGuid);
 

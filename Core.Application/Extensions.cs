@@ -26,14 +26,14 @@ public static class Extensions
             cfg.AddBehavior<IPipelineBehavior<CreateSellOrderCommand, CommandResult>,
                 LoggingBehavior<CreateSellOrderCommand, CommandResult>>();
             
-            cfg.AddBehavior<IPipelineBehavior<RespondToSellOrderCommand, CommandResult>,
-                LoggingBehavior<RespondToSellOrderCommand, CommandResult>>();
+            cfg.AddBehavior<IPipelineBehavior<RespondToSellOrderByBuyerCommand, CommandResult>,
+                LoggingBehavior<RespondToSellOrderByBuyerCommand, CommandResult>>();
             
-            cfg.AddBehavior<IPipelineBehavior<ConfirmOrderByBuyerCommand, CommandResult>,
-                LoggingBehavior<ConfirmOrderByBuyerCommand, CommandResult>>();
+            cfg.AddBehavior<IPipelineBehavior<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, CommandResult>,
+                LoggingBehavior<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, CommandResult>>();
             
-            cfg.AddBehavior<IPipelineBehavior<ConfirmBySellerAndCompleteOrderCommand, CommandResult>,
-                LoggingBehavior<ConfirmBySellerAndCompleteOrderCommand, CommandResult>>();
+            cfg.AddBehavior<IPipelineBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>,
+                LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>>();
         });
 
         return services;

@@ -24,9 +24,9 @@ public class ApiController : Controller
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
-    [Route("respond-to-sell-order")]
+    [Route("respond-to-sell-order-by-buyer")]
     [HttpPost]
-    public async Task<IActionResult> RespondToSellOrder([FromBody] RespondToSellOrderCommand? request)
+    public async Task<IActionResult> RespondToSellOrderByBuyer([FromBody] RespondToSellOrderByBuyerCommand? request)
     {
         if (request == null)
             return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
@@ -36,9 +36,9 @@ public class ApiController : Controller
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
-    [Route("confirm-order-by-buyer")]
+    [Route("confirm-transfer-fiat-to-seller-by-buyer-for-sell-order")]
     [HttpPost]
-    public async Task<IActionResult> ConfirmOrderByBuyer([FromBody] ConfirmOrderByBuyerCommand? request)
+    public async Task<IActionResult> ConfirmTransferFiatToSellerByBuyerForSellOrder([FromBody] ConfirmTransferFiatToSellerByBuyerForSellOrderCommand? request)
     {
         if (request == null)
             return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
@@ -48,9 +48,9 @@ public class ApiController : Controller
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
-    [Route("confirm-by-seller-and-complete-order")]
+    [Route("confirm-receipt-fiat-from-buyer-by-seller-for-sell-order")]
     [HttpPost]
-    public async Task<IActionResult> ConfirmBySellerAndCompleteOrder([FromBody] ConfirmBySellerAndCompleteOrderCommand? request)
+    public async Task<IActionResult> ConfirmReceiptFiatFromBuyerBySellerForSellOrder([FromBody] ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand? request)
     {
         if (request == null)
             return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
