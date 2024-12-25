@@ -1,6 +1,9 @@
 using Core.Application;
+using Core.Application.Commands;
+using Core.Domain.Interfaces;
 using Infrastructure.Blockchain;
 using Infrastructure.Persistence;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
@@ -83,23 +86,97 @@ public class Program
         var persistenceConfig = config.GetRequiredSection("Persistence");
 
         var blockchainUrl = blockchainConfig["Url"] ?? throw new Exception("Config.Blockchain.Url is not found.");
-        var blockchainAccountPrivateKey = blockchainConfig["PrivateKey"] ??
-                                          throw new Exception("Config.Blockchain.PrivateKey is not found.");
-        var blockchainId = int.Parse(blockchainConfig["ChainId"] ??
-                                     throw new Exception("Config.Blockchain.ChainId is not found."));
-        var blockchainAccount = new Account(blockchainAccountPrivateKey, blockchainId);
+
         const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
 
         var exchangerFeeRateInPercent = decimal.Parse(exchangerConfig["FeeRate"] ??
                                                       throw new Exception("Config.Exchanger.FeeRate is not found."));
-        var exchangerFeeRate = exchangerFeeRateInPercent / 100;
 
-        var connectionString = persistenceConfig["SqliteConnectionString"] ??
-                               throw new Exception("Config.Persistence.SqliteConnectionString is not found.");
+        await AddPersistence(persistenceConfig["SqliteConnectionString"] ??
+                             throw new Exception("Config.Persistence.SqliteConnectionString is not found."));
+        var blockchainAccountAddress = await AddBlockchain(
+            blockchainConfig["PrivateKey"] ?? throw new Exception("Config.Blockchain.PrivateKey is not found."),
+            int.Parse(blockchainConfig["ChainId"] ?? throw new Exception("Config.Blockchain.ChainId is not found.")),
+            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
+        AddApplication(exchangerFeeRateInPercent / 100, blockchainAccountAddress.ToLower());
 
-        await services.AddPersistence(options => options.UseSqlite(connectionString));
-        await services.AddBlockchain(_ => new Web3(blockchainAccount, blockchainUrl),
-            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds, blockchainAccount.Address);
-        services.AddApplication(_ => new ExchangerConfiguration(exchangerFeeRate, blockchainAccount.Address.ToLower()));
+        return;
+
+        async Task AddPersistence(string connectionString)
+        {
+            Action<DbContextOptionsBuilder> optionsAction = options => options.UseSqlite(connectionString);
+
+            var dbContextOptionsBuilder = new DbContextOptionsBuilder();
+            optionsAction(dbContextOptionsBuilder);
+
+            var testDbContext = new P2PDexDbContext(dbContextOptionsBuilder.Options);
+            await testDbContext.Database.EnsureCreatedAsync();
+
+            services.AddDbContext<P2PDexDbContext>(optionsAction, ServiceLifetime.Transient, ServiceLifetime.Transient);
+
+            services.AddTransient<Repository>();
+
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+        }
+
+        async Task<string> AddBlockchain(string blockchainAccountPrivateKey, int blockchainId,
+            double feeUpdateIntervalInMs)
+        {
+            var blockchainAccount = new Account(blockchainAccountPrivateKey, blockchainId);
+            Func<Web3> web3Factory = () => new Web3(blockchainAccount, blockchainUrl);
+
+            var testWeb3 = web3Factory();
+            await testWeb3.Eth.GasPrice.SendRequestAsync();
+
+            services.AddSingleton(web3Factory);
+
+            services.AddSingleton<FeeTracker>(
+                sp => new FeeTracker(sp.GetRequiredService<Web3>(), feeUpdateIntervalInMs));
+
+            services.AddSingleton<IBlockchain, EthereumBlockchain>(sp =>
+                new EthereumBlockchain(sp.GetRequiredService<Web3>(), blockchainAccount.Address,
+                    sp.GetRequiredService<FeeTracker>()));
+
+            return blockchainAccount.Address;
+        }
+
+        void AddApplication(decimal exchangerFeeRate, string exchangerAccountAddress)
+        {
+            services.AddSingleton(() => new ExchangerConfiguration(exchangerFeeRate, exchangerAccountAddress));
+
+            services.AddSingleton<OrderTransferTransactionTracker>();
+
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(CreateSellOrderCommand).Assembly);
+                
+                cfg.AddBehavior<IPipelineBehavior<CalculateFinalCryptoAmountForTransferCommand, CommandResult>,
+                    LoggingBehavior<CalculateFinalCryptoAmountForTransferCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<GetExchangerAccountAddressCommand, CommandResult>,
+                    LoggingBehavior<GetExchangerAccountAddressCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<CreateTraderCommand, CommandResult>,
+                    LoggingBehavior<CreateTraderCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<CreateSellOrderCommand, CommandResult>,
+                    LoggingBehavior<CreateSellOrderCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<RespondToSellOrderByBuyerCommand, CommandResult>,
+                    LoggingBehavior<RespondToSellOrderByBuyerCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, CommandResult>,
+                    LoggingBehavior<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>
+                    , LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>>();
+            });
+
+            // Вот таким образом можно тонко настраивать создание обработчиков команд
+            //services.AddScoped<IRequestHandler<CreateSellOrderCommand, CommandResult>, CreateSellOrderHandler>(sp =>
+            //    new CreateSellOrderHandler(sp.GetRequiredService<IBlockchain>(),
+            //        sp.GetRequiredKeyedService<IUnitOfWork>("Scoped"), sp.GetRequiredService<ExchangerConfiguration>(),
+            //        sp.GetRequiredService<OrderTransferTransactionTracker>()));
+        }
     }
 }
