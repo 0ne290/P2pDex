@@ -11,7 +11,7 @@ namespace Core.Application;
 public class OrderTransferTransactionTracker : IDisposable
 {
     public OrderTransferTransactionTracker(IBlockchain blockchain, IUnitOfWork unitOfWork,
-        ILogger<OrderTransferTransactionTracker> logger)
+        ILogger<OrderTransferTransactionTracker> logger, double intervalInMs)
     {
         _blockchain = blockchain;
         _unitOfWork = unitOfWork;
@@ -25,7 +25,7 @@ public class OrderTransferTransactionTracker : IDisposable
         
         _synchronizer = 0;
 
-        _timer = new Timer { AutoReset = true, Enabled = false, Interval = 1000 };
+        _timer = new Timer { AutoReset = true, Enabled = false, Interval = intervalInMs };
         _timer.Elapsed += Handler;
         _timer.Start();
     }

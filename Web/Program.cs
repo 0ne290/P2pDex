@@ -85,20 +85,20 @@ public class Program
         var exchangerConfig = config.GetRequiredSection("Exchanger");
         var persistenceConfig = config.GetRequiredSection("Persistence");
 
-        var blockchainUrl = blockchainConfig["Url"] ?? throw new Exception("Config.Blockchain.Url is not found.");
-
-        const double transferTransactionFeeUpdateIntervalInMinutes = 20d;
-
+        const double blockchainFeeTrackIntervalInMinutes = 20d;
         var exchangerFeeRateInPercent = decimal.Parse(exchangerConfig["FeeRate"] ??
                                                       throw new Exception("Config.Exchanger.FeeRate is not found."));
+        const double orderTransferTransactionTrackIntervalInMinutes = 2d;
 
         await AddPersistence(persistenceConfig["SqliteConnectionString"] ??
                              throw new Exception("Config.Persistence.SqliteConnectionString is not found."));
         var blockchainAccountAddress = await AddBlockchain(
             blockchainConfig["PrivateKey"] ?? throw new Exception("Config.Blockchain.PrivateKey is not found."),
             int.Parse(blockchainConfig["ChainId"] ?? throw new Exception("Config.Blockchain.ChainId is not found.")),
-            TimeSpan.FromMinutes(transferTransactionFeeUpdateIntervalInMinutes).TotalMilliseconds);
-        AddApplication(exchangerFeeRateInPercent / 100, blockchainAccountAddress.ToLower());
+            blockchainConfig["Url"] ?? throw new Exception("Config.Blockchain.Url is not found."),
+            TimeSpan.FromMinutes(blockchainFeeTrackIntervalInMinutes).TotalMilliseconds);
+        AddApplication(exchangerFeeRateInPercent / 100, blockchainAccountAddress.ToLower(),
+            TimeSpan.FromMinutes(orderTransferTransactionTrackIntervalInMinutes).TotalMilliseconds);
 
         return;
 
@@ -119,11 +119,10 @@ public class Program
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
 
-        async Task<string> AddBlockchain(string blockchainAccountPrivateKey, int blockchainId,
-            double feeUpdateIntervalInMs)
+        async Task<string> AddBlockchain(string accountPrivateKey, int id, string url, double feeTrackIntervalInMs)
         {
-            var blockchainAccount = new Account(blockchainAccountPrivateKey, blockchainId);
-            Func<Web3> web3Factory = () => new Web3(blockchainAccount, blockchainUrl);
+            var blockchainAccount = new Account(accountPrivateKey, id);
+            Func<Web3> web3Factory = () => new Web3(blockchainAccount, url);
 
             var testWeb3 = web3Factory();
             await testWeb3.Eth.GasPrice.SendRequestAsync();
@@ -131,7 +130,7 @@ public class Program
             services.AddSingleton(web3Factory);
 
             services.AddSingleton<FeeTracker>(
-                sp => new FeeTracker(sp.GetRequiredService<Web3>(), feeUpdateIntervalInMs));
+                sp => new FeeTracker(sp.GetRequiredService<Web3>(), feeTrackIntervalInMs));
 
             services.AddSingleton<IBlockchain, EthereumBlockchain>(sp =>
                 new EthereumBlockchain(sp.GetRequiredService<Web3>(), blockchainAccount.Address,
@@ -140,11 +139,15 @@ public class Program
             return blockchainAccount.Address;
         }
 
-        void AddApplication(decimal exchangerFeeRate, string exchangerAccountAddress)
+        void AddApplication(decimal exchangerFeeRate, string exchangerAccountAddress, double orderTransferTransactionTrackIntervalInMs)
         {
             services.AddSingleton(() => new ExchangerConfiguration(exchangerFeeRate, exchangerAccountAddress));
 
-            services.AddSingleton<OrderTransferTransactionTracker>();
+            services.AddSingleton<OrderTransferTransactionTracker>(sp =>
+                new OrderTransferTransactionTracker(sp.GetRequiredService<IBlockchain>(),
+                    sp.GetRequiredService<IUnitOfWork>(),
+                    sp.GetRequiredService<ILogger<OrderTransferTransactionTracker>>(),
+                    orderTransferTransactionTrackIntervalInMs));
 
             services.AddMediatR(cfg =>
             {
