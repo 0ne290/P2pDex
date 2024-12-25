@@ -127,7 +127,7 @@ public class Program
             var testWeb3 = web3Factory();
             await testWeb3.Eth.GasPrice.SendRequestAsync();
 
-            services.AddSingleton(web3Factory);
+            services.AddSingleton(_ => web3Factory());
 
             services.AddSingleton<FeeTracker>(
                 sp => new FeeTracker(sp.GetRequiredService<Web3>(), feeTrackIntervalInMs));
@@ -141,7 +141,7 @@ public class Program
 
         void AddApplication(decimal exchangerFeeRate, string exchangerAccountAddress, double orderTransferTransactionTrackIntervalInMs)
         {
-            services.AddSingleton(() => new ExchangerConfiguration(exchangerFeeRate, exchangerAccountAddress));
+            services.AddSingleton(_ => new ExchangerConfiguration(exchangerFeeRate, exchangerAccountAddress));
 
             services.AddSingleton<OrderTransferTransactionTracker>(sp =>
                 new OrderTransferTransactionTracker(sp.GetRequiredService<IBlockchain>(),
