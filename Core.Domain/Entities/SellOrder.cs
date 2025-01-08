@@ -90,13 +90,13 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.ExchangerToBuyerTransferTransactionConfirmed;
     }
 
-    //public void Cancel()
-    //{
-    //    if (Status is OrderStatus.Completed or OrderStatus.Cancelled)
-    //        throw new InvariantViolationException("Status is invalid.");
-    //    
-    //    Status = OrderStatus.Cancelled;
-    //}
+    public void Cancel()
+    {
+        if (Status is OrderStatus.ExchangerToBuyerTransferTransactionConfirmed or OrderStatus.Cancelled)
+            throw new InvariantViolationException("Status is invalid.");
+        
+        Status = OrderStatus.Cancelled;
+    }
 
     public Guid SellerGuid { get; private set; }
 

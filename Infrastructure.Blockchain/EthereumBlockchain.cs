@@ -20,17 +20,25 @@ public class EthereumBlockchain : IBlockchain
             .GetResult();
     }
 
-    public async Task<TransferTransaction?> TryGetConfirmedTransactionByHash(string transactionHash)
+    public async Task<TransferTransaction?> TryGetTransactionByHash(string transactionHash)
     {
-        var receipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
-
-        if (receipt == null || receipt.Status.Value != 1)
-            return null;
-        
         var transaction = await _web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(transactionHash);
+
+        if (transaction == null)
+            return null;
+
+        var transactionReceipt = await _web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
+        TransferTransactionStatus transactionStatus;
+        if (transactionReceipt == null)
+            transactionStatus = TransferTransactionStatus.InProcess;
+        else
+            transactionStatus = transactionReceipt.Status.Value == 1
+                ? TransferTransactionStatus.Confirmed
+                : TransferTransactionStatus.Rejected;
 
         return new TransferTransaction
         {
+            Status = transactionStatus,
             From = transaction.From,
             To = transaction.To,
             Amount = Web3.Convert.FromWei(transaction.Value)

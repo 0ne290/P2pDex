@@ -9,6 +9,6 @@ public enum OrderStatus
     TransferFiatToSellerConfirmedByBuyer,
     ReceiptFiatFromBuyerConfirmedBySeller,
     //FrozenForDurationOfDispute,
-    //Cancelled,
+    Cancelled,
     ExchangerToBuyerTransferTransactionConfirmed
 }

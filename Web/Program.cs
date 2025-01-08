@@ -13,6 +13,7 @@ using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
 using Serilog.Formatting.Json;
+using Web.ApiKeyAuthScheme;
 
 namespace Web;
 
@@ -45,6 +46,13 @@ public class Program
         {
             Log.Information("Starting host build.");
 
+            builder.Services.AddAuthentication().AddScheme<ApiKeyAuthSchemeOptions, ApiKeyAuthSchemeHandler>("ApiKey",
+                opts =>
+                {
+                    opts.ApiKey =
+                        "qxTsEGrZru84hyfnlhBWUHqsJm2p/XUdD417YCvifUcNaOGnhGauARJz3Dq8RAWI1Sj26grwAYAOtLzr9eaidA==";
+                });
+
             await CompositionRoot(builder.Services, builder.Configuration);
 
             // Add services to the container.
@@ -59,6 +67,7 @@ public class Program
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(

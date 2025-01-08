@@ -32,5 +32,5 @@ public interface IRepository
     /// <summary>
     /// Возвращаемые сущности НЕ добавляются в отслеживатель.
     /// </summary>
-    IEnumerable<TEntity> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : BaseEntity;
+    Task<ICollection<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : BaseEntity;
 }

@@ -2,5 +2,5 @@ namespace Core.Domain.Constants;
 
 public enum TransferTransactionStatus
 {
-    Confirmed, Rejected,
+    Confirmed, InProcess, Rejected,
 }

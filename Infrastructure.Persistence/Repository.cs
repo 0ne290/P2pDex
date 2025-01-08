@@ -24,8 +24,8 @@ public class Repository : IRepository
     public async Task<TEntity?> TryGetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity =>
         await DbContext.Set<TEntity>().FirstOrDefaultAsync(e => e.Guid.Equals(guid));
 
-    public IEnumerable<TEntity> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter)
-        where TEntity : BaseEntity => DbContext.Set<TEntity>().AsNoTracking().Where(filter);
+    public async Task<ICollection<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter)
+        where TEntity : BaseEntity => await DbContext.Set<TEntity>().AsNoTracking().Where(filter).ToListAsync();
 
     public readonly P2PDexDbContext DbContext;
 }

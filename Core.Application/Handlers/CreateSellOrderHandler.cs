@@ -30,25 +30,9 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
                 o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash))
             throw new InvariantViolationException("Transaction has already been used to pay for the order.");
 
-        var transaction = await _blockchain.TryGetConfirmedTransactionByHash(request.TransferTransactionHash);
+        var transaction = await _blockchain.TryGetTransactionByHash(request.TransferTransactionHash);
 
-        if (transaction == null)
-            throw new InvariantViolationException(
-                "Transaction either does not exist, has not yet been confirmed, or has been rejected.");
-        if (transaction.To != _exchangerConfiguration.AccountAddress)
-            throw new InvariantViolationException(
-                "Cryptocurrency was transferred to the wrong address. For a refund, contact the recipient.");
-
-        var expectedCryptoAmount = request.CryptoAmount + sellerToExchangerFee + exchangerToMinersFee;
-
-        if (expectedCryptoAmount != transaction.Amount)
-        {
-            var refundTransactionHash =
-                await _blockchain.SendTransferTransaction(transaction.From, transaction.Amount - exchangerToMinersFee);
-
-            throw new InvariantViolationException(
-                $"Amount of cryptocurrency transferred should have been {expectedCryptoAmount}. Cryptocurrency refund transaction with the collected transfer fee has already been accepted for processing. Wait for confirmation by blockchain. Refund transaction hash: {refundTransactionHash}.");
-        }
+        
 
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.SaveAllTrackedEntities();
