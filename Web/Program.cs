@@ -154,7 +154,7 @@ public class Program
 
             services.AddSingleton<OrderTransferTransactionTracker>(sp =>
                 new OrderTransferTransactionTracker(sp.GetRequiredService<IBlockchain>(),
-                    sp.GetRequiredService<IUnitOfWork>(),
+                    sp.GetRequiredService<IUnitOfWork>(), sp.GetRequiredService<ExchangerConfiguration>(),
                     sp.GetRequiredService<ILogger<OrderTransferTransactionTracker>>(),
                     orderTransferTransactionTrackIntervalInMs));
 
