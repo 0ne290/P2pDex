@@ -9,11 +9,10 @@ namespace Core.Application.Handlers;
 
 public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>
 {
-    public ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain, OrderTransferTransactionTracker orderTransferTransactionTracker)
+    public ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain)
     {
         _unitOfWork = unitOfWork;
         _blockchain = blockchain;
-        _orderTransferTransactionTracker = orderTransferTransactionTracker;
     }
     
     public async Task<CommandResult> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
@@ -33,14 +32,10 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
         
         await _unitOfWork.SaveAllTrackedEntities();
         
-        _orderTransferTransactionTracker.Track(order);
-        
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
 
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IBlockchain _blockchain;
-
-    private readonly OrderTransferTransactionTracker _orderTransferTransactionTracker;
 }

@@ -8,12 +8,11 @@ namespace Core.Application.Handlers;
 
 public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, CommandResult>
 {
-    public CreateSellOrderHandler(IBlockchain blockchain, IUnitOfWork unitOfWork, ExchangerConfiguration exchangerConfiguration, OrderTransferTransactionTracker orderTransferTransactionTracker)
+    public CreateSellOrderHandler(IBlockchain blockchain, IUnitOfWork unitOfWork, ExchangerConfiguration exchangerConfiguration)
     {
         _blockchain = blockchain;
         _unitOfWork = unitOfWork;
         _exchangerConfiguration = exchangerConfiguration;
-        _orderTransferTransactionTracker = orderTransferTransactionTracker;
     }
 
     public async Task<CommandResult> Handle(CreateSellOrderCommand request, CancellationToken _)
@@ -30,14 +29,8 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
                 o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash))
             throw new InvariantViolationException("Transaction has already been used to pay for the order.");
 
-        var transaction = await _blockchain.TryGetTransactionByHash(request.TransferTransactionHash);
-
-        
-
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.SaveAllTrackedEntities();
-        
-        _orderTransferTransactionTracker.Track(order);
 
         return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
     }
@@ -47,6 +40,4 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly ExchangerConfiguration _exchangerConfiguration;
-
-    private readonly OrderTransferTransactionTracker _orderTransferTransactionTracker;
 }

@@ -1,7 +1,6 @@
 using System.Timers;
 using Core.Domain.Constants;
 using Core.Domain.Entities;
-using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using Timer = System.Timers.Timer;
@@ -98,6 +97,40 @@ public class OrderTransferTransactionTracker : IDisposable
 
                 updatedOrders.Add(trackedOrder);
                 trackedOrder.ConfirmSellerToExchangerTransferTransaction();
+            }
+            else
+            {
+                var transactionHash = trackedOrder.ExchangerToBuyerTransferTransactionHash!;
+
+                var transaction = await _blockchain.TryGetTransactionByHash(transactionHash);
+                
+                if (transaction == null )
+                {
+                    _logger.LogCritical(
+                        "OrderTransferTransactionTracker: transaction {TransactionHash} does not exist. Order {OrderGuid} is canceled.",
+                        transactionHash, trackedOrder.Guid);
+
+                    throw new Exception("Alarm!");
+                }
+
+                if (transaction.Status == TransferTransactionStatus.Rejected)
+                {
+                    _logger.LogCritical(
+                        "OrderTransferTransactionTracker: transaction {TransactionHash} is rejected. Order {OrderGuid} is canceled.",
+                        transactionHash, trackedOrder.Guid);
+
+                    throw new Exception("Alarm!");
+                }
+                
+                if (transaction.Status == TransferTransactionStatus.InProcess)
+                    continue;
+                
+                _logger.LogInformation(
+                    "OrderTransferTransactionTracker: transaction {TransactionHash} is confirmed. Order {OrderGuid} is awaiting buyer respond.",
+                    transactionHash, trackedOrder.Guid);
+
+                updatedOrders.Add(trackedOrder);
+                trackedOrder.ConfirmExchangerToBuyerTransferTransaction();
             }
         }
         
