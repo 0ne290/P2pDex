@@ -1,7 +1,7 @@
-using Core.Application.Commands;
+using Core.Application.General.Commands;
 using MediatR;
 
-namespace Core.Application.Handlers;
+namespace Core.Application.General.Handlers;
 
 public class GetExchangerAccountAddressHandler : IRequestHandler<GetExchangerAccountAddressCommand, CommandResult>
 {

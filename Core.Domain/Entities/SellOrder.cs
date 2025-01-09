@@ -1,10 +1,9 @@
-using System.Text.RegularExpressions;
 using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
 
-public partial class SellOrder : BaseOrder
+public class SellOrder : BaseOrder
 {
     private SellOrder() { }
     
@@ -24,7 +23,7 @@ public partial class SellOrder : BaseOrder
         BuyerAccountAddress = null;
     }
 
-    public void ConfirmSellerToExchangerTransferTransaction()
+    public override void ConfirmSellerToExchangerTransferTransaction()
     {
         if (Status != OrderStatus.Created)
             throw new DevelopmentErrorException("Status is invalid.");
@@ -46,56 +45,12 @@ public partial class SellOrder : BaseOrder
         Status = OrderStatus.RespondedByBuyer;
     }
 
-    public void ConfirmTransferFiatToSellerByBuyer()
+    public override void ConfirmTransferFiatToSellerByBuyer()
     {
         if (Status != OrderStatus.RespondedByBuyer)
             throw new InvariantViolationException("Status is invalid.");
 
         Status = OrderStatus.TransferFiatToSellerConfirmedByBuyer;
-    }
-
-    public void ConfirmReceiptFiatFromBuyerBySeller(string exchangerToBuyerTransferTransactionHash)
-    {
-        if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
-            throw new DevelopmentErrorException("Status is invalid.");
-        if (!EthereumTransactionHashRegex.IsMatch(exchangerToBuyerTransferTransactionHash))
-            throw new DevelopmentErrorException("Exchanger to buyer transfer transaction hash is invalid.");
-
-        ExchangerToBuyerTransferTransactionHash = exchangerToBuyerTransferTransactionHash;
-        Status = OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller;
-    }
-
-    //public void DenyReceiptFiatFromBuyerBySeller()
-    //{
-    //    if (Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
-    //        throw new InvariantViolationException("Status is invalid.");
-//
-    //    Status = OrderStatus.FrozenForDurationOfDispute;
-    //}
-    
-    public void ConfirmExchangerToBuyerTransferTransaction()
-    {
-        switch (Status)
-        {
-            //case OrderStatus.FrozenForDurationOfDispute:
-            //    break;
-            case OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller:
-                //Seller.IncrementSuccessfulOrdersAsSeller();
-                //Buyer!.IncrementSuccessfulOrdersAsBuyer();
-                break;
-            default:
-                throw new DevelopmentErrorException("Status is invalid.");
-        }
-        
-        Status = OrderStatus.ExchangerToBuyerTransferTransactionConfirmed;
-    }
-
-    public void Cancel()
-    {
-        if (Status is OrderStatus.ExchangerToBuyerTransferTransactionConfirmed or OrderStatus.Cancelled)
-            throw new InvariantViolationException("Status is invalid.");
-        
-        Status = OrderStatus.Cancelled;
     }
 
     public Guid SellerGuid { get; private set; }
@@ -105,14 +60,4 @@ public partial class SellOrder : BaseOrder
     public Guid? BuyerGuid { get; private set; }
 
     public string? BuyerAccountAddress { get; private set; }
-    
-    private static readonly Regex EthereumTransactionHashRegex = CreateEthereumTransactionHashRegex();
-
-    private static readonly Regex EthereumAccountAddressRegex = CreateEthereumAccountAddressRegex();
-    
-    [GeneratedRegex("^0x[0-9a-fA-F]{64}$")]
-    private static partial Regex CreateEthereumTransactionHashRegex();
-
-    [GeneratedRegex("^0x[0-9a-fA-F]{40}$")]
-    private static partial Regex CreateEthereumAccountAddressRegex();
 }

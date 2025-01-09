@@ -1,7 +1,7 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.Commands;
+namespace Core.Application.General.Commands;
 
 public class CreateTraderCommand : IRequest<CommandResult>
 {

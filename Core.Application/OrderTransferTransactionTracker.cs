@@ -26,117 +26,31 @@ public class OrderTransferTransactionTracker : IDisposable
 
     private async void Handler(object? _, ElapsedEventArgs __) => await ExecuteConcurrentlyAsync(async () =>
     {
-        var updatedOrders = new List<SellOrder>();
+        var updatedSellOrders = new List<SellOrder>();
+        var updatedBuyOrders = new List<BuyOrder>();
 
-        var trackedOrders = await _unitOfWork.Repository.GetAll<SellOrder>(o =>
-            o.Status == OrderStatus.Created || o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller);
-        foreach (var trackedOrder in trackedOrders)
-        {
-            if (trackedOrder.Status == OrderStatus.Created)
-            {
-                var transactionHash = trackedOrder.SellerToExchangerTransferTransactionHash;
-
-                var transaction = await _blockchain.TryGetTransactionByHash(transactionHash);
-
-                if (transaction == null )
-                {
-                    _logger.LogInformation(
-                        "OrderTransferTransactionTracker: transaction {TransactionHash} does not exist. Order {OrderGuid} is canceled.",
-                        transactionHash, trackedOrder.Guid);
-
-                    trackedOrder.Cancel();
-                    updatedOrders.Add(trackedOrder);
-                    continue;
-                }
-
-                if (transaction.Status == TransferTransactionStatus.Rejected)
-                {
-                    _logger.LogCritical(
-                        "OrderTransferTransactionTracker: transaction {TransactionHash} is rejected. Order {OrderGuid} is canceled.",
-                        transactionHash, trackedOrder.Guid);
-
-                    trackedOrder.Cancel();
-                    updatedOrders.Add(trackedOrder);
-                    continue;
-                }
-                
-                if (transaction.Status == TransferTransactionStatus.InProcess)
-                    continue;
-                
-                if (transaction.To != _exchangerConfiguration.AccountAddress)
-                {
-                    _logger.LogInformation(
-                        "OrderTransferTransactionTracker: transaction {TransactionHash} recipient is invalid. Order {OrderGuid} is canceled.",
-                        transactionHash, trackedOrder.Guid);
-
-                    trackedOrder.Cancel();
-                    updatedOrders.Add(trackedOrder);
-                    continue;
-                }
-
-                var expectedCryptoAmount = trackedOrder.CryptoAmount + trackedOrder.SellerToExchangerFee +
-                                           trackedOrder.ExchangerToMinersFee;
-
-                if (expectedCryptoAmount != transaction.Amount)
-                {
-                    var refundTransactionHash = await _blockchain.SendTransferTransaction(transaction.From,
-                        transaction.Amount - trackedOrder.ExchangerToMinersFee);
-
-                    _logger.LogInformation(
-                        "OrderTransferTransactionTracker: transaction {TransactionHash} amount should have been {ExpectedCryptoAmount}. Refund transaction hash: {RefundTransactionHash}. Order {OrderGuid} is canceled.",
-                        transactionHash, expectedCryptoAmount, refundTransactionHash, trackedOrder.Guid);
-
-                    trackedOrder.Cancel();
-                    updatedOrders.Add(trackedOrder);
-                    continue;
-                }
-
-                _logger.LogInformation(
-                    "OrderTransferTransactionTracker: transaction {TransactionHash} is confirmed. Order {OrderGuid} is awaiting buyer respond.",
-                    transactionHash, trackedOrder.Guid);
-
-                updatedOrders.Add(trackedOrder);
-                trackedOrder.ConfirmSellerToExchangerTransferTransaction();
-            }
-            else
-            {
-                var transactionHash = trackedOrder.ExchangerToBuyerTransferTransactionHash!;
-
-                var transaction = await _blockchain.TryGetTransactionByHash(transactionHash);
-                
-                if (transaction == null )
-                {
-                    _logger.LogCritical(
-                        "OrderTransferTransactionTracker: transaction {TransactionHash} does not exist. Order {OrderGuid} is canceled.",
-                        transactionHash, trackedOrder.Guid);
-
-                    throw new Exception("Alarm!");
-                }
-
-                if (transaction.Status == TransferTransactionStatus.Rejected)
-                {
-                    _logger.LogCritical(
-                        "OrderTransferTransactionTracker: transaction {TransactionHash} is rejected. Order {OrderGuid} is canceled.",
-                        transactionHash, trackedOrder.Guid);
-
-                    throw new Exception("Alarm!");
-                }
-                
-                if (transaction.Status == TransferTransactionStatus.InProcess)
-                    continue;
-                
-                _logger.LogInformation(
-                    "OrderTransferTransactionTracker: transaction {TransactionHash} is confirmed. Order {OrderGuid} is awaiting buyer respond.",
-                    transactionHash, trackedOrder.Guid);
-
-                updatedOrders.Add(trackedOrder);
-                trackedOrder.ConfirmExchangerToBuyerTransferTransaction();
-            }
-        }
+        foreach (var trackedSellOrder in await _unitOfWork.Repository.GetAll<SellOrder>(o => o.Status == OrderStatus.Created))
+            if (await HandleSellerToExchangerTransferTransaction(trackedSellOrder.SellerToExchangerTransferTransactionHash, trackedSellOrder))
+                updatedSellOrders.Add(trackedSellOrder);
         
-        if (updatedOrders.Count > 0)
+        foreach (var trackedSellOrder in await _unitOfWork.Repository.GetAll<SellOrder>(o => o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller))
+            if (await HandleExchangerToBuyerTransferTransaction(trackedSellOrder))
+                updatedSellOrders.Add(trackedSellOrder);
+        
+        foreach (var trackedBuyOrder in await _unitOfWork.Repository.GetAll<BuyOrder>(o => o.Status == OrderStatus.RespondedBySeller))
+            if (await HandleSellerToExchangerTransferTransaction(trackedBuyOrder.SellerToExchangerTransferTransactionHash!, trackedBuyOrder))
+                updatedBuyOrders.Add(trackedBuyOrder);
+        
+        foreach (var trackedBuyOrder in await _unitOfWork.Repository.GetAll<BuyOrder>(o => o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller))
+            if (await HandleExchangerToBuyerTransferTransaction(trackedBuyOrder))
+                updatedBuyOrders.Add(trackedBuyOrder);
+        
+        if (updatedSellOrders.Count > 0)
+            _unitOfWork.Repository.UpdateRange(updatedSellOrders);
+        if (updatedBuyOrders.Count > 0)
+            _unitOfWork.Repository.UpdateRange(updatedBuyOrders);
+        if (updatedBuyOrders.Count > 0 || updatedSellOrders.Count > 0)
         {
-            _unitOfWork.Repository.UpdateRange(updatedOrders);
             await _unitOfWork.SaveAllTrackedEntities();
             _unitOfWork.UntrackAllEntities();
         }
@@ -152,6 +66,106 @@ public class OrderTransferTransactionTracker : IDisposable
         await action();
 
         Interlocked.Decrement(ref _synchronizer);
+    }
+
+    private async Task<bool> HandleSellerToExchangerTransferTransaction(string transactionHash, BaseOrder trackedOrder)
+    {
+        var transaction = await _blockchain.TryGetTransactionByHash(transactionHash);
+
+        if (transaction == null)
+        {
+            _logger.LogInformation(
+                "OrderTransferTransactionTracker: transaction {TransactionHash} does not exist. Order {OrderGuid}.",
+                transactionHash, trackedOrder.Guid);
+
+            trackedOrder.Cancel();
+            
+            return true;
+        }
+
+        if (transaction.Status == TransferTransactionStatus.Rejected)
+        {
+            _logger.LogCritical(
+                "OrderTransferTransactionTracker: transaction {TransactionHash} is rejected. Order {OrderGuid}.",
+                transactionHash, trackedOrder.Guid);
+
+            trackedOrder.Cancel();
+            
+            return true;
+        }
+
+        if (transaction.Status == TransferTransactionStatus.InProcess)
+            return false;
+
+        if (transaction.To != _exchangerConfiguration.AccountAddress)
+        {
+            _logger.LogInformation(
+                "OrderTransferTransactionTracker: transaction {TransactionHash} recipient is invalid. Order {OrderGuid}.",
+                transactionHash, trackedOrder.Guid);
+
+            trackedOrder.Cancel();
+
+            return true;
+        }
+
+        var expectedCryptoAmount = trackedOrder.CryptoAmount + trackedOrder.SellerToExchangerFee + trackedOrder.ExchangerToMinersFee;
+
+        if (expectedCryptoAmount != transaction.Amount)
+        {
+            var refundTransactionHash = await _blockchain.SendTransferTransaction(transaction.From, transaction.Amount - trackedOrder.ExchangerToMinersFee);
+
+            _logger.LogInformation(
+                "OrderTransferTransactionTracker: transaction {TransactionHash} amount should have been {ExpectedCryptoAmount}. Refund transaction hash: {RefundTransactionHash}. Order {OrderGuid}.",
+                transactionHash, expectedCryptoAmount, refundTransactionHash, trackedOrder.Guid);
+
+            trackedOrder.Cancel();
+            
+            return true;
+        }
+
+        _logger.LogInformation(
+            "OrderTransferTransactionTracker: transaction {TransactionHash} is confirmed. Order {OrderGuid}.",
+            transactionHash, trackedOrder.Guid);
+
+        trackedOrder.ConfirmSellerToExchangerTransferTransaction();
+
+        return true;
+    }
+    
+    private async Task<bool> HandleExchangerToBuyerTransferTransaction(BaseOrder trackedOrder)
+    {
+        var transactionHash = trackedOrder.ExchangerToBuyerTransferTransactionHash!;
+
+        var transaction = await _blockchain.TryGetTransactionByHash(transactionHash);
+                
+        if (transaction == null )
+        {
+            _logger.LogCritical(
+                "OrderTransferTransactionTracker: transaction {TransactionHash} does not exist. Order {OrderGuid}.",
+                transactionHash, trackedOrder.Guid);
+
+            throw new Exception("Alarm!");
+        }
+
+        if (transaction.Status == TransferTransactionStatus.Rejected)
+        {
+            _logger.LogCritical(
+                "OrderTransferTransactionTracker: transaction {TransactionHash} is rejected. Order {OrderGuid}.",
+                transactionHash, trackedOrder.Guid);
+
+            throw new Exception("Alarm!");
+        }
+
+        if (transaction.Status == TransferTransactionStatus.InProcess)
+            return false;
+                
+        _logger.LogInformation(
+            "OrderTransferTransactionTracker: transaction {TransactionHash} is confirmed. Order {OrderGuid}.",
+            transactionHash, trackedOrder.Guid);
+
+        trackedOrder.ConfirmExchangerToBuyerTransferTransaction();
+
+        return true;
     }
 
     public void Dispose()

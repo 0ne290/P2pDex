@@ -1,5 +1,7 @@
 using Core.Application;
-using Core.Application.Commands;
+using Core.Application.BuyOrder.Commands;
+using Core.Application.General.Commands;
+using Core.Application.SellOrder.Commands;
 using Core.Domain.Interfaces;
 using Infrastructure.Blockchain;
 using Infrastructure.Persistence;
@@ -182,6 +184,18 @@ public class Program
 
                 cfg.AddBehavior<IPipelineBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>
                     , LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>>();
+                
+                cfg.AddBehavior<IPipelineBehavior<CreateBuyOrderCommand, CommandResult>,
+                    LoggingBehavior<CreateBuyOrderCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<RespondToBuyOrderBySellerCommand, CommandResult>,
+                    LoggingBehavior<RespondToBuyOrderBySellerCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<ConfirmTransferFiatToSellerByBuyerForBuyOrderCommand, CommandResult>,
+                    LoggingBehavior<ConfirmTransferFiatToSellerByBuyerForBuyOrderCommand, CommandResult>>();
+
+                cfg.AddBehavior<IPipelineBehavior<ConfirmReceiptFiatFromBuyerBySellerForBuyOrderCommand, CommandResult>
+                    , LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForBuyOrderCommand, CommandResult>>();
             });
 
             // Вот таким образом можно тонко настраивать создание обработчиков команд

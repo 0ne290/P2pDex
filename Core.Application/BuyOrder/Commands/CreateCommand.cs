@@ -1,9 +1,9 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.Commands;
+namespace Core.Application.BuyOrder.Commands;
 
-public class CreateSellOrderCommand : IRequest<CommandResult>
+public class CreateBuyOrderCommand : IRequest<CommandResult>
 {
     [JsonProperty(Required = Required.Always, PropertyName = "crypto")]
     public required string Crypto { get; init; }
@@ -20,9 +20,9 @@ public class CreateSellOrderCommand : IRequest<CommandResult>
     [JsonProperty(Required = Required.Always, PropertyName = "paymentMethodInfo")]
     public required string PaymentMethodInfo { get; init; }
     
-    [JsonProperty(Required = Required.Always, PropertyName = "sellerGuid")]
-    public required Guid SellerGuid { get; init; }
+    [JsonProperty(Required = Required.Always, PropertyName = "buyerGuid")]
+    public required Guid BuyerGuid { get; init; }
     
-    [JsonProperty(Required = Required.Always, PropertyName = "transferTransactionHash")]
-    public required string TransferTransactionHash { get; init; }
+    [JsonProperty(Required = Required.Always, PropertyName = "buyerAccountAddress")]
+    public required string BuyerAccountAddress { get; init; }
 }

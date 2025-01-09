@@ -1,5 +1,5 @@
 using MediatR;
 
-namespace Core.Application.Commands;
+namespace Core.Application.General.Commands;
 
 public class GetExchangerAccountAddressCommand : IRequest<CommandResult>;

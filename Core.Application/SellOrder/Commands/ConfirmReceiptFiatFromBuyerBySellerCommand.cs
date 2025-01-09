@@ -1,7 +1,7 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.Commands;
+namespace Core.Application.SellOrder.Commands;
 
 public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand : IRequest<CommandResult>
 {

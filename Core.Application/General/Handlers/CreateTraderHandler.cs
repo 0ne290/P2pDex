@@ -1,9 +1,9 @@
-using Core.Application.Commands;
+using Core.Application.General.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces;
 using MediatR;
 
-namespace Core.Application.Handlers;
+namespace Core.Application.General.Handlers;
 
 public class CreateTraderHandler : IRequestHandler<CreateTraderCommand, CommandResult>
 {

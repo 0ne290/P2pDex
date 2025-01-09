@@ -1,9 +1,9 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.Commands;
+namespace Core.Application.BuyOrder.Commands;
 
-public class ConfirmTransferFiatToSellerByBuyerForSellOrderCommand : IRequest<CommandResult>
+public class ConfirmTransferFiatToSellerByBuyerForBuyOrderCommand : IRequest<CommandResult>
 {
     [JsonProperty(Required = Required.Always, PropertyName = "orderGuid")]
     public required Guid OrderGuid { get; init; }

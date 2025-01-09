@@ -1,8 +1,8 @@
-using Core.Application.Commands;
+using Core.Application.General.Commands;
 using Core.Domain.Interfaces;
 using MediatR;
 
-namespace Core.Application.Handlers;
+namespace Core.Application.General.Handlers;
 
 public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<CalculateFinalCryptoAmountForTransferCommand, CommandResult>
 {

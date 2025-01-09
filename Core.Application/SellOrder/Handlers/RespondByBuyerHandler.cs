@@ -1,10 +1,10 @@
-using Core.Application.Commands;
+using Core.Application.SellOrder.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
 using MediatR;
 
-namespace Core.Application.Handlers;
+namespace Core.Application.SellOrder.Handlers;
 
 public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrderByBuyerCommand, CommandResult>
 {
@@ -15,7 +15,7 @@ public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrd
     
     public async Task<CommandResult> Handle(RespondToSellOrderByBuyerCommand request, CancellationToken _)
     {
-        var order = await _unitOfWork.Repository.TryGetByGuid<SellOrder>(request.OrderGuid);
+        var order = await _unitOfWork.Repository.TryGetByGuid<Domain.Entities.SellOrder>(request.OrderGuid);
 
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
