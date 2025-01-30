@@ -1,17 +1,12 @@
-using Core.Domain.Exceptions;
-
 namespace Core.Domain.Entities;
 
 public class Trader : BaseEntity
 {
     private Trader() { }
     
-    public Trader(Guid guid, string name) : base(guid)
+    public Trader(Guid guid, long id) : base(guid)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new InvariantViolationException("Name is invalid.");
-        
-        Name = name;
+        Id = id;
         CountOfSuccessfulOrdersAsBuyer = 0;
         CountOfSuccessfulOrdersAsSeller = 0;
         CountOfWonDisputesAsBuyer = 0;
@@ -31,8 +26,8 @@ public class Trader : BaseEntity
     public void IncrementWonDisputesAsSeller() => CountOfWonDisputesAsSeller++;
     
     public void IncrementLostDisputesAsSeller() => CountOfLostDisputesAsSeller++;
-
-    public string Name { get; private set; }
+    
+    public long Id { get; private set; }
     
     public int CountOfSuccessfulOrdersAsBuyer { get; private set; }
     

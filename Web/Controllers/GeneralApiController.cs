@@ -14,14 +14,11 @@ public class GeneralApiController : Controller
         _mediator = mediator;
     }
     
-    [Route("create-trader")]
-    [HttpPost]
-    public async Task<IActionResult> CreateTrader([FromBody] CreateTraderCommand? request)
+    [Route("ensure-existed-of-trader/{userId:long}")]
+    [HttpGet]
+    public async Task<IActionResult> EnsureExistedOfTrader(long userId)
     {
-        if (request == null)
-            return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
-        
-        var result = await _mediator.Send(request);
+        var result = await _mediator.Send(new EnsureExistedOfTraderCommand { Id = userId});
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }

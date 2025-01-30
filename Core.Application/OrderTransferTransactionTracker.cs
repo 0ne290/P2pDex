@@ -26,22 +26,22 @@ public class OrderTransferTransactionTracker : IDisposable
 
     private async void Handler(object? _, ElapsedEventArgs __) => await ExecuteConcurrentlyAsync(async () =>
     {
-        var updatedSellOrders = new List<SellOrder>();
-        var updatedBuyOrders = new List<BuyOrder>();
+        var updatedSellOrders = new List<Domain.Entities.SellOrder>();
+        var updatedBuyOrders = new List<Domain.Entities.BuyOrder>();
 
-        foreach (var trackedSellOrder in await _unitOfWork.Repository.GetAll<SellOrder>(o => o.Status == OrderStatus.Created))
+        foreach (var trackedSellOrder in await _unitOfWork.Repository.GetAll<Domain.Entities.SellOrder>(o => o.Status == OrderStatus.Created))
             if (await HandleSellerToExchangerTransferTransaction(trackedSellOrder.SellerToExchangerTransferTransactionHash, trackedSellOrder))
                 updatedSellOrders.Add(trackedSellOrder);
         
-        foreach (var trackedSellOrder in await _unitOfWork.Repository.GetAll<SellOrder>(o => o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller))
+        foreach (var trackedSellOrder in await _unitOfWork.Repository.GetAll<Domain.Entities.SellOrder>(o => o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller))
             if (await HandleExchangerToBuyerTransferTransaction(trackedSellOrder))
                 updatedSellOrders.Add(trackedSellOrder);
         
-        foreach (var trackedBuyOrder in await _unitOfWork.Repository.GetAll<BuyOrder>(o => o.Status == OrderStatus.RespondedBySeller))
+        foreach (var trackedBuyOrder in await _unitOfWork.Repository.GetAll<Domain.Entities.BuyOrder>(o => o.Status == OrderStatus.RespondedBySeller))
             if (await HandleSellerToExchangerTransferTransaction(trackedBuyOrder.SellerToExchangerTransferTransactionHash!, trackedBuyOrder))
                 updatedBuyOrders.Add(trackedBuyOrder);
         
-        foreach (var trackedBuyOrder in await _unitOfWork.Repository.GetAll<BuyOrder>(o => o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller))
+        foreach (var trackedBuyOrder in await _unitOfWork.Repository.GetAll<Domain.Entities.BuyOrder>(o => o.Status == OrderStatus.ReceiptFiatFromBuyerConfirmedBySeller))
             if (await HandleExchangerToBuyerTransferTransaction(trackedBuyOrder))
                 updatedBuyOrders.Add(trackedBuyOrder);
         

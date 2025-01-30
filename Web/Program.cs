@@ -15,7 +15,6 @@ using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
 using Serilog.Formatting.Json;
-using Web.ApiKeyAuthScheme;
 
 namespace Web;
 
@@ -48,12 +47,14 @@ public class Program
         {
             Log.Information("Starting host build.");
 
-            builder.Services.AddAuthentication().AddScheme<ApiKeyAuthSchemeOptions, ApiKeyAuthSchemeHandler>("ApiKey",
+            /*builder.Services.AddAuthentication().AddScheme<ApiKeyAuthSchemeOptions, ApiKeyAuthSchemeHandler>("ApiKey",
                 opts =>
                 {
                     opts.ApiKey =
                         "qxTsEGrZru84hyfnlhBWUHqsJm2p/XUdD417YCvifUcNaOGnhGauARJz3Dq8RAWI1Sj26grwAYAOtLzr9eaidA==";
                 });
+            
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();*/
 
             await CompositionRoot(builder.Services, builder.Configuration);
 
@@ -121,6 +122,7 @@ public class Program
             optionsAction(dbContextOptionsBuilder);
 
             var testDbContext = new P2PDexDbContext(dbContextOptionsBuilder.Options);
+            Console.WriteLine(testDbContext.Database.GenerateCreateScript());
             await testDbContext.Database.EnsureCreatedAsync();
 
             services.AddDbContext<P2PDexDbContext>(optionsAction, ServiceLifetime.Transient, ServiceLifetime.Transient);
@@ -170,8 +172,8 @@ public class Program
                 cfg.AddBehavior<IPipelineBehavior<GetExchangerAccountAddressCommand, CommandResult>,
                     LoggingBehavior<GetExchangerAccountAddressCommand, CommandResult>>();
 
-                cfg.AddBehavior<IPipelineBehavior<CreateTraderCommand, CommandResult>,
-                    LoggingBehavior<CreateTraderCommand, CommandResult>>();
+                cfg.AddBehavior<IPipelineBehavior<EnsureExistedOfTraderCommand, CommandResult>,
+                    LoggingBehavior<EnsureExistedOfTraderCommand, CommandResult>>();
 
                 cfg.AddBehavior<IPipelineBehavior<CreateSellOrderCommand, CommandResult>,
                     LoggingBehavior<CreateSellOrderCommand, CommandResult>>();
