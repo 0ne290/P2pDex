@@ -1,12 +1,10 @@
 using Core.Application.General.Commands;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers;
 
 [Route("api")]
-[Authorize]
 public class GeneralApiController : Controller
 {
     public GeneralApiController(IMediator mediator)

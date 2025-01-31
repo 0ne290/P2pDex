@@ -1,4 +1,4 @@
-using Core.Domain.Constants;
+/*using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
@@ -59,4 +59,4 @@ public class BuyOrder : BaseOrder
     public Guid? SellerGuid { get; private set; }
 
     public string? SellerToExchangerTransferTransactionHash { get; private set; }
-}
+}*/

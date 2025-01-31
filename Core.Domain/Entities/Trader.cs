@@ -1,10 +1,10 @@
 namespace Core.Domain.Entities;
 
-public class Trader : BaseEntity
+public class Trader
 {
     private Trader() { }
     
-    public Trader(Guid guid, long id) : base(guid)
+    public Trader(long id)
     {
         Id = id;
         CountOfSuccessfulOrdersAsBuyer = 0;

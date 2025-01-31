@@ -1,4 +1,4 @@
-using Core.Application.BuyOrder.Commands;
+/*using Core.Application.BuyOrder.Commands;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
 using MediatR;
@@ -30,4 +30,4 @@ public class ConfirmTransferFiatToSellerByBuyerForBuyOrderHandler : IRequestHand
     }
 
     private readonly IUnitOfWork _unitOfWork;
-}
+}*/

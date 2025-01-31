@@ -1,4 +1,4 @@
-using MediatR;
+/*using MediatR;
 using Newtonsoft.Json;
 
 namespace Core.Application.BuyOrder.Commands;
@@ -25,4 +25,4 @@ public class CreateBuyOrderCommand : IRequest<CommandResult>
     
     [JsonProperty(Required = Required.Always, PropertyName = "buyerAccountAddress")]
     public required string BuyerAccountAddress { get; init; }
-}
+}*/

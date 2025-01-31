@@ -1,5 +1,4 @@
 using Core.Application;
-using Core.Application.BuyOrder.Commands;
 using Core.Application.General.Commands;
 using Core.Application.SellOrder.Commands;
 using Core.Domain.Interfaces;
@@ -46,6 +45,8 @@ public class Program
         try
         {
             Log.Information("Starting host build.");
+            
+            builder.Services.AddCors();
 
             /*builder.Services.AddAuthentication().AddScheme<ApiKeyAuthSchemeOptions, ApiKeyAuthSchemeHandler>("ApiKey",
                 opts =>
@@ -71,7 +72,9 @@ public class Program
             app.UseRouting();
 
             app.UseAuthentication();
-            app.UseAuthorization();
+            //app.UseAuthorization();
+            
+            app.UseCors(b => b.AllowAnyOrigin());
 
             app.MapControllerRoute(
                 name: "default",
@@ -187,7 +190,7 @@ public class Program
                 cfg.AddBehavior<IPipelineBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>
                     , LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>>();
                 
-                cfg.AddBehavior<IPipelineBehavior<CreateBuyOrderCommand, CommandResult>,
+                /*cfg.AddBehavior<IPipelineBehavior<CreateBuyOrderCommand, CommandResult>,
                     LoggingBehavior<CreateBuyOrderCommand, CommandResult>>();
 
                 cfg.AddBehavior<IPipelineBehavior<RespondToBuyOrderBySellerCommand, CommandResult>,
@@ -197,7 +200,7 @@ public class Program
                     LoggingBehavior<ConfirmTransferFiatToSellerByBuyerForBuyOrderCommand, CommandResult>>();
 
                 cfg.AddBehavior<IPipelineBehavior<ConfirmReceiptFiatFromBuyerBySellerForBuyOrderCommand, CommandResult>
-                    , LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForBuyOrderCommand, CommandResult>>();
+                    , LoggingBehavior<ConfirmReceiptFiatFromBuyerBySellerForBuyOrderCommand, CommandResult>>();*/
             });
 
             // Вот таким образом можно тонко настраивать создание обработчиков команд

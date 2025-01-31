@@ -1,3 +1,4 @@
+/*
 using Core.Application.BuyOrder.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
@@ -37,3 +38,4 @@ public class RespondToBuyOrderBySellerHandler : IRequestHandler<RespondToBuyOrde
 
     private readonly IUnitOfWork _unitOfWork;
 }
+*/

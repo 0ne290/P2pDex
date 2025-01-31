@@ -15,14 +15,14 @@ public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrd
     
     public async Task<CommandResult> Handle(RespondToSellOrderByBuyerCommand request, CancellationToken _)
     {
-        var order = await _unitOfWork.Repository.TryGetByGuid<Domain.Entities.SellOrder>(request.OrderGuid);
+        var order = await _unitOfWork.Repository.TryGet<Domain.Entities.SellOrder>(o => o.Guid.Equals(request.OrderGuid));
 
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
-        order.RespondByBuyer(request.BuyerGuid, request.BuyerAccountAddress);
+        order.RespondByBuyer(request.BuyerId, request.BuyerAccountAddress);
         
-        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Guid.Equals(request.BuyerGuid)))
+        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id.Equals(request.BuyerId)))
             throw new InvariantViolationException("Buyer does not exists.");
     
         await _unitOfWork.SaveAllTrackedEntities();

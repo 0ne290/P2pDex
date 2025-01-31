@@ -1,4 +1,4 @@
-using Core.Application.BuyOrder.Commands;
+/*using Core.Application.BuyOrder.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
@@ -37,4 +37,4 @@ public class CreateBuyOrderHandler : IRequestHandler<CreateBuyOrderCommand, Comm
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly ExchangerConfiguration _exchangerConfiguration;
-}
+}*/

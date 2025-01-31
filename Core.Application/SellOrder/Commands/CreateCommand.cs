@@ -20,8 +20,8 @@ public class CreateSellOrderCommand : IRequest<CommandResult>
     [JsonProperty(Required = Required.Always, PropertyName = "paymentMethodInfo")]
     public required string PaymentMethodInfo { get; init; }
     
-    [JsonProperty(Required = Required.Always, PropertyName = "sellerGuid")]
-    public required Guid SellerGuid { get; init; }
+    [JsonProperty(Required = Required.Always, PropertyName = "sellerId")]
+    public required long SellerId { get; init; }
     
     [JsonProperty(Required = Required.Always, PropertyName = "transferTransactionHash")]
     public required string TransferTransactionHash { get; init; }

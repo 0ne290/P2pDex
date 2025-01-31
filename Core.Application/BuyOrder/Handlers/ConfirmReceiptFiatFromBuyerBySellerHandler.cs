@@ -1,4 +1,4 @@
-using Core.Application.BuyOrder.Commands;
+/*using Core.Application.BuyOrder.Commands;
 using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
@@ -37,4 +37,4 @@ public class ConfirmReceiptFiatFromBuyerBySellerForBuyOrderHandler : IRequestHan
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly IBlockchain _blockchain;
-}
+}*/

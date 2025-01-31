@@ -1,4 +1,4 @@
-using MediatR;
+/*using MediatR;
 using Newtonsoft.Json;
 
 namespace Core.Application.BuyOrder.Commands;
@@ -10,4 +10,4 @@ public class ConfirmTransferFiatToSellerByBuyerForBuyOrderCommand : IRequest<Com
     
     [JsonProperty(Required = Required.Always, PropertyName = "buyerGuid")]
     public required Guid BuyerGuid { get; init; }
-}
+}*/

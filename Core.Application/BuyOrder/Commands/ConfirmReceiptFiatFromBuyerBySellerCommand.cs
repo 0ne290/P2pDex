@@ -1,3 +1,4 @@
+/*
 using MediatR;
 using Newtonsoft.Json;
 
@@ -11,3 +12,4 @@ public class ConfirmReceiptFiatFromBuyerBySellerForBuyOrderCommand : IRequest<Co
     [JsonProperty(Required = Required.Always, PropertyName = "sellerGuid")]
     public required Guid SellerGuid { get; init; }
 }
+*/

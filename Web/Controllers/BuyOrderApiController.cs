@@ -1,4 +1,4 @@
-using Core.Application.BuyOrder.Commands;
+/*using Core.Application.BuyOrder.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,4 +63,4 @@ public class BuyOrderApiController : Controller
     }
     
     private readonly IMediator _mediator;
-}
+}*/

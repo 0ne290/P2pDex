@@ -16,11 +16,11 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
     
     public async Task<CommandResult> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
     {
-        var order = await _unitOfWork.Repository.TryGetByGuid<Domain.Entities.SellOrder>(request.OrderGuid);
+        var order = await _unitOfWork.Repository.TryGet<Domain.Entities.SellOrder>(o => o.Guid.Equals(request.OrderGuid));
 
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
-        if (!Equals(order.SellerGuid, request.SellerGuid))
+        if (!Equals(order.SellerId, request.SellerId))
             throw new InvariantViolationException("Trader is not a seller.");
         if (order.Status != OrderStatus.TransferFiatToSellerConfirmedByBuyer)
             throw new InvariantViolationException("Order status is invalid.");

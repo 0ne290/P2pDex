@@ -14,14 +14,14 @@ public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHan
     
     public async Task<CommandResult> Handle(ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request, CancellationToken _)
     {
-        var order = await _unitOfWork.Repository.TryGetByGuid<Domain.Entities.SellOrder>(request.OrderGuid);
+        var order = await _unitOfWork.Repository.TryGet<Domain.Entities.SellOrder>(o => o.Guid.Equals(request.OrderGuid));
 
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
         order.ConfirmTransferFiatToSellerByBuyer();
 
-        if (!Equals(order.BuyerGuid, request.BuyerGuid))
+        if (!Equals(order.BuyerId, request.BuyerId))
             throw new InvariantViolationException("Trader is not a buyer.");
 
         await _unitOfWork.SaveAllTrackedEntities();

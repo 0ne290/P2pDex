@@ -21,14 +21,14 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
         var exchangerToMinersFee = _blockchain.TransferTransactionFee.Value;
         var order = new Domain.Entities.SellOrder(Guid.NewGuid(), request.Crypto, request.CryptoAmount, request.Fiat,
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, sellerToExchangerFee, exchangerToMinersFee,
-            request.SellerGuid, request.TransferTransactionHash);
+            request.SellerId, request.TransferTransactionHash);
 
-        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Guid.Equals(request.SellerGuid)))
+        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id.Equals(request.SellerId)))
             throw new InvariantViolationException("Seller does not exists.");
         if (await _unitOfWork.Repository.Exists<Domain.Entities.SellOrder>(o =>
-                o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash) ||
+                o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash)/* ||
             await _unitOfWork.Repository.Exists<Domain.Entities.BuyOrder>(o =>
-                o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash))
+                o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash)*/)
             throw new InvariantViolationException("Transaction has already been used to pay for the order.");
 
         await _unitOfWork.Repository.Add(order);

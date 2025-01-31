@@ -1,12 +1,10 @@
 using Core.Application.SellOrder.Commands;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers;
 
 [Route("api/sell-order")]
-[Authorize]
 public class SellOrderApiController : Controller
 {
     public SellOrderApiController(IMediator mediator)

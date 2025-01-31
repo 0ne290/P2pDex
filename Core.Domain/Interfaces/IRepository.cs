@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using Core.Domain.Entities;
 
 namespace Core.Domain.Interfaces;
 
@@ -12,25 +11,25 @@ public interface IRepository
     /// <summary>
     /// Добавляет сущность в отслеживатель с состоянием "Добавлена".
     /// </summary>
-    Task Add<TEntity>(TEntity entity) where TEntity : BaseEntity;
+    Task Add<TEntity>(TEntity entity) where TEntity : class;
 
     /// <summary>
     /// Добавляет сущность в отслеживатель с состоянием "Изменена".
     /// </summary>
-    void UpdateRange<TEntity>(IEnumerable<TEntity> updatedEntities) where TEntity : BaseEntity;
-    
+    void UpdateRange<TEntity>(IEnumerable<TEntity> updatedEntities) where TEntity : class;
+
     /// <summary>
     /// Никак не влияет на отслеживатель.
     /// </summary>
-    Task<bool> Exists<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : BaseEntity;
-    
+    Task<bool> Exists<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class;
+
     /// <summary>
     /// Возвращаемая сущность добавляется в отслеживатель с состоянием "Без изменений".
     /// </summary>
-    Task<TEntity?> TryGetByGuid<TEntity>(Guid guid) where TEntity : BaseEntity;
-    
+    Task<TEntity?> TryGet<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class;
+
     /// <summary>
     /// Возвращаемые сущности НЕ добавляются в отслеживатель.
     /// </summary>
-    Task<ICollection<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : BaseEntity;
+    Task<ICollection<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class;
 }
