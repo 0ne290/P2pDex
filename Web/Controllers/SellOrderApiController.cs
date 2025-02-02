@@ -12,6 +12,15 @@ public class SellOrderApiController : Controller
         _mediator = mediator;
     }
     
+    [Route("/get-all")]
+    [HttpPost]
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await _mediator.Send(new GetAllSellOrdersCommand());
+
+        return ActionResultHelper.CreateResponse(result, HttpContext);
+    }
+    
     [Route("create")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateSellOrderCommand? request)

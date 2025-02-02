@@ -17,7 +17,7 @@ public class EnsureExistedOfTraderHandler : IRequestHandler<EnsureExistedOfTrade
         if (await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.Id))
             return new CommandResult(new { message = "Trader is already exists." });
         
-        var trader = new Trader(request.Id);
+        var trader = new Trader(request.Id, request.Name);
         
         await _unitOfWork.Repository.Add(trader);
         await _unitOfWork.SaveAllTrackedEntities();

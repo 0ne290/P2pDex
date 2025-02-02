@@ -12,11 +12,11 @@ public class GeneralApiController : Controller
         _mediator = mediator;
     }
     
-    [Route("ensure-existed-of-trader/{userId:long}")]
+    [Route("ensure-existed-of-trader/{userId:long}:{userName}")]
     [HttpGet]
-    public async Task<IActionResult> EnsureExistedOfTrader(long userId)
+    public async Task<IActionResult> EnsureExistedOfTrader(long userId, string userName)
     {
-        var result = await _mediator.Send(new EnsureExistedOfTraderCommand { Id = userId});
+        var result = await _mediator.Send(new EnsureExistedOfTraderCommand { Id = userId, Name = userName});
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }

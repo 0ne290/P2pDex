@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq.Expressions;
 
 namespace Core.Domain.Interfaces;
@@ -31,5 +32,10 @@ public interface IRepository
     /// <summary>
     /// Возвращаемые сущности НЕ добавляются в отслеживатель.
     /// </summary>
-    Task<ICollection<TEntity>> GetAll<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class;
+    Task<ICollection<TEntity>> GetAllBy<TEntity>(Expression<Func<TEntity, bool>> filter) where TEntity : class;
+
+    /// <summary>
+    /// Возвращаемые сущности НЕ добавляются в отслеживатель.
+    /// </summary>
+    Task<ICollection> GetAllSellOrdersBySellers();
 }
