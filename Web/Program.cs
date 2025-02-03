@@ -46,7 +46,16 @@ public class Program
         {
             Log.Information("Starting host build.");
             
-            builder.Services.AddCors();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    b =>
+                    {
+                        b.AllowAnyOrigin();
+                        b.AllowAnyHeader();
+                        b.AllowAnyMethod();
+                    });
+            });
 
             /*builder.Services.AddAuthentication().AddScheme<ApiKeyAuthSchemeOptions, ApiKeyAuthSchemeHandler>("ApiKey",
                 opts =>
@@ -74,7 +83,7 @@ public class Program
             app.UseAuthentication();
             //app.UseAuthorization();
             
-            app.UseCors(b => b.AllowAnyOrigin());
+            app.UseCors("AllowAllOrigins");
 
             app.MapControllerRoute(
                 name: "default",
