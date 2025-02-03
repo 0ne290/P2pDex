@@ -12,5 +12,5 @@ public class Trader
     
     public long Id { get; private set; }
     
-    public string Name { get; private set; }
+    public string Name { get; set; }
 }

@@ -14,15 +14,25 @@ public class EnsureExistedOfTraderHandler : IRequestHandler<EnsureExistedOfTrade
 
     public async Task<CommandResult> Handle(EnsureExistedOfTraderCommand request, CancellationToken _)
     {
-        if (await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.Id))
-            return new CommandResult(new { message = "Trader is already exists." });
+        var trader = await _unitOfWork.Repository.TryGet<Trader>(t => t.Id == request.Id);
+
+        if (trader == null)
+        {
+            await _unitOfWork.Repository.Add(new Trader(request.Id, request.Name));
+            await _unitOfWork.SaveAllTrackedEntities();
+            
+            return new CommandResult(new { message = "Trader is created." });
+        }
+        if (trader.Name != request.Name)
+        {
+            trader.Name = request.Name;
+            
+            await _unitOfWork.SaveAllTrackedEntities();
+            
+            return new CommandResult(new { message = "Trader is updated." });
+        }
         
-        var trader = new Trader(request.Id, request.Name);
-        
-        await _unitOfWork.Repository.Add(trader);
-        await _unitOfWork.SaveAllTrackedEntities();
-        
-        return new CommandResult(new { message = "Trader is created." });
+        return new CommandResult(new { message = "Trader already exists and does not require updating." });
     }
     
     private readonly IUnitOfWork _unitOfWork;

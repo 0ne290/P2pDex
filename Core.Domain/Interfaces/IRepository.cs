@@ -15,7 +15,7 @@ public interface IRepository
     Task Add<TEntity>(TEntity entity) where TEntity : class;
 
     /// <summary>
-    /// Добавляет сущность в отслеживатель с состоянием "Изменена".
+    /// Добавляет сущности в отслеживатель с состоянием "Изменена".
     /// </summary>
     void UpdateRange<TEntity>(IEnumerable<TEntity> updatedEntities) where TEntity : class;
 
