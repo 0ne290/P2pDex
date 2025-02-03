@@ -177,6 +177,9 @@ public class Program
 
                 cfg.AddBehavior<IPipelineBehavior<EnsureExistedOfTraderCommand, CommandResult>,
                     LoggingBehavior<EnsureExistedOfTraderCommand, CommandResult>>();
+                
+                cfg.AddBehavior<IPipelineBehavior<GetAllSellOrdersCommand, CommandResult>,
+                    LoggingBehavior<GetAllSellOrdersCommand, CommandResult>>();
 
                 cfg.AddBehavior<IPipelineBehavior<CreateSellOrderCommand, CommandResult>,
                     LoggingBehavior<CreateSellOrderCommand, CommandResult>>();

@@ -21,15 +21,11 @@ public class GeneralApiController : Controller
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
 
-    [Route("calculate-final-crypto-amount-for-transfer")]
+    [Route("calculate-final-crypto-amount-for-transfer/{cryptoAmount:decimal}")]
     [HttpGet]
-    public async Task<IActionResult> CalculateFinalCryptoAmountForTransfer(
-        [FromBody] CalculateFinalCryptoAmountForTransferCommand? request)
+    public async Task<IActionResult> CalculateFinalCryptoAmountForTransfer(decimal cryptoAmount)
     {
-        if (request == null)
-            return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
-        
-        var result = await _mediator.Send(request);
+        var result = await _mediator.Send(new CalculateFinalCryptoAmountForTransferCommand { CryptoAmount = cryptoAmount });
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }

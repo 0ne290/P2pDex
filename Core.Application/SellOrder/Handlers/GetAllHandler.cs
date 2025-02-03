@@ -12,7 +12,7 @@ public class GetAllSellOrdersHandler : IRequestHandler<GetAllSellOrdersCommand, 
     }
 
     public async Task<CommandResult> Handle(GetAllSellOrdersCommand _, CancellationToken __) =>
-        new(await _unitOfWork.Repository.GetAllSellOrdersBySellers());
+        new(new { sellOrders = await _unitOfWork.Repository.GetAllSellOrdersBySellers() });
     
     private readonly IUnitOfWork _unitOfWork;
 }
