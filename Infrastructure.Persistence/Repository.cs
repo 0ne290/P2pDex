@@ -31,7 +31,7 @@ public class Repository : IRepository
         .Join(DbContext.Traders, o => o.SellerId, t => t.Id,
             (o, t) => new
             {
-                seller = t.Name, crypto = o.Crypto, cryptoAmount = o.CryptoAmount, fiat = o.Fiat,
+                sellerId = t.Id, sellerName = t.Name, crypto = o.Crypto, cryptoAmount = o.CryptoAmount, fiat = o.Fiat,
                 cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate, fiatAmount = o.FiatAmount,
                 paymentMethodInfo = o.PaymentMethodInfo
             }).ToListAsync();

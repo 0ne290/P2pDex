@@ -4,7 +4,7 @@ public class Trader
 {
     private Trader() { }
     
-    public Trader(long id, string name)
+    public Trader(long id, string? name)
     {
         Id = id;
         Name = name;
@@ -12,5 +12,5 @@ public class Trader
     
     public long Id { get; private set; }
     
-    public string Name { get; set; }
+    public string? Name { get; set; }
 }

@@ -9,5 +9,5 @@ public class EnsureExistedOfTraderCommand : IRequest<CommandResult>
     public required long Id { get; init; }
     
     [JsonProperty(Required = Required.Always, PropertyName = "name")]
-    public required string Name { get; init; }
+    public required string? Name { get; init; }
 }

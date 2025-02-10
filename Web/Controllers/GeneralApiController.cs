@@ -16,7 +16,8 @@ public class GeneralApiController : Controller
     [HttpGet]
     public async Task<IActionResult> EnsureExistedOfTrader(long userId, string userName)
     {
-        var result = await _mediator.Send(new EnsureExistedOfTraderCommand { Id = userId, Name = userName});
+        var result = await _mediator.Send(new EnsureExistedOfTraderCommand
+            { Id = userId, Name = userName == "null" ? null : userName });
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
