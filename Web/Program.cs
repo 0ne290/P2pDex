@@ -14,6 +14,7 @@ using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
 using Serilog.Formatting.Json;
+using Web.Hubs;
 
 namespace Web;
 
@@ -69,7 +70,9 @@ public class Program
             await CompositionRoot(builder.Services, builder.Configuration);
 
             // Add services to the container.
-            builder.Services.AddSerilog().AddControllers().AddNewtonsoftJson();
+            builder.Services.AddSerilog();
+            builder.Services.AddControllers().AddNewtonsoftJson();
+            builder.Services.AddSignalR();
 
             var app = builder.Build();
 
@@ -84,6 +87,10 @@ public class Program
             //app.UseAuthorization();
             
             app.UseCors("AllowAllOrigins");
+            
+            // Вероятно, всю логику из контроллера заказов лучше было бы перенести в хаб, чтобы избежать лишней
+            // двусмысленности, но, как говорится, "и так сойдет".
+            app.MapHub<SellOrderHub>("api/sell-order-hub");
 
             app.MapControllerRoute(
                 name: "default",

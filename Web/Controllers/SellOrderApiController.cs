@@ -1,15 +1,18 @@
 using Core.Application.SellOrder.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Web.Hubs;
 
 namespace Web.Controllers;
 
 [Route("api/sell-order")]
 public class SellOrderApiController : Controller
 {
-    public SellOrderApiController(IMediator mediator)
+    public SellOrderApiController(IMediator mediator, IHubContext<SellOrderHub> sellOrderHub)
     {
         _mediator = mediator;
+        _sellOrderHub = sellOrderHub;
     }
     
     [Route("get-all")]
@@ -42,6 +45,13 @@ public class SellOrderApiController : Controller
         
         var result = await _mediator.Send(request);
 
+        if (result.IsSuccess)
+        {
+            dynamic value = result.Value;
+            
+            await _sellOrderHub.PublishAStatusChangeNotification((string)value.guid.ToString(), (string)value.status);
+        }
+
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
@@ -53,6 +63,13 @@ public class SellOrderApiController : Controller
             return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
         
         var result = await _mediator.Send(request);
+        
+        if (result.IsSuccess)
+        {
+            dynamic value = result.Value;
+            
+            await _sellOrderHub.PublishAStatusChangeNotification((string)value.guid.ToString(), (string)value.status);
+        }
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
@@ -65,9 +82,18 @@ public class SellOrderApiController : Controller
             return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
         
         var result = await _mediator.Send(request);
+        
+        if (result.IsSuccess)
+        {
+            dynamic value = result.Value;
+            
+            await _sellOrderHub.PublishAStatusChangeNotification((string)value.guid.ToString(), (string)value.status);
+        }
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
     }
     
     private readonly IMediator _mediator;
+
+    private readonly IHubContext<SellOrderHub> _sellOrderHub;
 }
