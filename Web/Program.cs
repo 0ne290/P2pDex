@@ -129,7 +129,7 @@ public class Program
             blockchainConfig["Url"] ?? throw new Exception("Config.Blockchain.Url is not found."),
             TimeSpan.FromMinutes(blockchainFeeTrackIntervalInMinutes).TotalMilliseconds);
         AddApplication(exchangerFeeRateInPercent / 100, blockchainAccountAddress.ToLower(),
-            TimeSpan.FromMinutes(orderTransferTransactionTrackIntervalInMinutes).TotalMilliseconds);
+            (int)TimeSpan.FromMinutes(orderTransferTransactionTrackIntervalInMinutes).TotalMilliseconds);
 
         return;
 
@@ -171,11 +171,11 @@ public class Program
             return blockchainAccount.Address;
         }
 
-        void AddApplication(decimal exchangerFeeRate, string exchangerAccountAddress, double orderTransferTransactionTrackIntervalInMs)
+        void AddApplication(decimal exchangerFeeRate, string exchangerAccountAddress, int orderTransferTransactionTrackIntervalInMs)
         {
             services.AddSingleton(_ => new ExchangerConfiguration(exchangerFeeRate, exchangerAccountAddress));
 
-            services.AddSingleton<OrderTransferTransactionTracker>(sp =>
+            services.AddHostedService<OrderTransferTransactionTracker>(sp =>
                 new OrderTransferTransactionTracker(sp.GetRequiredService<IBlockchain>(),
                     sp.GetRequiredService<IUnitOfWork>(), sp.GetRequiredService<ExchangerConfiguration>(),
                     sp.GetRequiredService<ILogger<OrderTransferTransactionTracker>>(),
