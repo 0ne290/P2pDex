@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq.Expressions;
+using Core.Domain.Constants;
 using Core.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,11 +29,12 @@ public class Repository : IRepository
         where TEntity : class => await DbContext.Set<TEntity>().AsNoTracking().Where(filter).ToListAsync();
 
     public async Task<ICollection> GetAllSellOrdersBySellers() => await DbContext.SellOrders.AsNoTracking()
-        .Join(DbContext.Traders, o => o.SellerId, t => t.Id,
+        .Where(o => o.Status == OrderStatus.SellerToExchangerTransferTransactionConfirmed).Join(DbContext.Traders,
+            o => o.SellerId, t => t.Id,
             (o, t) => new
             {
                 sellerId = t.Id, sellerName = t.Name, guid = o.Guid, crypto = o.Crypto, cryptoAmount = o.CryptoAmount,
-				fiat = o.Fiat, cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate, fiatAmount = o.FiatAmount,
+                fiat = o.Fiat, cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate, fiatAmount = o.FiatAmount,
                 paymentMethodInfo = o.PaymentMethodInfo
             }).ToListAsync();
 
