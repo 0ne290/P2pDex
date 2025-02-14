@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Core.Application.SellOrder.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
@@ -33,8 +34,12 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, Co
 
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.SaveAllTrackedEntities();
+        
+        dynamic ret = new ExpandoObject();
+        ret.guid = order.Guid;
+        ret.status = order.Status.ToString();
 
-        return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
+        return new CommandResult(ret);
     }
 
     private readonly IBlockchain _blockchain;

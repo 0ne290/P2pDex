@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Core.Application.SellOrder.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
@@ -27,7 +28,11 @@ public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrd
     
         await _unitOfWork.SaveAllTrackedEntities();
 
-        return new CommandResult(new { guid = order.Guid, status = order.Status.ToString() });
+        dynamic ret = new ExpandoObject();
+        ret.guid = order.Guid;
+        ret.status = order.Status.ToString();
+        
+        return new CommandResult(ret);
     }
 
     private readonly IUnitOfWork _unitOfWork;

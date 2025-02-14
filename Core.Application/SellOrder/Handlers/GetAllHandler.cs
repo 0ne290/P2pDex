@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Core.Application.SellOrder.Commands;
 using Core.Domain.Interfaces;
 using MediatR;
@@ -11,8 +12,13 @@ public class GetAllSellOrdersHandler : IRequestHandler<GetAllSellOrdersCommand, 
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<CommandResult> Handle(GetAllSellOrdersCommand _, CancellationToken __) =>
-        new(new { sellOrders = await _unitOfWork.Repository.GetAllSellOrdersBySellers() });
+    public async Task<CommandResult> Handle(GetAllSellOrdersCommand _, CancellationToken __)
+    {
+        dynamic ret = new ExpandoObject();
+        ret.sellOrders = await _unitOfWork.Repository.GetAllSellOrdersBySellers();
+        
+        return new CommandResult(ret);
+    }
     
     private readonly IUnitOfWork _unitOfWork;
 }

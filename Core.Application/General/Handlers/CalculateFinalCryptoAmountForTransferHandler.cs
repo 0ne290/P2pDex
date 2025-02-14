@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Core.Application.General.Commands;
 using Core.Domain.Interfaces;
 using MediatR;
@@ -17,9 +18,12 @@ public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<Calc
         var exchangerToMinersFee = _blockchain.TransferTransactionFee;
         var sellerToExchangerFee = request.CryptoAmount * _exchangerConfiguration.FeeRate;
         var finalCryptoAmount = request.CryptoAmount + exchangerToMinersFee.Value + sellerToExchangerFee;
+        
+        dynamic ret = new ExpandoObject();
+        ret.finalCryptoAmountguid = finalCryptoAmount;
+        ret.relevanceTimeInMs = exchangerToMinersFee.TimeToUpdateInMs;
 
-        return Task.FromResult(new CommandResult(new
-            { finalCryptoAmount, relevanceTimeInMs = exchangerToMinersFee.TimeToUpdateInMs }));
+        return Task.FromResult(new CommandResult(ret));
     }
     
     private readonly IBlockchain _blockchain;

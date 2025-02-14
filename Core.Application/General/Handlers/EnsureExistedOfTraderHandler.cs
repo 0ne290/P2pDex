@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Core.Application.General.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces;
@@ -15,24 +16,28 @@ public class EnsureExistedOfTraderHandler : IRequestHandler<EnsureExistedOfTrade
     public async Task<CommandResult> Handle(EnsureExistedOfTraderCommand request, CancellationToken _)
     {
         var trader = await _unitOfWork.Repository.TryGet<Trader>(t => t.Id == request.Id);
+        var message = "Trader already exists and does not require updating.";
 
         if (trader == null)
         {
             await _unitOfWork.Repository.Add(new Trader(request.Id, request.Name));
             await _unitOfWork.SaveAllTrackedEntities();
             
-            return new CommandResult(new { message = "Trader is created." });
+            message = "Trader is created.";
         }
-        if (trader.Name != request.Name)
+        else if (trader.Name != request.Name)
         {
             trader.Name = request.Name;
             
             await _unitOfWork.SaveAllTrackedEntities();
             
-            return new CommandResult(new { message = "Trader is updated." });
+            message = "Trader is updated.";
         }
         
-        return new CommandResult(new { message = "Trader already exists and does not require updating." });
+        dynamic ret = new ExpandoObject();
+        ret.message = message;
+        
+        return new CommandResult(ret);
     }
     
     private readonly IUnitOfWork _unitOfWork;

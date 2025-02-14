@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Core.Application.General.Commands;
 using MediatR;
 
@@ -10,8 +11,13 @@ public class GetExchangerAccountAddressHandler : IRequestHandler<GetExchangerAcc
         _exchangerConfiguration = exchangerConfiguration;
     }
 
-    public Task<CommandResult> Handle(GetExchangerAccountAddressCommand _, CancellationToken __) =>
-        Task.FromResult(new CommandResult(new { accountAddress = _exchangerConfiguration.AccountAddress }));
+    public Task<CommandResult> Handle(GetExchangerAccountAddressCommand _, CancellationToken __)
+    {
+        dynamic ret = new ExpandoObject();
+        ret.accountAddress = _exchangerConfiguration.AccountAddress;
+        
+        return Task.FromResult(new CommandResult(ret));
+    }
 
     private readonly ExchangerConfiguration _exchangerConfiguration;
 }
