@@ -19,15 +19,11 @@ public class SellOrderHub : Hub
     
     public override async Task OnConnectedAsync()
     {
-        Console.WriteLine($"[{DateTime.Now}] Client {Context.ConnectionId} connected.");
-        
         await base.OnConnectedAsync();
     }
     
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        Console.WriteLine($"[{DateTime.Now}] Client {Context.ConnectionId} disconnected. Message: {exception?.Message ?? "null"}.");
-        
         await base.OnDisconnectedAsync(exception);
     }
 }
