@@ -14,16 +14,25 @@ public static class ActionResultHelper
         return Create200(result);
     }
     
-    private static OkObjectResult Create200(CommandResult result) =>
-        new(Response.Success(result.Value).ToJson());
-
-    private static BadRequestObjectResult Create400(CommandResult result) =>
-        new(Response.Fail(new { message = result.Errors[0].Message }).ToJson());
-
-    private static ObjectResult Create500(CommandResult result, HttpContext httpContext) => new(new
+    private static ContentResult Create200(CommandResult result) => new()
     {
-        message = "Please report the issue to technical support and attach this response body to your message.",
-        requestGuid = result.RequestGuid.ToString(), requestName = result.RequestName,
-        url = httpContext.Request.GetEncodedUrl(), traceId = httpContext.TraceIdentifier
-    }) { StatusCode = 500 };
+        Content = Response.Success(result.Value).ToJson(),
+        ContentType = "application/json; charset=utf-8",
+        StatusCode = 200
+    };
+
+    private static ContentResult Create400(CommandResult result) => new()
+    {
+        Content = Response.Fail(new { message = result.Errors[0].Message }).ToJson(),
+        ContentType = "application/json; charset=utf-8",
+        StatusCode = 400
+    };
+
+    private static ContentResult Create500(CommandResult result, HttpContext httpContext) => new()
+    {
+        Content =
+            $"{{\"message\":\"Please report the issue to technical support and attach this response body to your message.\",\"requestGuid\":\"{result.RequestGuid.ToString()}\",\"requestName\":\"{result.RequestName}\",\"url\":\"{httpContext.Request.GetEncodedUrl()}\",\"traceId\":\"{httpContext.TraceIdentifier}\"}}",
+        ContentType = "application/json; charset=utf-8",
+        StatusCode = 500
+    };
 }
