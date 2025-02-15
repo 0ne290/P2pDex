@@ -1,4 +1,3 @@
-using System.Dynamic;
 using Core.Application.SellOrder.Commands;
 using Core.Domain.Exceptions;
 using Core.Domain.Interfaces;
@@ -27,9 +26,11 @@ public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHan
 
         await _unitOfWork.SaveAllTrackedEntities();
         
-        dynamic ret = new ExpandoObject();
-        ret.guid = order.Guid;
-        ret.status = order.Status.ToString();
+        var ret = new Dictionary<string, object>
+        {
+            ["guid"] = order.Guid,
+            ["status"] = order.Status.ToString()
+        };
         
         return new CommandResult(ret);
     }

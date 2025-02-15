@@ -1,4 +1,3 @@
-using System.Dynamic;
 using Core.Application.General.Commands;
 using Core.Domain.Entities;
 using Core.Domain.Interfaces;
@@ -34,8 +33,10 @@ public class EnsureExistedOfTraderHandler : IRequestHandler<EnsureExistedOfTrade
             message = "Trader is updated.";
         }
         
-        dynamic ret = new ExpandoObject();
-        ret.message = message;
+        var ret = new Dictionary<string, object>
+        {
+            ["message"] = message
+        };
         
         return new CommandResult(ret);
     }
