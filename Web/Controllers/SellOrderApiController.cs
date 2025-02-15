@@ -47,9 +47,9 @@ public class SellOrderApiController : Controller
 
         if (result.IsSuccess)
         {
-            dynamic value = result.Value;
+            var value = result.Value;
             
-            await _sellOrderHub.PublishAStatusChangeNotification((string)value.guid.ToString(), (string)value.status);
+            await _sellOrderHub.PublishAStatusChangeNotification(value["guid"].ToString()!, (string)value["status"]);
         }
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
@@ -66,9 +66,9 @@ public class SellOrderApiController : Controller
         
         if (result.IsSuccess)
         {
-            dynamic value = result.Value;
+            var value = result.Value;
             
-            await _sellOrderHub.PublishAStatusChangeNotification((string)value.guid.ToString(), (string)value.status);
+            await _sellOrderHub.PublishAStatusChangeNotification(value["guid"].ToString()!, (string)value["status"]);
         }
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
@@ -85,9 +85,9 @@ public class SellOrderApiController : Controller
         
         if (result.IsSuccess)
         {
-            dynamic value = result.Value;
+            var value = result.Value;
             
-            await _sellOrderHub.PublishAStatusChangeNotification((string)value.guid.ToString(), (string)value.status);
+            await _sellOrderHub.PublishAStatusChangeNotification(value["guid"].ToString()!, (string)value["status"]);
         }
 
         return ActionResultHelper.CreateResponse(result, HttpContext);
