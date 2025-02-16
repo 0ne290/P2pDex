@@ -1,7 +1,9 @@
 using Core.Application;
-using Core.Application.General.Commands;
-using Core.Application.SellOrder.Commands;
-using Core.Domain.Interfaces;
+using Core.Application.BackgroundServices;
+using Core.Application.Configurations;
+using Core.Application.Interfaces;
+using Core.Application.UseCases.General.Commands;
+using Core.Application.UseCases.SellOrder.Commands;
 using Infrastructure.Blockchain;
 using Infrastructure.Persistence;
 using MediatR;
@@ -14,6 +16,7 @@ using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
 using Serilog.Formatting.Json;
+using Web.Filters;
 using Web.Hubs;
 
 namespace Web;
@@ -70,8 +73,13 @@ public class Program
             await CompositionRoot(builder.Services, builder.Configuration);
 
             // Add services to the container.
-            builder.Services.AddSerilog();
-            builder.Services.AddControllers().AddNewtonsoftJson();
+            builder.Services
+                .AddSerilog()
+                .AddControllers(config =>
+                {
+                    config.Filters.Add<ExceptionHandlerAndLoggerFilter>();
+                })
+                .AddNewtonsoftJson();
             builder.Services.AddSignalR();
 
             var app = builder.Build();
@@ -92,9 +100,7 @@ public class Program
             // двусмысленности, но, как говорится, "и так сойдет".
             app.MapHub<SellOrderHub>("api/sell-order-hub");
 
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Api}/{action=Index}/{id?}");
+            app.MapControllers();
 
             Log.Information("Success to build host. Starting web application.");
 

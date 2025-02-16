@@ -1,4 +1,4 @@
-using Core.Application.General.Commands;
+using Core.Application.UseCases.General.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

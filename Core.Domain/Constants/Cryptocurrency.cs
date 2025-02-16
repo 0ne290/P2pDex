@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
+using Newtonsoft.Json.Converters;
+
 namespace Core.Domain.Constants;
 
-public static class Cryptocurrency
+[JsonConverter(typeof(StringEnumConverter))]
+public enum Cryptocurrency
 {
-    public static bool IsCryptocurrency(string value) => value == Ethereum;
-    
-    public const string Ethereum = "Ethereum";
+    Ethereum
 }

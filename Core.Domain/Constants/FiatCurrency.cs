@@ -1,8 +1,10 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Core.Domain.Constants;
 
-public static class FiatCurrency
+[JsonConverter(typeof(StringEnumConverter))]
+public enum FiatCurrency
 {
-    public static bool IsFiatCurrency(string value) => value == Ruble;
-
-    public const string Ruble = "Ruble";
+    Ruble
 }

@@ -1,3 +1,4 @@
+/*
 using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 
@@ -53,3 +54,4 @@ public class Dispute : BaseEntity
     
     public Guid? AdministratorGuid { get; private set; }
 }
+*/

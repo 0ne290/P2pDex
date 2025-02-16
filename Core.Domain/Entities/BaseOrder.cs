@@ -8,15 +8,15 @@ public abstract partial class BaseOrder : BaseEntity
 {
     protected BaseOrder() { }
     
-    protected BaseOrder(Guid guid, string crypto, decimal cryptoAmount, string fiat,
+    protected BaseOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
         decimal sellerToExchangerFee, decimal exchangerToMinersFee) : base(guid)
     {
-        if (!Cryptocurrency.IsCryptocurrency(crypto))
+        if (!Enum.IsDefined(crypto))
             throw new InvariantViolationException("Crypto is invalid.");
         if (cryptoAmount <= 0)
             throw new DevelopmentErrorException("Crypto amount is invalid.");
-        if (!FiatCurrency.IsFiatCurrency(fiat))
+        if (!Enum.IsDefined(fiat))
             throw new InvariantViolationException("Fiat is invalid.");
         if (cryptoToFiatExchangeRate <= 0)
             throw new InvariantViolationException("Crypto to fiat exchange rate is invalid.");
@@ -89,11 +89,11 @@ public abstract partial class BaseOrder : BaseEntity
 
     public OrderStatus Status { get; protected set; }
 
-    public string Crypto { get; private set; }
+    public Cryptocurrency Crypto { get; private set; }
 
     public decimal CryptoAmount { get; private set; }
 
-    public string Fiat { get; private set; }
+    public FiatCurrency Fiat { get; private set; }
 
     public decimal CryptoToFiatExchangeRate { get; private set; }
 

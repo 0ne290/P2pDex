@@ -7,7 +7,7 @@ public class SellOrder : BaseOrder
 {
     private SellOrder() { }
     
-    public SellOrder(Guid guid, string crypto, decimal cryptoAmount, string fiat,
+    public SellOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
         decimal cryptoToFiatExchangeRate, string paymentMethodInfo,
         decimal sellerToExchangerFee, decimal exchangerToMinersFee, long sellerId,
         string sellerToExchangerTransferTransactionHash) : base(guid, crypto, cryptoAmount, fiat,

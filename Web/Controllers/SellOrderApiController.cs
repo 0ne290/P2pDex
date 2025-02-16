@@ -1,4 +1,4 @@
-using Core.Application.SellOrder.Commands;
+using Core.Application.UseCases.SellOrder.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
