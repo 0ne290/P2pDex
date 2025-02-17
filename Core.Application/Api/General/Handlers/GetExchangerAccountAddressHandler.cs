@@ -1,8 +1,8 @@
-using Core.Application.Configurations;
-using Core.Application.UseCases.General.Commands;
+using Core.Application.Api.General.Commands;
+using Core.Application.Private.Configurations;
 using MediatR;
 
-namespace Core.Application.UseCases.General.Handlers;
+namespace Core.Application.Api.General.Handlers;
 
 public class GetExchangerAccountAddressHandler : IRequestHandler<GetExchangerAccountAddressCommand, IDictionary<string, object>>
 {

@@ -1,5 +1,5 @@
 using MediatR;
 
-namespace Core.Application.UseCases.SellOrder.Commands;
+namespace Core.Application.Api.SellOrder.Commands;
 
 public class GetAllSellOrdersCommand : IRequest<IDictionary<string, object>>;

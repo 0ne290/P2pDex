@@ -1,12 +1,12 @@
-using Core.Application.Interfaces;
-using Core.Application.UseCases.SellOrder.Commands;
+using Core.Application.Api.SellOrder.Commands;
+using Core.Application.Private.Interfaces;
 using Core.Domain.Constants;
 using Core.Domain.Exceptions;
 using MediatR;
 
-namespace Core.Application.UseCases.SellOrder.Handlers;
+namespace Core.Application.Api.SellOrder.Handlers;
 
-public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, CommandResult>
+public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, IDictionary<string, object>>
 {
     public ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain)
     {
@@ -14,7 +14,7 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
         _blockchain = blockchain;
     }
     
-    public async Task<CommandResult> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
+    public async Task<IDictionary<string, object>> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
     {
         var order = await _unitOfWork.Repository.TryGet<Domain.Entities.SellOrder>(o => o.Guid.Equals(request.OrderGuid));
 
@@ -34,10 +34,10 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
         var ret = new Dictionary<string, object>
         {
             ["guid"] = order.Guid,
-            ["status"] = order.Status.ToString()
+            ["status"] = order.Status
         };
         
-        return new CommandResult(ret);
+        return ret;
     }
 
     private readonly IUnitOfWork _unitOfWork;

@@ -1,18 +1,19 @@
+using Core.Domain.Constants;
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.UseCases.SellOrder.Commands;
+namespace Core.Application.Api.SellOrder.Commands;
 
 public class CreateSellOrderCommand : IRequest<IDictionary<string, object>>
 {
     [JsonProperty(Required = Required.Always, PropertyName = "crypto")]
-    public required string Crypto { get; init; }
+    public required Cryptocurrency Crypto { get; init; }
 
     [JsonProperty(Required = Required.Always, PropertyName = "cryptoAmount")]
     public required decimal CryptoAmount { get; init; }
 
     [JsonProperty(Required = Required.Always, PropertyName = "fiat")]
-    public required string Fiat { get; init; }
+    public required FiatCurrency Fiat { get; init; }
 
     [JsonProperty(Required = Required.Always, PropertyName = "cryptoToFiatExchangeRate")]
     public required decimal CryptoToFiatExchangeRate { get; init; }

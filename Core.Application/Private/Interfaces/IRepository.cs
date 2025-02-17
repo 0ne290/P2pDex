@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Linq.Expressions;
 
-namespace Core.Application.Interfaces;
+namespace Core.Application.Private.Interfaces;
 
 /// <summary>
 /// Если клиентский код изменит свойства отслеживаемой сущности, состояние этой сущности в отслеживателе автоматически

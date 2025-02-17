@@ -1,9 +1,9 @@
-using Core.Application.Interfaces;
-using Core.Application.UseCases.General.Commands;
+using Core.Application.Api.General.Commands;
+using Core.Application.Private.Interfaces;
 using Core.Domain.Entities;
 using MediatR;
 
-namespace Core.Application.UseCases.General.Handlers;
+namespace Core.Application.Api.General.Handlers;
 
 public class EnsureExistedOfTraderHandler : IRequestHandler<EnsureExistedOfTraderCommand, IDictionary<string, object>>
 {

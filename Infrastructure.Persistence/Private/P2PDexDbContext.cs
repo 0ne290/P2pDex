@@ -1,7 +1,7 @@
 using Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Persistence.Private;
 
 public class P2PDexDbContext : DbContext
 {

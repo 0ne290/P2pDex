@@ -1,8 +1,8 @@
-using Core.Application.Interfaces;
-using Core.Application.UseCases.SellOrder.Commands;
+using Core.Application.Api.SellOrder.Commands;
+using Core.Application.Private.Interfaces;
 using MediatR;
 
-namespace Core.Application.UseCases.SellOrder.Handlers;
+namespace Core.Application.Api.SellOrder.Handlers;
 
 public class GetAllSellOrdersHandler : IRequestHandler<GetAllSellOrdersCommand, IDictionary<string, object>>
 {

@@ -1,9 +1,9 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.UseCases.SellOrder.Commands;
+namespace Core.Application.Api.SellOrder.Commands;
 
-public class RespondToSellOrderByBuyerCommand : IRequest<CommandResult>
+public class RespondToSellOrderByBuyerCommand : IRequest<IDictionary<string, object>>
 {
     [JsonProperty(Required = Required.Always, PropertyName = "orderGuid")]
     public required Guid OrderGuid { get; init; }

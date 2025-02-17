@@ -1,10 +1,11 @@
-using Core.Application.Configurations;
-using Core.Application.Interfaces;
+using Core.Application.Private.Configurations;
+using Core.Application.Private.Constants;
+using Core.Application.Private.Interfaces;
 using Core.Domain.Constants;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Application.BackgroundServices;
+namespace Core.Application.Private.BackgroundServices;
 
 public class OrderTransferTransactionTracker : BackgroundService
 {

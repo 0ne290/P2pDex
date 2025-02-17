@@ -1,6 +1,7 @@
-using Core.Domain.Interfaces;
+using Core.Application.Private.Interfaces;
+using Infrastructure.Persistence.Private;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Persistence.Public;
 
 public class UnitOfWork : IUnitOfWork
 {

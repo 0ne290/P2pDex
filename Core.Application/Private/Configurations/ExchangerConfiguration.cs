@@ -1,4 +1,4 @@
-namespace Core.Application.Configurations;
+namespace Core.Application.Private.Configurations;
 
 public class ExchangerConfiguration
 {

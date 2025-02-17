@@ -1,9 +1,9 @@
-using Core.Application.Configurations;
-using Core.Application.Interfaces;
-using Core.Application.UseCases.General.Commands;
+using Core.Application.Api.General.Commands;
+using Core.Application.Private.Configurations;
+using Core.Application.Private.Interfaces;
 using MediatR;
 
-namespace Core.Application.UseCases.General.Handlers;
+namespace Core.Application.Api.General.Handlers;
 
 public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<CalculateFinalCryptoAmountForTransferCommand, IDictionary<string, object>>
 {
@@ -15,7 +15,7 @@ public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<Calc
 
     public Task<IDictionary<string, object>> Handle(CalculateFinalCryptoAmountForTransferCommand request, CancellationToken _)
     {
-        var exchangerToMinersFee = _blockchain.TransferTransactionFee;
+        var exchangerToMinersFee = _blockchain.GetTransferTransactionFee(DateTime.Now);
         var sellerToExchangerFee = request.CryptoAmount * _exchangerConfiguration.FeeRate;
         var finalCryptoAmount = request.CryptoAmount + exchangerToMinersFee.Value + sellerToExchangerFee;
         
@@ -25,7 +25,7 @@ public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<Calc
             ["relevanceTimeInMs"] = exchangerToMinersFee.TimeToUpdateInMs
         };
 
-        return Task.FromResult<IDictionary<string, object>>(ret);
+        return Task.FromResult(ret);
     }
     
     private readonly IBlockchain _blockchain;

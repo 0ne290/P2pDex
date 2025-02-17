@@ -1,7 +1,7 @@
-using Core.Application.Models;
-using Core.Domain.Constants;
+using Core.Application.Private.Constants;
+using Core.Application.Private.Models;
 
-namespace Core.Application.Interfaces;
+namespace Core.Application.Private.Interfaces;
 
 public interface IBlockchain
 {
@@ -12,6 +12,8 @@ public interface IBlockchain
     Task<string> SendTransferTransaction(string to, decimal amount);
     
     Task<string> SendTransferTransaction(string to, decimal amount, decimal fee);
-    
-    (decimal Value, double TimeToUpdateInMs) TransferTransactionFee { get; }
+
+    Task RefreshTransferTransactionFee(DateTime refreshTime, int msUntilNextRefresh);
+
+    (decimal Value, int TimeToUpdateInMs) GetTransferTransactionFee(DateTime getTime);
 }

@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Linq.Expressions;
+using Core.Application.Private.Interfaces;
 using Core.Domain.Constants;
-using Core.Domain.Interfaces;
+using Infrastructure.Persistence.Private;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Persistence.Public;
 
 public class Repository : IRepository
 {

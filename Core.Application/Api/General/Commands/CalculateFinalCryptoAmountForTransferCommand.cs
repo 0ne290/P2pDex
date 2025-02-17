@@ -1,7 +1,7 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.UseCases.General.Commands;
+namespace Core.Application.Api.General.Commands;
 
 public class CalculateFinalCryptoAmountForTransferCommand : IRequest<IDictionary<string, object>>
 {

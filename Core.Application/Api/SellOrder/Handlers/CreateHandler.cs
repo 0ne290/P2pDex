@@ -1,11 +1,11 @@
-using Core.Application.Configurations;
-using Core.Application.Interfaces;
-using Core.Application.UseCases.SellOrder.Commands;
+using Core.Application.Api.SellOrder.Commands;
+using Core.Application.Private.Configurations;
+using Core.Application.Private.Interfaces;
 using Core.Domain.Entities;
 using Core.Domain.Exceptions;
 using MediatR;
 
-namespace Core.Application.UseCases.SellOrder.Handlers;
+namespace Core.Application.Api.SellOrder.Handlers;
 
 public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, IDictionary<string, object>>
 {
@@ -19,7 +19,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, ID
     public async Task<IDictionary<string, object>> Handle(CreateSellOrderCommand request, CancellationToken _)
     {
         var sellerToExchangerFee = request.CryptoAmount * _exchangerConfiguration.FeeRate;
-        var exchangerToMinersFee = _blockchain.TransferTransactionFee.Value;
+        var exchangerToMinersFee = _blockchain.GetTransferTransactionFee(DateTime.Now).Value;
         var order = new Domain.Entities.SellOrder(Guid.NewGuid(), request.Crypto, request.CryptoAmount, request.Fiat,
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, sellerToExchangerFee, exchangerToMinersFee,
             request.SellerId, request.TransferTransactionHash);
@@ -38,7 +38,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, ID
         IDictionary<string, object> ret = new Dictionary<string, object>
         {
             ["guid"] = order.Guid,
-            ["status"] = order.Status.ToString()
+            ["status"] = order.Status
         };
 
         return ret;

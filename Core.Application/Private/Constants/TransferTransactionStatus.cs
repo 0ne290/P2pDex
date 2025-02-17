@@ -1,4 +1,4 @@
-namespace Core.Domain.Constants;
+namespace Core.Application.Private.Constants;
 
 public enum TransferTransactionStatus
 {

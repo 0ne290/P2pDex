@@ -1,4 +1,4 @@
-using Core.Application.UseCases.SellOrder.Commands;
+using Core.Application.Api.SellOrder.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -21,76 +21,49 @@ public class SellOrderApiController : Controller
     {
         var result = await _mediator.Send(new GetAllSellOrdersCommand());
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
     
     [Route("create")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateSellOrderCommand? request)
+    public async Task<IActionResult> Create([FromBody] CreateSellOrderCommand request)
     {
-        if (request == null)
-            return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
-        
         var result = await _mediator.Send(request);
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
     
     [Route("respond-by-buyer")]
     [HttpPost]
-    public async Task<IActionResult> RespondByBuyer([FromBody] RespondToSellOrderByBuyerCommand? request)
+    public async Task<IActionResult> RespondByBuyer([FromBody] RespondToSellOrderByBuyerCommand request)
     {
-        if (request == null)
-            return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
-        
         var result = await _mediator.Send(request);
 
-        if (result.IsSuccess)
-        {
-            var value = result.Value;
-            
-            await _sellOrderHub.PublishAStatusChangeNotification(value["guid"].ToString()!, (string)value["status"]);
-        }
+        await _sellOrderHub.PublishAStatusChangeNotification(result["guid"].ToString()!, result["status"].ToString()!);
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
     
     [Route("confirm-transfer-fiat-to-seller-by-buyer")]
     [HttpPost]
-    public async Task<IActionResult> ConfirmTransferFiatToSellerByBuyer([FromBody] ConfirmTransferFiatToSellerByBuyerForSellOrderCommand? request)
+    public async Task<IActionResult> ConfirmTransferFiatToSellerByBuyer([FromBody] ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request)
     {
-        if (request == null)
-            return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
-        
         var result = await _mediator.Send(request);
         
-        if (result.IsSuccess)
-        {
-            var value = result.Value;
-            
-            await _sellOrderHub.PublishAStatusChangeNotification(value["guid"].ToString()!, (string)value["status"]);
-        }
+        await _sellOrderHub.PublishAStatusChangeNotification(result["guid"].ToString()!, result["status"].ToString()!);
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
     
     [Route("confirm-receipt-fiat-from-buyer-by-seller")]
     [HttpPost]
-    public async Task<IActionResult> ConfirmReceiptFiatFromBuyerBySeller([FromBody] ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand? request)
+    public async Task<IActionResult> ConfirmReceiptFiatFromBuyerBySeller([FromBody] ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request)
     {
-        if (request == null)
-            return BadRequest(Web.Response.Fail(new { message = "Request format is invalid." }).ToJson());
-        
         var result = await _mediator.Send(request);
         
-        if (result.IsSuccess)
-        {
-            var value = result.Value;
-            
-            await _sellOrderHub.PublishAStatusChangeNotification(value["guid"].ToString()!, (string)value["status"]);
-        }
+        await _sellOrderHub.PublishAStatusChangeNotification(result["guid"].ToString()!, result["status"].ToString()!);
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
     
     private readonly IMediator _mediator;

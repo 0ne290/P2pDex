@@ -1,6 +1,6 @@
-using Core.Domain.Constants;
+using Core.Application.Private.Constants;
 
-namespace Core.Application.Models;
+namespace Core.Application.Private.Models;
 
 public class TransferTransaction
 {

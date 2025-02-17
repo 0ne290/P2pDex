@@ -1,4 +1,4 @@
-using Core.Application.UseCases.General.Commands;
+using Core.Application.Api.General.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +19,7 @@ public class GeneralApiController : Controller
         var result = await _mediator.Send(new EnsureExistedOfTraderCommand
             { Id = userId, Name = userName == "null" ? null : userName });
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
 
     [Route("calculate-final-crypto-amount-for-transfer/{cryptoAmount:decimal}")]
@@ -28,7 +28,7 @@ public class GeneralApiController : Controller
     {
         var result = await _mediator.Send(new CalculateFinalCryptoAmountForTransferCommand { CryptoAmount = cryptoAmount });
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
     
     [Route("get-exchanger-account-address")]
@@ -37,7 +37,7 @@ public class GeneralApiController : Controller
     {
         var result = await _mediator.Send(new GetExchangerAccountAddressCommand());
 
-        return ActionResultHelper.CreateResponse(result, HttpContext);
+        return Web.Response.Create200(result);
     }
 
     private readonly IMediator _mediator;
