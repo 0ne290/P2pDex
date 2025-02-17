@@ -71,14 +71,13 @@ public class Program
             await CompositionRoot(builder.Services, builder.Configuration);
 
             // Add services to the container.
-            builder.Services
-                .AddSerilog()
-                .AddControllers(config =>
+            builder.Services.AddSerilog();
+            builder.Services.AddSignalR();
+            builder.Services.AddControllers(config =>
                 {
                     config.Filters.Add<ExceptionHandlerAndLoggerFilter>();
                 })
                 .AddNewtonsoftJson();
-            builder.Services.AddSignalR();
 
             var app = builder.Build();
 

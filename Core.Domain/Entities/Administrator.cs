@@ -1,4 +1,4 @@
-using Core.Domain.Exceptions;
+/*using Core.Domain.Exceptions;
 
 namespace Core.Domain.Entities;
 
@@ -18,4 +18,4 @@ public class Administrator : BaseEntity
     public string Name { get; }
     
     public int CountOfDisputeResolved { get; private set; }
-}
+}*/
