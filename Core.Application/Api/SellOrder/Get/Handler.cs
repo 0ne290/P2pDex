@@ -17,7 +17,7 @@ public class GetSellOrderHandler : IRequestHandler<GetSellOrderCommand, IDiction
         if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.TraderId))
             throw new InvariantViolationException("Trader does not exists.");
         
-        var order = await _unitOfWork.SellOrderAndItsTradersQuery.Execute(o => o.Guid.Equals(request.OrderGuid));
+        var order = await _unitOfWork.SellOrderAndItsTradersQuery.Execute(request.OrderGuid);
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
