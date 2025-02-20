@@ -18,13 +18,13 @@ public class SellOrderAndItsTradersQuery : ISellOrderAndItsTradersQuery
         .Join(DbContext.Traders, o => o.SellerId, t => t.Id,
             (o, t) => new
             {
-                sellerId = t.Id, sellerName = t.Name, buyerId = o.BuyerId, crypto = o.Crypto,
+                status = o.Status, sellerId = t.Id, sellerName = t.Name, buyerId = o.BuyerId, crypto = o.Crypto,
                 cryptoAmount = o.CryptoAmount, fiat = o.Fiat, cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate,
                 fiatAmount = o.FiatAmount, paymentMethodInfo = o.PaymentMethodInfo
             }).Join(DbContext.Traders, o => o.buyerId, t => t.Id,
             (o, t) => new
             {
-                o.sellerId, o.sellerName, o.buyerId, buyerName = t.Name, o.crypto, o.cryptoAmount, o.fiat,
+                o.status, o.sellerId, o.sellerName, o.buyerId, buyerName = t.Name, o.crypto, o.cryptoAmount, o.fiat,
                 o.cryptoToFiatExchangeRate, o.fiatAmount, o.paymentMethodInfo
             }).FirstOrDefaultAsync();
     
