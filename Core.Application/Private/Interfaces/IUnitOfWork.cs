@@ -15,4 +15,8 @@ public interface IUnitOfWork
     void UntrackAllEntities();
     
     IRepository Repository { get; }
+    
+    ISellOrdersAndTheirSellersQuery SellOrdersAndTheirSellersQuery { get; }
+    
+    ISellOrderAndItsTradersQuery SellOrderAndItsTradersQuery { get; }
 }

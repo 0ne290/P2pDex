@@ -24,7 +24,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, ID
             request.CryptoToFiatExchangeRate, request.PaymentMethodInfo, sellerToExchangerFee, exchangerToMinersFee,
             request.SellerId, request.TransferTransactionHash);
 
-        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id.Equals(request.SellerId)))
+        if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.SellerId))
             throw new InvariantViolationException("Seller does not exists.");
         if (await _unitOfWork.Repository.Exists<Domain.Entities.SellOrder>(o =>
                 o.SellerToExchangerTransferTransactionHash == request.TransferTransactionHash)/* ||

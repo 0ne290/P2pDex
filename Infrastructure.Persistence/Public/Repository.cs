@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Linq.Expressions;
 using Core.Application.Private.Interfaces;
-using Core.Domain.Constants;
 using Infrastructure.Persistence.Private;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,16 +26,6 @@ public class Repository : IRepository
 
     public async Task<ICollection<TEntity>> GetAllBy<TEntity>(Expression<Func<TEntity, bool>> filter)
         where TEntity : class => await DbContext.Set<TEntity>().AsNoTracking().Where(filter).ToListAsync();
-
-    public async Task<ICollection> GetAllSellOrdersBySellers() => await DbContext.SellOrders.AsNoTracking()
-        .Where(o => o.Status == OrderStatus.SellerToExchangerTransferTransactionConfirmed).Join(DbContext.Traders,
-            o => o.SellerId, t => t.Id,
-            (o, t) => new
-            {
-                sellerId = t.Id, sellerName = t.Name, guid = o.Guid, crypto = o.Crypto, cryptoAmount = o.CryptoAmount,
-                fiat = o.Fiat, cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate, fiatAmount = o.FiatAmount,
-                paymentMethodInfo = o.PaymentMethodInfo
-            }).ToListAsync();
 
     public readonly P2PDexDbContext DbContext;
 }

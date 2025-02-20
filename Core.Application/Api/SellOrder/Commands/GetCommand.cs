@@ -3,8 +3,11 @@ using Newtonsoft.Json;
 
 namespace Core.Application.Api.SellOrder.Commands;
 
-public class GetAllSellOrdersCommand : IRequest<IDictionary<string, object>>
+public class GetSellOrderCommand : IRequest<IDictionary<string, object>>
 {
+    [JsonProperty(Required = Required.Always, PropertyName = "orderGuid")]
+    public required Guid OrderGuid { get; init; }
+    
     [JsonProperty(Required = Required.Always, PropertyName = "traderId")]
     public required long TraderId { get; init; }
 }
