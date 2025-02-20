@@ -15,11 +15,20 @@ public class SellOrderApiController : Controller
         _sellOrderHub = sellOrderHub;
     }
     
-    [Route("get-all")]
+    [Route("get-all/{traderId:long}")]
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(long traderId)
     {
-        var result = await _mediator.Send(new GetAllSellOrdersCommand());
+        var result = await _mediator.Send(new GetAllSellOrdersCommand { TraderId = traderId });
+
+        return Web.Response.Create200(result);
+    }
+    
+    [Route("get/{traderId:long}:{orderGuid:guid}")]
+    [HttpGet]
+    public async Task<IActionResult> GetAll(long traderId, Guid orderGuid)
+    {
+        var result = await _mediator.Send(new GetSellOrderCommand { TraderId = traderId, OrderGuid = orderGuid });
 
         return Web.Response.Create200(result);
     }
