@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Core.Application.Api.SellOrder.Get;
 using Core.Application.Private.Interfaces;
 using Core.Domain.Entities;
 using Infrastructure.Persistence.Private;
@@ -13,7 +14,8 @@ public class SellOrderAndItsTradersQuery : ISellOrderAndItsTradersQuery
         DbContext = dbContext;
     }
 
-    public async Task<object?> Execute(Expression<Func<SellOrder, bool>> filter) => await DbContext.SellOrders
+    public async Task<SellOrderAndItsTradersDto?> Execute(Expression<Func<SellOrder, bool>> filter) => await DbContext
+        .SellOrders
         .AsNoTracking().Where(filter)
         .Join(DbContext.Traders, o => o.SellerId, t => t.Id,
             (o, t) => new
@@ -22,11 +24,13 @@ public class SellOrderAndItsTradersQuery : ISellOrderAndItsTradersQuery
                 cryptoAmount = o.CryptoAmount, fiat = o.Fiat, cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate,
                 fiatAmount = o.FiatAmount, paymentMethodInfo = o.PaymentMethodInfo
             }).Join(DbContext.Traders, o => o.buyerId, t => t.Id,
-            (o, t) => new
+            (o, t) => new SellOrderAndItsTradersDto
             {
-                o.status, o.sellerId, o.sellerName, o.buyerId, buyerName = t.Name, o.crypto, o.cryptoAmount, o.fiat,
-                o.cryptoToFiatExchangeRate, o.fiatAmount, o.paymentMethodInfo
-            }).FirstOrDefaultAsync();
+                Status = o.status, SellerId = o.sellerId, SellerName = o.sellerName, BuyerId = o.buyerId,
+                BuyerName = t.Name, Crypto = o.crypto, CryptoAmount = o.cryptoAmount, Fiat = o.fiat,
+                CryptoToFiatExchangeRate = o.cryptoToFiatExchangeRate, FiatAmount = o.fiatAmount,
+                PaymentMethodInfo = o.paymentMethodInfo
+            }).DefaultIfEmpty().FirstOrDefaultAsync();
     
     public readonly P2PDexDbContext DbContext;
 }

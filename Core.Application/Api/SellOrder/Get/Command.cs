@@ -1,7 +1,7 @@
 using MediatR;
 using Newtonsoft.Json;
 
-namespace Core.Application.Api.SellOrder.Commands;
+namespace Core.Application.Api.SellOrder.Get;
 
 public class GetSellOrderCommand : IRequest<IDictionary<string, object>>
 {
