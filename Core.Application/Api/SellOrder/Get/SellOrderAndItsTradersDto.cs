@@ -11,13 +11,13 @@ public class SellOrderAndItsTradersDto
     [JsonProperty(Required = Required.Always, PropertyName = "sellerId")]
     public required long SellerId { get; init; }
 
-    [JsonProperty(Required = Required.Always, PropertyName = "sellerName")]
+    [JsonProperty(Required = Required.AllowNull, PropertyName = "sellerName")]
     public required string? SellerName { get; init; }
 
-    [JsonProperty(Required = Required.Always, PropertyName = "buyerId")]
+    [JsonProperty(Required = Required.AllowNull, PropertyName = "buyerId")]
     public required long? BuyerId { get; init; }
 
-    [JsonProperty(Required = Required.Always, PropertyName = "buyerName")]
+    [JsonProperty(Required = Required.AllowNull, PropertyName = "buyerName")]
     public required string? BuyerName { get; init; }
 
     [JsonProperty(Required = Required.Always, PropertyName = "crypto")]
