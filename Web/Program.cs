@@ -151,8 +151,6 @@ public class Program
 
             services.AddDbContext<P2PDexDbContext>(optionsAction, ServiceLifetime.Transient, ServiceLifetime.Transient);
 
-            services.AddTransient<Repository>();
-
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
 
