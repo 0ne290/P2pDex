@@ -11,17 +11,17 @@ public class SellOrdersAndTheirSellersQuery : ISellOrdersAndTheirSellersQuery
 {
     public SellOrdersAndTheirSellersQuery(P2PDexDbContext dbContext)
     {
-        DbContext = dbContext;
+        _dbContext = dbContext;
     }
 
-    public async Task<ICollection> Execute(Expression<Func<SellOrder, bool>> filter) => await DbContext.SellOrders
-        .AsNoTracking().Where(filter).Join(DbContext.Traders, o => o.SellerId, t => t.Id,
+    public async Task<ICollection> Execute(Expression<Func<SellOrder, bool>> filter) => await _dbContext.SellOrders
+        .AsNoTracking().Where(filter).Join(_dbContext.Traders, o => o.SellerId, t => t.Id,
             (o, t) => new
             {
                 sellerId = t.Id, sellerName = t.Name, guid = o.Guid, crypto = o.Crypto, cryptoAmount = o.CryptoAmount,
                 fiat = o.Fiat, cryptoToFiatExchangeRate = o.CryptoToFiatExchangeRate, fiatAmount = o.FiatAmount,
                 paymentMethodInfo = o.PaymentMethodInfo
             }).ToListAsync();
-    
-    public readonly P2PDexDbContext DbContext;
+
+    private readonly P2PDexDbContext _dbContext;
 }
