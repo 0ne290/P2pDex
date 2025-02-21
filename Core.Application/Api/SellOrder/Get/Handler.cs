@@ -22,7 +22,7 @@ public class GetSellOrderHandler : IRequestHandler<GetSellOrderCommand, IDiction
             throw new InvariantViolationException("Order does not exists.");
         
         if (order.BuyerId != null && order.SellerId != request.TraderId && order.BuyerId != request.TraderId)
-            throw new InvariantViolationException("Trader is not a buyer.");
+            throw new InvariantViolationException("Trader is neither a buyer nor a seller.");
         
         IDictionary<string, object> ret = new Dictionary<string, object>
         {

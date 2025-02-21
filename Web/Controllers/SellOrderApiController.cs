@@ -27,7 +27,7 @@ public class SellOrderApiController : Controller
     
     [Route("get/{traderId:long}:{orderGuid:guid}")]
     [HttpGet]
-    public async Task<IActionResult> GetAll(long traderId, Guid orderGuid)
+    public async Task<IActionResult> Get(long traderId, Guid orderGuid)
     {
         var result = await _mediator.Send(new GetSellOrderCommand { TraderId = traderId, OrderGuid = orderGuid });
 
