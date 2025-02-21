@@ -19,10 +19,10 @@ public class SellOrderAndItsTradersQuery : ISellOrderAndItsTradersQuery
                  SELECT SellOrders.Status, SellOrders.SellerId, Sellers.Name, SellOrders.BuyerId, Buyers.Name,
                         SellOrders.Crypto, SellOrders.CryptoAmount, SellOrders.Fiat, SellOrders.CryptoToFiatExchangeRate,
                         SellOrders.FiatAmount, SellOrders.PaymentMethodInfo
-                 WHERE SellOrders.Guid = {orderGuid.ToString()}
                  FROM SellOrders
                      INNER JOIN Traders Sellers ON SellOrders.SellerId = Sellers.Id
-                     LEFT JOIN Traders Buyers ON SellOrders.BuyerId = Buyers.Id;
+                     LEFT JOIN Traders Buyers ON SellOrders.BuyerId = Buyers.Id
+                 WHERE SellOrders.Guid = {orderGuid.ToString()};
                  """
                 ).FirstOrDefaultAsync();
     
