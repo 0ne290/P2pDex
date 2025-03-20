@@ -31,6 +31,8 @@ public class Program
             .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore.SignalR", LogEventLevel.Debug)
+            .MinimumLevel.Override("Microsoft.AspNetCore.Http.Connections", LogEventLevel.Debug)
 
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails(new DestructuringOptionsBuilder()
@@ -47,6 +49,8 @@ public class Program
         try
         {
             Log.Information("Starting host build.");
+            
+            builder.Services.AddOpenApi();
             
             builder.Services.AddCors(options =>
             {
@@ -72,7 +76,10 @@ public class Program
 
             // Add services to the container.
             builder.Services.AddSerilog();
-            builder.Services.AddSignalR();
+            builder.Services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+            });
             builder.Services.AddControllers(config =>
                 {
                     config.Filters.Add<ExceptionHandlerAndLoggerFilter>();
@@ -80,6 +87,8 @@ public class Program
                 .AddNewtonsoftJson();
 
             var app = builder.Build();
+            
+            app.MapOpenApi();
 
             app.UseSerilogRequestLogging();
 

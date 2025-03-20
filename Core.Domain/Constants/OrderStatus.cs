@@ -9,7 +9,7 @@ public enum OrderStatus
     Created,
     SellerToExchangerTransferTransactionConfirmed,
     RespondedByBuyer,
-    RespondedBySeller,
+    //RespondedBySeller,
     TransferFiatToSellerConfirmedByBuyer,
     ReceiptFiatFromBuyerConfirmedBySeller,
     //FrozenForDurationOfDispute,
