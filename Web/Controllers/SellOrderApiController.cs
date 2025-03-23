@@ -9,6 +9,7 @@ using Web.Hubs;
 namespace Web.Controllers;
 
 [Route("api/sell-order")]
+[ApiController]
 public class SellOrderApiController : Controller
 {
     public SellOrderApiController(IMediator mediator, IHubContext<SellOrderHub> sellOrderHub)

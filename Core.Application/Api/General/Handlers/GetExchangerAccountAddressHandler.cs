@@ -4,21 +4,16 @@ using MediatR;
 
 namespace Core.Application.Api.General.Handlers;
 
-public class GetExchangerAccountAddressHandler : IRequestHandler<GetExchangerAccountAddressCommand, IDictionary<string, object>>
+public class GetExchangerAccountAddressHandler : IRequestHandler<GetExchangerAccountAddressCommand, GetExchangerAccountAddressResponse>
 {
     public GetExchangerAccountAddressHandler(ExchangerConfiguration exchangerConfiguration)
     {
         _exchangerConfiguration = exchangerConfiguration;
     }
 
-    public Task<IDictionary<string, object>> Handle(GetExchangerAccountAddressCommand _, CancellationToken __)
+    public Task<GetExchangerAccountAddressResponse> Handle(GetExchangerAccountAddressCommand _, CancellationToken __)
     {
-        IDictionary<string, object> ret = new Dictionary<string, object>
-        {
-            ["accountAddress"] = _exchangerConfiguration.AccountAddress
-        };
-
-        return Task.FromResult(ret);
+        return Task.FromResult(new GetExchangerAccountAddressResponse { AccountAddress = _exchangerConfiguration.AccountAddress });
     }
 
     private readonly ExchangerConfiguration _exchangerConfiguration;

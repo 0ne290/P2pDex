@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Core.Application.Api.General.Handlers;
 
-public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<CalculateFinalCryptoAmountForTransferCommand, IDictionary<string, object>>
+public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<CalculateFinalCryptoAmountForTransferCommand, CalculateFinalCryptoAmountForTransferResponse>
 {
     public CalculateFinalCryptoAmountForTransferHandler(IBlockchain blockchain, ExchangerConfiguration exchangerConfiguration)
     {
@@ -13,19 +13,16 @@ public class CalculateFinalCryptoAmountForTransferHandler : IRequestHandler<Calc
         _exchangerConfiguration = exchangerConfiguration;
     }
 
-    public Task<IDictionary<string, object>> Handle(CalculateFinalCryptoAmountForTransferCommand request, CancellationToken _)
+    public Task<CalculateFinalCryptoAmountForTransferResponse> Handle(CalculateFinalCryptoAmountForTransferCommand request, CancellationToken _)
     {
         var exchangerToMinersFee = _blockchain.GetTransferTransactionFee(DateTime.Now);
         var sellerToExchangerFee = request.CryptoAmount * _exchangerConfiguration.FeeRate;
         var finalCryptoAmount = request.CryptoAmount + exchangerToMinersFee.Value + sellerToExchangerFee;
-        
-        IDictionary<string, object> ret = new Dictionary<string, object>
-        {
-            ["finalCryptoAmount"] = finalCryptoAmount,
-            ["relevanceTimeInMs"] = exchangerToMinersFee.TimeToUpdateInMs
-        };
 
-        return Task.FromResult(ret);
+        return Task.FromResult(new CalculateFinalCryptoAmountForTransferResponse
+        {
+            FinalCryptoAmount = finalCryptoAmount, RelevanceTimeInMs = exchangerToMinersFee.TimeToUpdateInMs
+        });
     }
     
     private readonly IBlockchain _blockchain;
