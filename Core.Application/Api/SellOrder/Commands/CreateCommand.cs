@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Core.Application.Api.SellOrder.Commands;
 
-public class CreateSellOrderCommand : IRequest<IDictionary<string, object>>
+public class CreateSellOrderCommand : IRequest<OrderStatusChangeResponse>
 {
     [JsonProperty(Required = Required.Always, PropertyName = "crypto")]
     public required Cryptocurrency Crypto { get; init; }

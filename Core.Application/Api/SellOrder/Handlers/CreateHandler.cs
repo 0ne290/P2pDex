@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Core.Application.Api.SellOrder.Handlers;
 
-public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, IDictionary<string, object>>
+public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, OrderStatusChangeResponse>
 {
     public CreateSellOrderHandler(IBlockchain blockchain, IUnitOfWork unitOfWork, ExchangerConfiguration exchangerConfiguration)
     {
@@ -16,7 +16,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, ID
         _exchangerConfiguration = exchangerConfiguration;
     }
 
-    public async Task<IDictionary<string, object>> Handle(CreateSellOrderCommand request, CancellationToken _)
+    public async Task<OrderStatusChangeResponse> Handle(CreateSellOrderCommand request, CancellationToken _)
     {
         var sellerToExchangerFee = request.CryptoAmount * _exchangerConfiguration.FeeRate;
         var exchangerToMinersFee = _blockchain.GetTransferTransactionFee(DateTime.Now).Value;
@@ -35,13 +35,7 @@ public class CreateSellOrderHandler : IRequestHandler<CreateSellOrderCommand, ID
         await _unitOfWork.Repository.Add(order);
         await _unitOfWork.SaveAllTrackedEntities();
         
-        IDictionary<string, object> ret = new Dictionary<string, object>
-        {
-            ["guid"] = order.Guid,
-            ["status"] = order.Status
-        };
-
-        return ret;
+        return new OrderStatusChangeResponse { Guid = order.Guid, Status = order.Status };
     }
 
     private readonly IBlockchain _blockchain;

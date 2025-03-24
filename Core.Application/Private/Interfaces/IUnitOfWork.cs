@@ -16,7 +16,7 @@ public interface IUnitOfWork
     
     IRepository Repository { get; }
     
-    ISellOrdersAndTheirSellersQuery SellOrdersAndTheirSellersQuery { get; }
+    ISellOrdersWithSellersQuery SellOrdersWithSellersQuery { get; }
     
-    ISellOrderAndItsTradersQuery SellOrderAndItsTradersQuery { get; }
+    ISellOrderWithTradersQuery SellOrderWithTradersQuery { get; }
 }

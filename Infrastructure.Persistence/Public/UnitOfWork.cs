@@ -10,8 +10,8 @@ public class UnitOfWork : IUnitOfWork
         _dbContext = dbContext;
         
         Repository = new Repository(dbContext);
-        SellOrdersAndTheirSellersQuery = new SellOrdersAndTheirSellersQuery(dbContext);
-        SellOrderAndItsTradersQuery = new SellOrderAndItsTradersQuery(dbContext);
+        SellOrdersWithSellersQuery = new SellOrdersWithSellersQuery(dbContext);
+        SellOrderWithTradersQuery = new SellOrderWithTradersQuery(dbContext);
     }
 
     public async Task SaveAllTrackedEntities() => await _dbContext.SaveChangesAsync();
@@ -20,9 +20,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IRepository Repository { get; }
     
-    public ISellOrdersAndTheirSellersQuery SellOrdersAndTheirSellersQuery { get; }
+    public ISellOrdersWithSellersQuery SellOrdersWithSellersQuery { get; }
     
-    public ISellOrderAndItsTradersQuery SellOrderAndItsTradersQuery { get; }
+    public ISellOrderWithTradersQuery SellOrderWithTradersQuery { get; }
 
     private readonly P2PDexDbContext _dbContext;
 }

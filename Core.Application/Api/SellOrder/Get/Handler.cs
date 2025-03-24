@@ -5,31 +5,26 @@ using MediatR;
 
 namespace Core.Application.Api.SellOrder.Get;
 
-public class GetSellOrderHandler : IRequestHandler<GetSellOrderCommand, IDictionary<string, object>>
+public class GetSellOrderHandler : IRequestHandler<GetSellOrderCommand, GetSellOrderResponse>
 {
     public GetSellOrderHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IDictionary<string, object>> Handle(GetSellOrderCommand request, CancellationToken _)
+    public async Task<GetSellOrderResponse> Handle(GetSellOrderCommand request, CancellationToken _)
     {
         if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.TraderId))
             throw new InvariantViolationException("Trader does not exists.");
         
-        var order = await _unitOfWork.SellOrderAndItsTradersQuery.Execute(request.OrderGuid);
+        var order = await _unitOfWork.SellOrderWithTradersQuery.Execute(request.OrderGuid);
         if (order == null)
             throw new InvariantViolationException("Order does not exists.");
         
         if (order.BuyerId != null && order.SellerId != request.TraderId && order.BuyerId != request.TraderId)
             throw new InvariantViolationException("Trader is neither a buyer nor a seller.");
         
-        IDictionary<string, object> ret = new Dictionary<string, object>
-        {
-            ["sellOrder"] = order
-        };
-        
-        return ret;
+        return new GetSellOrderResponse { SellOrder = order };
     }
     
     private readonly IUnitOfWork _unitOfWork;

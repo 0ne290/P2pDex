@@ -17,7 +17,7 @@ public class ExceptionHandlerAndLoggerFilter : IAsyncActionFilter
     {
         var controllerActionDescriptor = (ControllerActionDescriptor)actionExecutingContext.ActionDescriptor;
 
-        var requestName = $"{controllerActionDescriptor.ControllerName}.{controllerActionDescriptor.ActionName}";
+        var requestName = controllerActionDescriptor.DisplayName!;
         var requestGuid = Guid.NewGuid().ToString();
 
         _logger.LogInformation(
@@ -34,30 +34,30 @@ public class ExceptionHandlerAndLoggerFilter : IAsyncActionFilter
         switch (exception)
         {
             case null:
-                var response = (Response)actionExecutedContext.Result!;
-
                 _logger.LogInformation(
-                    "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, execution time in ms: {executionTime}, response: {@response}.",
-                    "RETURN 200", requestName, requestGuid, actionExecutingContext.ActionArguments,
-                    stopwatch.ElapsedMilliseconds, response.Data);
+                    "Stage: {stage}, request GUID: {requestGuid}, execution time in ms: {executionTime}, response: {@response}.",
+                    "RETURN 200", requestGuid, stopwatch.ElapsedMilliseconds, actionExecutedContext.Result);
                 
                 break;
             
             case InvariantViolationException:
                 _logger.LogInformation(
-                    "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, message: {message}.",
-                    "RETURN 400", requestName, requestGuid, actionExecutingContext.ActionArguments, exception.Message);
+                    "Stage: {stage}, request GUID: {requestGuid}, message: {message}.", "RETURN 400", requestGuid, exception.Message);
 
-                actionExecutedContext.Result = Response.Create400(exception.Message);
+                actionExecutedContext.Result = ResponseCreator.Create(new Error400 { Message = exception.Message } );
                 
                 break;
             
             default:
                 _logger.LogError(
-                    "Stage: {stage}, request name: {requestName}, request GUID: {requestGuid}, request body: {@requestBody}, error detail: {@errorDetail}.",
-                    "RETURN 500", requestName, requestGuid, actionExecutingContext.ActionArguments, exception);
-            
-                actionExecutedContext.Result = Response.Create500(requestName, requestGuid, actionExecutingContext.HttpContext);
+                    "Stage: {stage}, request GUID: {requestGuid}, error detail: {@errorDetail}.",
+                    "RETURN 500", requestGuid, exception);
+
+                actionExecutedContext.Result = ResponseCreator.Create(new Error500
+                {
+                    RequestName = requestName, RequestGuid = requestGuid,
+                    TraceId = actionExecutingContext.HttpContext.TraceIdentifier
+                });
                 
                 break;
         }

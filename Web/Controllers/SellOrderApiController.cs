@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Core.Application.Api.SellOrder;
 using Core.Application.Api.SellOrder.Commands;
 using Core.Application.Api.SellOrder.Get;
 using MediatR;
@@ -21,24 +22,30 @@ public class SellOrderApiController : Controller
     [EndpointSummary("Получает все заказы.")]
     [EndpointDescription("Получает все заказы со статусом \"SellerToExchangerTransferTransactionConfirmed\". Если" +
                          " трейдера не существует, возвращается 400.")]
+    [ProducesResponseType<Response<GetAllSellOrdersResponse>>(StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType<Response<Error400>>(StatusCodes.Status400BadRequest, "application/json")]
+    [ProducesResponseType<Response<Error500>>(StatusCodes.Status500InternalServerError, "application/json")]
     [Route("get-all/{traderId:long}")]
     [HttpGet]
-    public async Task<IActionResult> GetAll(
+    public async Task<Response<GetAllSellOrdersResponse>> GetAll(
         [Description("Идентификатор трейдера, от имени которого выполняется запрос.")]
         long traderId
         )
     {
         var result = await _mediator.Send(new GetAllSellOrdersCommand { TraderId = traderId });
 
-        return Web.Response.Create200(result);
+        return ResponseCreator.Create(result);
     }
     
     [EndpointSummary("Получает заказ.")]
     [EndpointDescription("Получает заказ вместе с его покупателем и продавцом. Если трейдера или заказа не существует," +
                          " возвращается 400.")]
+    [ProducesResponseType<Response<GetSellOrderResponse>>(StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType<Response<Error400>>(StatusCodes.Status400BadRequest, "application/json")]
+    [ProducesResponseType<Response<Error500>>(StatusCodes.Status500InternalServerError, "application/json")]
     [Route("get/{traderId:long}:{orderGuid:guid}")]
     [HttpGet]
-    public async Task<IActionResult> Get(
+    public async Task<Response<GetSellOrderResponse>> Get(
         [Description("Идентификатор трейдера, от имени которого выполняется запрос.")]
         long traderId,
         [Description("Идентификатор заказа.")]
@@ -46,18 +53,21 @@ public class SellOrderApiController : Controller
     {
         var result = await _mediator.Send(new GetSellOrderCommand { TraderId = traderId, OrderGuid = orderGuid });
 
-        return Web.Response.Create200(result);
+        return ResponseCreator.Create(result);
     }
     
     [EndpointSummary("Создает заказ.")]
     [EndpointDescription("Статус созданного заказа - \"Created\".")]
+    [ProducesResponseType<Response<OrderStatusChangeResponse>>(StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType<Response<Error400>>(StatusCodes.Status400BadRequest, "application/json")]
+    [ProducesResponseType<Response<Error500>>(StatusCodes.Status500InternalServerError, "application/json")]
     [Route("create")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateSellOrderCommand request)
+    public async Task<Response<OrderStatusChangeResponse>> Create([FromBody] CreateSellOrderCommand request)
     {
         var result = await _mediator.Send(request);
 
-        return Web.Response.Create200(result);
+        return ResponseCreator.Create(result);
     }
     
     [EndpointSummary("Откликается на заказ в качестве покупателя.")]
@@ -65,29 +75,35 @@ public class SellOrderApiController : Controller
                          " \"SellerToExchangerTransferTransactionConfirmed\". Этот статус приложение должно" +
                          " устанавливать само каждые 2 минуты всем заказам в статусе \"Created\", чьи транзакции были" +
                          " подтверждены.")]
+    [ProducesResponseType<Response<OrderStatusChangeResponse>>(StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType<Response<Error400>>(StatusCodes.Status400BadRequest, "application/json")]
+    [ProducesResponseType<Response<Error500>>(StatusCodes.Status500InternalServerError, "application/json")]
     [Route("respond-by-buyer")]
     [HttpPost]
-    public async Task<IActionResult> RespondByBuyer([FromBody] RespondToSellOrderByBuyerCommand request)
+    public async Task<Response<OrderStatusChangeResponse>> RespondByBuyer([FromBody] RespondToSellOrderByBuyerCommand request)
     {
         var result = await _mediator.Send(request);
 
-        await _sellOrderHub.PublishAStatusChangeNotification(result["guid"].ToString()!, result["status"].ToString()!);
+        await _sellOrderHub.PublishAStatusChangeNotification(result.Guid.ToString(), result.Status.ToString());
 
-        return Web.Response.Create200(result);
+        return ResponseCreator.Create(result);
     }
     
     [EndpointSummary("Подтверждает перевод фиата покупателем продавцу.")]
     [EndpointDescription("Устанавливает статус заказа в \"TransferFiatToSellerConfirmedByBuyer\". Статус заказа должен" +
                          " быть \"RespondedByBuyer\".")]
+    [ProducesResponseType<Response<OrderStatusChangeResponse>>(StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType<Response<Error400>>(StatusCodes.Status400BadRequest, "application/json")]
+    [ProducesResponseType<Response<Error500>>(StatusCodes.Status500InternalServerError, "application/json")]
     [Route("confirm-transfer-fiat-to-seller-by-buyer")]
     [HttpPost]
-    public async Task<IActionResult> ConfirmTransferFiatToSellerByBuyer([FromBody] ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request)
+    public async Task<Response<OrderStatusChangeResponse>> ConfirmTransferFiatToSellerByBuyer([FromBody] ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request)
     {
         var result = await _mediator.Send(request);
         
-        await _sellOrderHub.PublishAStatusChangeNotification(result["guid"].ToString()!, result["status"].ToString()!);
+        await _sellOrderHub.PublishAStatusChangeNotification(result.Guid.ToString(), result.Status.ToString());
 
-        return Web.Response.Create200(result);
+        return ResponseCreator.Create(result);
     }
     
     [EndpointSummary("Подтверждает получение продавцом фиата покупателя.")]
@@ -96,15 +112,18 @@ public class SellOrderApiController : Controller
                          " все заказы в статусе \"ReceiptFiatFromBuyerConfirmedBySeller\", чьи транзакции были" +
                          " подтверждены, в конечный статус \"ExchangerToBuyerTransferTransactionConfirmed\"," +
                          " означающий, что заказ успешно завершен.")]
+    [ProducesResponseType<Response<OrderStatusChangeResponse>>(StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType<Response<Error400>>(StatusCodes.Status400BadRequest, "application/json")]
+    [ProducesResponseType<Response<Error500>>(StatusCodes.Status500InternalServerError, "application/json")]
     [Route("confirm-receipt-fiat-from-buyer-by-seller")]
     [HttpPost]
-    public async Task<IActionResult> ConfirmReceiptFiatFromBuyerBySeller([FromBody] ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request)
+    public async Task<Response<OrderStatusChangeResponse>> ConfirmReceiptFiatFromBuyerBySeller([FromBody] ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request)
     {
         var result = await _mediator.Send(request);
         
-        await _sellOrderHub.PublishAStatusChangeNotification(result["guid"].ToString()!, result["status"].ToString()!);
+        await _sellOrderHub.PublishAStatusChangeNotification(result.Guid.ToString(), result.Status.ToString());
 
-        return Web.Response.Create200(result);
+        return ResponseCreator.Create(result);
     }
     
     private readonly IMediator _mediator;

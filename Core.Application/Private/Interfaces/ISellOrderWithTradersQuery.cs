@@ -2,10 +2,10 @@ using Core.Application.Api.SellOrder.Get;
 
 namespace Core.Application.Private.Interfaces;
 
-public interface ISellOrderAndItsTradersQuery
+public interface ISellOrderWithTradersQuery
 {
     /// <summary>
     /// Возвращаемые сущности НЕ добавляются в отслеживатель.
     /// </summary>
-    Task<SellOrderAndItsTradersDto?> Execute(Guid orderGuid);
+    Task<SellOrderWithTraders?> Execute(Guid orderGuid);
 }

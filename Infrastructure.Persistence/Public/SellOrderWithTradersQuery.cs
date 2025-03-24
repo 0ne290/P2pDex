@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Public;
 
-public class SellOrderAndItsTradersQuery : ISellOrderAndItsTradersQuery
+public class SellOrderWithTradersQuery : ISellOrderWithTradersQuery
 {
-    public SellOrderAndItsTradersQuery(P2PDexDbContext dbContext)
+    public SellOrderWithTradersQuery(P2PDexDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<SellOrderAndItsTradersDto?> Execute(Guid orderGuid)
+    public async Task<SellOrderWithTraders?> Execute(Guid orderGuid)
     {
         FormattableString query = $"""
                                    SELECT SellOrders.Status, SellOrders.SellerId, Sellers.Name AS SellerName, SellOrders.BuyerId,
@@ -24,7 +24,7 @@ public class SellOrderAndItsTradersQuery : ISellOrderAndItsTradersQuery
                                    WHERE SellOrders.Guid = {orderGuid.ToString().ToUpper()}
                                    """;
 
-        return await _dbContext.Database.SqlQuery<SellOrderAndItsTradersDto>(query).FirstOrDefaultAsync();
+        return await _dbContext.Database.SqlQuery<SellOrderWithTraders>(query).FirstOrDefaultAsync();
     }
 
 

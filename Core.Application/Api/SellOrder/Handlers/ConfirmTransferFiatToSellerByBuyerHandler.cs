@@ -6,14 +6,14 @@ using MediatR;
 
 namespace Core.Application.Api.SellOrder.Handlers;
 
-public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHandler<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, IDictionary<string, object>>
+public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHandler<ConfirmTransferFiatToSellerByBuyerForSellOrderCommand, OrderStatusChangeResponse>
 {
     public ConfirmTransferFiatToSellerByBuyerForSellOrderHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
     
-    public async Task<IDictionary<string, object>> Handle(ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request, CancellationToken _)
+    public async Task<OrderStatusChangeResponse> Handle(ConfirmTransferFiatToSellerByBuyerForSellOrderCommand request, CancellationToken _)
     {
         if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.BuyerId))
             throw new InvariantViolationException("Buyer does not exists.");
@@ -29,13 +29,7 @@ public class ConfirmTransferFiatToSellerByBuyerForSellOrderHandler : IRequestHan
 
         await _unitOfWork.SaveAllTrackedEntities();
         
-        var ret = new Dictionary<string, object>
-        {
-            ["guid"] = order.Guid,
-            ["status"] = order.Status
-        };
-        
-        return ret;
+        return new OrderStatusChangeResponse { Guid = order.Guid, Status = order.Status };
     }
 
     private readonly IUnitOfWork _unitOfWork;

@@ -6,14 +6,14 @@ using MediatR;
 
 namespace Core.Application.Api.SellOrder.Handlers;
 
-public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrderByBuyerCommand, IDictionary<string, object>>
+public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrderByBuyerCommand, OrderStatusChangeResponse>
 {
     public RespondToSellOrderByBuyerHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
     
-    public async Task<IDictionary<string, object>> Handle(RespondToSellOrderByBuyerCommand request, CancellationToken _)
+    public async Task<OrderStatusChangeResponse> Handle(RespondToSellOrderByBuyerCommand request, CancellationToken _)
     {
         var order = await _unitOfWork.Repository.TryGet<Domain.Entities.SellOrder>(o => o.Guid.Equals(request.OrderGuid));
         if (order == null)
@@ -26,13 +26,7 @@ public class RespondToSellOrderByBuyerHandler : IRequestHandler<RespondToSellOrd
     
         await _unitOfWork.SaveAllTrackedEntities();
 
-        var ret = new Dictionary<string, object>
-        {
-            ["guid"] = order.Guid,
-            ["status"] = order.Status
-        };
-        
-        return ret;
+        return new OrderStatusChangeResponse { Guid = order.Guid, Status = order.Status };
     }
 
     private readonly IUnitOfWork _unitOfWork;

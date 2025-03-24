@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Core.Application.Api.SellOrder.Handlers;
 
-public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, IDictionary<string, object>>
+public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHandler<ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand, OrderStatusChangeResponse>
 {
     public ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler(IUnitOfWork unitOfWork, IBlockchain blockchain)
     {
@@ -15,7 +15,7 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
         _blockchain = blockchain;
     }
     
-    public async Task<IDictionary<string, object>> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
+    public async Task<OrderStatusChangeResponse> Handle(ConfirmReceiptFiatFromBuyerBySellerForSellOrderCommand request, CancellationToken _)
     {
         if (!await _unitOfWork.Repository.Exists<Trader>(t => t.Id == request.SellerId))
             throw new InvariantViolationException("Seller does not exists.");
@@ -34,13 +34,7 @@ public class ConfirmReceiptFiatFromBuyerBySellerForSellOrderHandler : IRequestHa
         
         await _unitOfWork.SaveAllTrackedEntities();
         
-        var ret = new Dictionary<string, object>
-        {
-            ["guid"] = order.Guid,
-            ["status"] = order.Status
-        };
-        
-        return ret;
+        return new OrderStatusChangeResponse { Guid = order.Guid, Status = order.Status };
     }
 
     private readonly IUnitOfWork _unitOfWork;
