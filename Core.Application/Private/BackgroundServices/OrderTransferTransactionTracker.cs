@@ -23,11 +23,15 @@ public class OrderTransferTransactionTracker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            _logger.LogInformation("OrderTransferTransactionTracker: iteration started.");
+            
             _updatedSellOrders = [];
 
             await HandleSellerToExchangerTransferTransaction();
             await HandleExchangerToBuyerTransferTransaction();
             await UpdateSellOrders();
+            
+            _logger.LogInformation("OrderTransferTransactionTracker: iteration completed.");
  
             await Task.Delay(_intervalInMs, stoppingToken);
         }
