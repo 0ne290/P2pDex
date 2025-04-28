@@ -5,6 +5,7 @@ namespace Core.Domain.Entities;
 
 public class SellOrder : BaseOrder
 {
+    // Только для тестов и Entity Framework Core
     private SellOrder() { }
     
     public SellOrder(Guid guid, Cryptocurrency crypto, decimal cryptoAmount, FiatCurrency fiat,
